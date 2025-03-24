@@ -22,7 +22,7 @@ export const formatUnixTimestamp = (timestamp: number | string): string => {
 // Helper function for SMA calculation
 export const calculateSMA = (
   data: number[],
-  windowSize: number = 15,
+  windowSize: number = 15
 ): (number | null)[] => {
   const sma: (number | null)[] = []
 
@@ -47,12 +47,12 @@ export const calculateSMA = (
 export function getEarliestAndLatestTimestamps(
   apy: TimeseriesDataPoint[],
   tvl: TimeseriesDataPoint[],
-  pps: TimeseriesDataPoint[],
+  pps: TimeseriesDataPoint[]
 ) {
   // Convert string times to numbers for ease of comparison
-  const apyTimes = apy.map((d) => Number(d.time))
-  const tvlTimes = tvl.map((d) => Number(d.time))
-  const ppsTimes = pps.map((d) => Number(d.time))
+  const apyTimes = apy.map(d => Number(d.time))
+  const tvlTimes = tvl.map(d => Number(d.time))
+  const ppsTimes = pps.map(d => Number(d.time))
 
   const earliest = Math.min(...apyTimes, ...tvlTimes, ...ppsTimes)
   const latest = Math.max(...apyTimes, ...tvlTimes, ...ppsTimes)
@@ -78,11 +78,11 @@ export function getEarliestAndLatestTimestamps(
 export function fillMissingDailyData(
   data: TimeseriesDataPoint[],
   earliest: number,
-  latest: number,
+  latest: number
 ): TimeseriesDataPoint[] {
   // Index existing data by day (converted from Unix so day boundaries match)
   const dailyMap: Record<string, TimeseriesDataPoint> = {}
-  data.forEach((point) => {
+  data.forEach(point => {
     dailyMap[point.time] = point
   })
 
