@@ -10,7 +10,7 @@ import { ApolloProvider } from '@apollo/client'
 import { config } from './wagmi'
 import { routeTree } from './routeTree.gen'
 import { apolloClient } from './lib/apollo-client'
-import './styles/globals.css'
+
 
 globalThis.Buffer = Buffer
 

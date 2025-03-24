@@ -8,7 +8,7 @@ export const Route = createRootRoute({
     <>
       <div className="flex min-h-screen flex-col bg-[#f5f5f5]">
         <Header />
-        <main className="min-h-screen px-4 py-6">
+        <main className="min-h-screen px-0 py-0">
           <Outlet />
         </main>
         <Footer />
