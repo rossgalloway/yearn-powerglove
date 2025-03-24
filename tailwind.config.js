@@ -1,12 +1,13 @@
+
 /** @type {import('tailwindcss').Config} */
 
 const config = {
   darkMode: ['class'],
   content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
     './src/routes/**/*.{ts,tsx}',
-    './src/components/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-    '*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{ts,tsx}'
   ],
   prefix: '',
   theme: {
@@ -78,12 +79,3 @@ const config = {
 }
 
 export default config
-
-// /** @type {import('tailwindcss').Config} */
-// module.exports = {
-//   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-//   theme: {
-//     extend: {},
-//   },
-//   plugins: [],
-// }
