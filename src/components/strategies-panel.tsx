@@ -1,22 +1,37 @@
-"use client"
+'use client'
 
-import { useState, useMemo } from "react"
-import { ChevronDown, ChevronRight, ChevronUp, ExternalLink, Shield, Share2 } from "lucide-react"
-import { Cell, Label, Pie, PieChart, Tooltip } from "recharts"
-import { cn } from "@/lib/utils"
+import { useState, useMemo } from 'react'
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ExternalLink,
+  Shield,
+  Share2,
+} from 'lucide-react'
+import { Cell, Label, Pie, PieChart, Tooltip } from 'recharts'
+import { cn } from '@/lib/utils'
+import usdc1VaultData from '@/data/usdc1VaultData.json'
+import usdc1StrategyData from '@/data/usdc1StrategyData.json'
+import allVaultsData from '@/data/allVaultsData.json'
+import {
+  CHAIN_ID_TO_ICON,
+  CHAIN_ID_TO_NAME,
+  CHAIN_ID_TO_BLOCK_EXPLORER,
+} from '@/constants/chains'
 
 // Define the type for strategy details
 interface StrategyDetails {
-  platform: string
+  chainId: string
   vaultAddress: string
   managementFee: string
   performanceFee: string
-  lastReport: string
   isVault: boolean
+  isEndorsed?: boolean
 }
 
 // Define the type for strategy data
-interface Strategy {
+export interface Strategy {
   id: number
   name: string
   allocationPercent: number
@@ -25,15 +40,121 @@ interface Strategy {
   details: StrategyDetails
 }
 
+interface VaultDebt {
+  address: string
+  currentDebt: string
+  currentDebtUsd: string
+  chainId?: number
+  name?: string
+  erc4626?: boolean
+  v3?: boolean
+  yearn?: boolean
+  apy?: {
+    net: number
+    InceptionNet: number
+    grossApr: number
+  }
+  fees?: {
+    managementFee: number
+    performanceFee: number
+  }
+}
+
 // Define sort column types
-type SortColumn = "name" | "allocationPercent" | "allocationAmount" | "estimatedAPY"
-type SortDirection = "asc" | "desc"
+type SortColumn =
+  | 'name'
+  | 'allocationPercent'
+  | 'allocationAmount'
+  | 'estimatedAPY'
+type SortDirection = 'asc' | 'desc'
+
+// Hydrate strategies data for the Strategies Panel
+function hydrateStrategiesPanelData(): Strategy[] {
+  // Extract the vaultDebts array from usdc1VaultData.json
+  const vaultDebts = usdc1VaultData.data.vault.debts || []
+  // Enrich each debt with matching strategy info from usdc1StrategyData.json
+  const enrichedDebts = vaultDebts.map((debt: any) => {
+    // Match by comparing the 'strategy' field
+    const matchingStrategy = usdc1StrategyData.find(
+      (item: any) =>
+        item.address.toLowerCase() === (debt.strategy || '').toLowerCase()
+    )
+    let extendedDebt = { ...debt }
+    if (matchingStrategy) {
+      extendedDebt = {
+        ...extendedDebt,
+        chainId: matchingStrategy.chainId,
+        name: matchingStrategy.name,
+        erc4626: matchingStrategy.erc4626,
+        v3: matchingStrategy.v3,
+        yearn: matchingStrategy.yearn,
+      }
+    }
+    // For entries where erc4626 == true, enrich with apy and fees from allVaultsData.json
+    if (extendedDebt.erc4626) {
+      const matchingVault = allVaultsData.data.vaults.find(
+        (v: any) =>
+          v.address.toLowerCase() === (debt.strategy || '').toLowerCase()
+      )
+      if (matchingVault) {
+        extendedDebt = {
+          ...extendedDebt,
+          apy: matchingVault.apy,
+          fees: matchingVault.fees,
+        }
+      }
+    }
+    return extendedDebt
+  })
+
+  // Sort the enriched debts by currentDebt (convert strings to numbers)
+  const sortedDebts = enrichedDebts.sort(
+    (a, b) => Number(a.currentDebt) - Number(b.currentDebt)
+  )
+
+  // Sum currentDebtUsd values to get totalDebt
+  const totalDebt = sortedDebts.reduce(
+    (sum: number, debt: any) => sum + Number(debt.currentDebtUsd),
+    0
+  )
+
+  // Map each debt into the Strategy type
+  const strategies = sortedDebts.map((debt: any, index: number): Strategy => {
+    const allocationPercent = totalDebt
+      ? (Number(debt.currentDebtUsd) / totalDebt) * 100
+      : 0
+
+    return {
+      id: index,
+      name: debt.name || '',
+      allocationPercent,
+      allocationAmount: String(debt.currentDebtUsd),
+      estimatedAPY: debt.apy
+        ? `${(Number(debt.apy.net) * 100).toFixed(2)}%`
+        : '0%',
+      details: {
+        chainId: debt.chainId, // using chainId from enriched data
+        vaultAddress: debt.strategy || '', // rename vaultAddress to strategyAddress
+        managementFee: debt.fees
+          ? `${(Number(debt.fees.managementFee) / 100).toFixed(0)}%`
+          : '0%',
+        performanceFee: debt.fees
+          ? `${(Number(debt.fees.performanceFee) / 100).toFixed(0)}%`
+          : '0%',
+        isVault: !!debt.erc4626,
+        isEndorsed: debt.yearn || false,
+      },
+    }
+  })
+
+  return strategies
+}
 
 export default function StrategiesPanel() {
   const [expandedRow, setExpandedRow] = useState<number | null>(1)
-  const [activeTab, setActiveTab] = useState<string>("Strategies")
-  const [sortColumn, setSortColumn] = useState<SortColumn>("allocationPercent")
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
+  const [activeTab, setActiveTab] = useState<string>('Strategies')
+  const [sortColumn, setSortColumn] = useState<SortColumn>('allocationPercent')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const toggleRow = (index: number) => {
     setExpandedRow(expandedRow === index ? null : index)
@@ -41,98 +162,43 @@ export default function StrategiesPanel() {
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
-      // Toggle direction if same column
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
     } else {
-      // Set new column and default to ascending
       setSortColumn(column)
-      setSortDirection("asc")
+      setSortDirection('asc')
     }
   }
 
-  const strategies: Strategy[] = [
-    {
-      id: 0,
-      name: "DAI-1 Vault",
-      allocationPercent: 51.2,
-      allocationAmount: "1.02M",
-      estimatedAPY: "6.96%",
-      details: {
-        platform: "Ethereum",
-        vaultAddress: "0x0968..c2F4",
-        managementFee: "0%",
-        performanceFee: "5%",
-        isVault: true,
-      },
-    },
-    {
-      id: 1,
-      name: "Morpho Gauntlet DAI Core Compounder",
-      allocationPercent: 46.5,
-      allocationAmount: "923.5K",
-      estimatedAPY: "6.96%",
-      details: {
-        platform: "Ethereum",
-        vaultAddress: "0x0968..c2F4",
-        managementFee: "0%",
-        performanceFee: "5%",
-        isVault: true,
-      },
-    },
-    {
-      id: 2,
-      name: "StrategyGearBoxLenderDAI",
-      allocationPercent: 2.3,
-      allocationAmount: "465.8K",
-      estimatedAPY: "3.48%",
-      details: {
-        platform: "Ethereum",
-        vaultAddress: "0x0968..c2F4",
-        managementFee: "0%",
-        performanceFee: "5%",
-        isVault: false,
-      },
-    },
-    {
-      id: 3,
-      name: "DAI-Ajna Router",
-      allocationPercent: 0.0,
-      allocationAmount: "0",
-      estimatedAPY: "0%",
-      details: {
-        platform: "Ethereum",
-        vaultAddress: "0x0968..c2F4",
-        managementFee: "0%",
-        performanceFee: "5%",
-        isVault: true,
-      },
-    },
-  ]
+  // Use the hydrated strategies data instead of the static array
+  const strategies: Strategy[] = hydrateStrategiesPanelData()
 
   // Sort strategies based on current sort column and direction
   const sortedStrategies = [...strategies].sort((a, b) => {
-    if (sortColumn === "name") {
-      return sortDirection === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-    } else if (sortColumn === "allocationPercent") {
-      return sortDirection === "asc"
+    if (sortColumn === 'name') {
+      return sortDirection === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name)
+    } else if (sortColumn === 'allocationPercent') {
+      return sortDirection === 'asc'
         ? a.allocationPercent - b.allocationPercent
         : b.allocationPercent - a.allocationPercent
-    } else if (sortColumn === "allocationAmount") {
+    } else if (sortColumn === 'allocationAmount') {
       // Convert K and M to actual numbers for sorting
       const parseAmount = (amount: string) => {
-        if (amount === "0") return 0
-        const num = Number.parseFloat(amount.replace(/[^0-9.]/g, ""))
-        if (amount.includes("K")) return num * 1000
-        if (amount.includes("M")) return num * 1000000
+        if (amount === '0') return 0
+        const num = Number.parseFloat(amount.replace(/[^0-9.]/g, ''))
+        if (amount.includes('K')) return num * 1000
+        if (amount.includes('M')) return num * 1000000
         return num
       }
-      return sortDirection === "asc"
+      return sortDirection === 'asc'
         ? parseAmount(a.allocationAmount) - parseAmount(b.allocationAmount)
         : parseAmount(b.allocationAmount) - parseAmount(a.allocationAmount)
-    } else if (sortColumn === "estimatedAPY") {
+    } else if (sortColumn === 'estimatedAPY') {
       // Remove % and APY for sorting
-      const parseAPY = (apy: string) => Number.parseFloat(apy.replace(/[^0-9.]/g, ""))
-      return sortDirection === "asc"
+      const parseAPY = (apy: string) =>
+        Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
+      return sortDirection === 'asc'
         ? parseAPY(a.estimatedAPY) - parseAPY(b.estimatedAPY)
         : parseAPY(b.estimatedAPY) - parseAPY(a.estimatedAPY)
     }
@@ -141,18 +207,18 @@ export default function StrategiesPanel() {
 
   // Filter out strategies with 0% allocation for the chart
   const chartStrategies = strategies
-    .filter((s) => s.allocationPercent > 0)
+    .filter(s => s.allocationPercent > 0)
     // Sort by allocation percent descending for the chart
     .sort((a, b) => b.allocationPercent - a.allocationPercent)
 
   // Helper function to parse APY value
   const parseAPY = (apy: string) => {
-    return Number.parseFloat(apy.replace(/[^0-9.]/g, ""))
+    return Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
   }
 
   // Calculate APY contribution for each strategy
   const apyContributions = useMemo(() => {
-    return chartStrategies.map((strategy) => {
+    return chartStrategies.map(strategy => {
       const apyValue = parseAPY(strategy.estimatedAPY)
       const contribution = (apyValue * strategy.allocationPercent) / 100
       return {
@@ -173,7 +239,7 @@ export default function StrategiesPanel() {
   }, [apyContributions])
 
   // Prepare data for the allocation pie chart
-  const allocationChartData = chartStrategies.map((strategy) => ({
+  const allocationChartData = chartStrategies.map(strategy => ({
     id: strategy.id,
     name: strategy.name,
     value: strategy.allocationPercent,
@@ -181,7 +247,7 @@ export default function StrategiesPanel() {
   }))
 
   // Prepare data for the APY contribution pie chart
-  const apyContributionChartData = apyContributions.map((item) => ({
+  const apyContributionChartData = apyContributions.map(item => ({
     id: item.id,
     name: item.name,
     value: item.contribution,
@@ -192,10 +258,10 @@ export default function StrategiesPanel() {
 
   // Generate colors for chart segments
   const COLORS = [
-    "#000838", // Dark blue
-    "#001070",
-    "#0018A8",
-    "#0020E0", // Lighter blue
+    '#000838', // Dark blue
+    '#001070',
+    '#0018A8',
+    '#0020E0', // Lighter blue
   ]
 
   // Custom tooltip component for the charts
@@ -239,7 +305,7 @@ export default function StrategiesPanel() {
     if (sortColumn !== column) {
       return <ChevronDown className="w-4 h-4 ml-1 inline-block" />
     }
-    return sortDirection === "asc" ? (
+    return sortDirection === 'asc' ? (
       <ChevronUp className="w-4 h-4 ml-1 inline-block text-[#0657f9]" />
     ) : (
       <ChevronDown className="w-4 h-4 ml-1 inline-block text-[#0657f9]" />
@@ -248,7 +314,7 @@ export default function StrategiesPanel() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "Strategies":
+      case 'Strategies':
         return (
           <div className="pb-4 lg:flex lg:flex-row flex-col">
             {/* Table Section */}
@@ -261,38 +327,41 @@ export default function StrategiesPanel() {
                   </div>
                   <div
                     className="w-1/6 text-right whitespace-nowrap cursor-pointer"
-                    onClick={() => handleSort("allocationPercent")}
+                    onClick={() => handleSort('allocationPercent')}
                   >
                     <span>Allocation %</span>
-                    {renderSortIcon("allocationPercent")}
+                    {renderSortIcon('allocationPercent')}
                   </div>
                   <div
                     className="w-1/6 text-right whitespace-nowrap cursor-pointer"
-                    onClick={() => handleSort("allocationAmount")}
+                    onClick={() => handleSort('allocationAmount')}
                   >
                     <span>Allocation $</span>
-                    {renderSortIcon("allocationAmount")}
+                    {renderSortIcon('allocationAmount')}
                   </div>
                   <div
                     className="w-1/6 text-right whitespace-nowrap cursor-pointer"
-                    onClick={() => handleSort("estimatedAPY")}
+                    onClick={() => handleSort('estimatedAPY')}
                   >
                     <span>Est. APY</span>
-                    {renderSortIcon("estimatedAPY")}
+                    {renderSortIcon('estimatedAPY')}
                   </div>
                 </div>
 
                 {/* Table Rows */}
-                {sortedStrategies.map((strategy) => (
+                {sortedStrategies.map(strategy => (
                   <div
                     key={strategy.id}
-                    className={cn("border-t border-[#f5f5f5]", strategy.allocationPercent === 0 && "opacity-50")}
+                    className={cn(
+                      'border-t border-[#f5f5f5]',
+                      strategy.allocationPercent === 0 && 'opacity-50'
+                    )}
                   >
                     {/* Main Row */}
                     <div
                       className={cn(
-                        "flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer",
-                        expandedRow === strategy.id && "bg-[#f5f5f5]/30",
+                        'flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer',
+                        expandedRow === strategy.id && 'bg-[#f5f5f5]/30'
                       )}
                       onClick={() => toggleRow(strategy.id)}
                     >
@@ -309,9 +378,21 @@ export default function StrategiesPanel() {
                         </div>
                         <span className="font-medium">{strategy.name}</span>
                       </div>
-                      <div className="w-1/6 text-right">{strategy.allocationPercent}%</div>
-                      <div className="w-1/6 text-right">{strategy.allocationAmount}</div>
-                      <div className="w-1/6 text-right">{strategy.estimatedAPY} APY</div>
+                      <div className="w-1/6 text-right">
+                        {strategy.allocationPercent.toFixed(1)}%
+                      </div>
+                      <div className="w-1/6 text-right">
+                        {Number(strategy.allocationAmount).toLocaleString(
+                          'en-US',
+                          {
+                            style: 'currency',
+                            currency: 'USD',
+                          }
+                        )}
+                      </div>
+                      <div className="w-1/6 text-right">
+                        {strategy.estimatedAPY} APY
+                      </div>
                     </div>
 
                     {/* Expanded Details */}
@@ -319,22 +400,47 @@ export default function StrategiesPanel() {
                       <div className="bg-[#f5f5f5]/30 px-12 py-4 border-t border-[#f5f5f5]">
                         <div className="flex gap-4 mb-4">
                           <div className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center">
-                            {strategy.details.platform}
+                            {CHAIN_ID_TO_NAME[Number(strategy.details.chainId)]}
                           </div>
                           {strategy.details.isVault && (
-                            <button className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors">
-                              Vault
+                            <a
+                              href={`/vault/${strategy.details.vaultAddress}`}
+                              target="_blank"
+                              className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
+                            >
+                              Data
                               <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
-                            </button>
+                            </a>
                           )}
-                          <button className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors">
+                          {strategy.details.isEndorsed &&
+                            strategy.details.isVault && (
+                              <a
+                                href={`https://yearn.fi/v3/${strategy.details.chainId}/${strategy.details.vaultAddress}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
+                              >
+                                Vault
+                                <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
+                              </a>
+                            )}
+                          <a
+                            href={`${CHAIN_ID_TO_BLOCK_EXPLORER[Number(strategy.details.chainId)]}/address/${strategy.details.vaultAddress}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
+                          >
                             {strategy.details.vaultAddress}
                             <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
-                          </button>
+                          </a>
                         </div>
                         <div className="space-y-1 text-sm">
-                          <div>Management Fee: {strategy.details.managementFee}</div>
-                          <div>Performance Fee: {strategy.details.performanceFee}</div>
+                          <div>
+                            Management Fee: {strategy.details.managementFee}
+                          </div>
+                          <div>
+                            Performance Fee: {strategy.details.performanceFee}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -344,7 +450,7 @@ export default function StrategiesPanel() {
             </div>
 
             {/* Charts Section */}
-            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-between">
+            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around">
               {/* Allocation Chart */}
               <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
                 <PieChart width={160} height={160}>
@@ -360,7 +466,10 @@ export default function StrategiesPanel() {
                     endAngle={-270}
                   >
                     {allocationChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                     <Label
                       content={() => (
@@ -395,7 +504,10 @@ export default function StrategiesPanel() {
                     endAngle={-270}
                   >
                     {apyContributionChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                     <Label
                       content={() => (
@@ -417,18 +529,22 @@ export default function StrategiesPanel() {
             </div>
           </div>
         )
-      case "Info":
+      case 'Info':
         return (
           <div className="p-8">
             <h2 className="text-xl font-semibold mb-4">Info</h2>
-            <p className="text-[#4f4f4f]">Additional information and details about the investment strategy.</p>
+            <p className="text-[#4f4f4f]">
+              Additional information and details about the investment strategy.
+            </p>
           </div>
         )
-      case "Risk":
+      case 'Risk':
         return (
           <div className="p-8">
             <h2 className="text-xl font-semibold mb-4">Risk</h2>
-            <p className="text-[#4f4f4f]">Risk assessment and considerations for this investment strategy.</p>
+            <p className="text-[#4f4f4f]">
+              Risk assessment and considerations for this investment strategy.
+            </p>
           </div>
         )
       default:
@@ -441,12 +557,14 @@ export default function StrategiesPanel() {
       <div className="w-full mx-auto bg-white border-x border-b-0 border-border">
         {/* Tab Navigation */}
         <div className="flex items-center border-b border-border">
-          {["Strategies", "Info", "Risk"].map((tab) => (
+          {['Strategies', 'Info', 'Risk'].map(tab => (
             <div
               key={tab}
               className={cn(
-                "px-6 py-3 cursor-pointer",
-                activeTab === tab ? "text-black font-medium border-b-2 border-[#0657f9]" : "text-[#808080]",
+                'px-6 py-3 cursor-pointer',
+                activeTab === tab
+                  ? 'text-black font-medium border-b-2 border-[#0657f9]'
+                  : 'text-[#808080]'
               )}
               onClick={() => setActiveTab(tab)}
             >
@@ -469,4 +587,3 @@ export default function StrategiesPanel() {
     </div>
   )
 }
-

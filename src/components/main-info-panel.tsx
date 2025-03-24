@@ -28,7 +28,10 @@ interface MainInfoPanelProps {
   historicalAPY: string
   managementFee: string
   performanceFee: string
+  apiVersion: string
   vaultAddress: string
+  blockExplorerLink?: string
+  yearnVaultLink?: string
 }
 
 function hydrateMainInfoPanelData(): MainInfoPanelProps & {
@@ -65,7 +68,11 @@ function hydrateMainInfoPanelData(): MainInfoPanelProps & {
   const historicalAPY = `${(vaultData.apy.inceptionNet * 100).toFixed(2)}%`
   const managementFee = `${(vaultData.fees.managementFee / 100).toFixed(0)}%`
   const performanceFee = `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
+  const apiVersion = vaultData.apiVersion
   const blockExplorerLink = `${CHAIN_ID_TO_BLOCK_EXPLORER[vaultData.chainId]}/address/${vaultData.address}`
+  const yearnVaultLink = vaultData.apiVersion.startsWith('3')
+    ? `https://yearn.fi/v3/${vaultData.chainId}/${vaultData.address}`
+    : `https://yearn.fi/vaults/${vaultData.chainId}/${vaultData.address}`
 
   return {
     vaultId: vaultData.symbol,
@@ -79,8 +86,10 @@ function hydrateMainInfoPanelData(): MainInfoPanelProps & {
     historicalAPY,
     managementFee,
     performanceFee,
+    apiVersion,
     vaultAddress: vaultData.address,
     blockExplorerLink,
+    yearnVaultLink,
   }
 }
 
@@ -107,9 +116,14 @@ export function MainInfoPanel() {
           <div className="max-w-md">
             <h1 className="text-3xl font-bold mb-3">{data.vaultName}</h1>
             <p className="text-gray-600 mb-4">{data.description}</p>
-            <Button className="bg-[#0657f9] hover:bg-[#0657f9]/90 rounded-none">
+            <a
+              className="bg-[#0657f9] hover:bg-[#0657f9]/90 rounded-none text-white px-4 py-2 inline-flex items-center"
+              href={data.yearnVaultLink}
+              target="_blank"
+              rel="noreferrer"
+            >
               Go to Vault <ExternalLink className="ml-2 h-4 w-4" />
-            </Button>
+            </a>
           </div>
         </div>
 
