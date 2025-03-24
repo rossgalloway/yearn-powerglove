@@ -6,8 +6,48 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: 'Aeonik';
+  src: url('/fonts/Aeonik-Regular.woff2') format('woff2'),
+       url('/fonts/Aeonik-Regular.woff') format('woff'),
+       url('/fonts/Aeonik-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik';
+  src: url('/fonts/Aeonik-Bold.woff2') format('woff2'),
+       url('/fonts/Aeonik-Bold.woff') format('woff'),
+       url('/fonts/Aeonik-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik Mono';
+  src: url('/fonts/AeonikMono-Regular.woff2') format('woff2'),
+       url('/fonts/AeonikMono-Regular.woff') format('woff'),
+       url('/fonts/AeonikMono-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik Mono';
+  src: url('/fonts/AeonikMono-Bold.woff2') format('woff2'),
+       url('/fonts/AeonikMono-Bold.woff') format('woff'),
+       url('/fonts/AeonikMono-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Aeonik', sans-serif;
 }
 
 @layer utilities {
