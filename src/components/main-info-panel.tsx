@@ -1,5 +1,14 @@
-import { Button } from "@/components/ui/button"
-import { ArrowUpRight, Copy, ExternalLink, Info } from "lucide-react"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { ArrowUpRight, Copy, Check, ExternalLink, Info } from 'lucide-react'
+import { format } from 'date-fns'
+import usdc1VaultData from '@/data/usdc1VaultData.json'
+import smolAssets from '@/data/smolAssets.json'
+import {
+  CHAIN_ID_TO_ICON,
+  CHAIN_ID_TO_NAME,
+  CHAIN_ID_TO_BLOCK_EXPLORER,
+} from '@/constants/chains'
 
 interface MainInfoPanelProps {
   vaultId: string
@@ -22,38 +31,82 @@ interface MainInfoPanelProps {
   vaultAddress: string
 }
 
-export function MainInfoPanel({
-  vaultId = "yvUSDC-1",
-  deploymentDate = "Deployment Date: May 2024",
-  vaultName = "Yearn USDC Prime",
-  description = "The USDC Prime vault aims to optimize for risk-adjusted yield across large market cap and high liquidity collateral markets.",
-  vaultToken = {
-    icon: "USDC",
-    name: "USDC",
-  },
-  totalSupply = "$82.7M",
-  network = {
-    icon: "Ethereum",
-    name: "Ethereum",
-  },
-  estimatedAPY = "7.92%",
-  historicalAPY = "6.52%",
-  managementFee = "0%",
-  performanceFee = "10%",
-  vaultAddress = "0x8e...d458",
-}: MainInfoPanelProps) {
-  return (
+function hydrateMainInfoPanelData(): MainInfoPanelProps & {
+  blockExplorerLink: string
+} {
+  const vaultData = usdc1VaultData.data.vault
 
-        <div className="border border-border bg-white border-b-0 border-t-0"> 
+  const deploymentDate = format(
+    new Date(parseInt(vaultData.inceptTime) * 1000),
+    'MMMM yyyy'
+  )
+  const vaultName = vaultData.name
+  const description = `The ${vaultName} aims to optimize for risk-adjusted yield across established lending and yield-farming markets.`
+
+  const vaultToken = {
+    icon:
+      smolAssets.tokens.find(token => token.symbol === vaultData.asset.symbol)
+        ?.logoURI || '',
+    name: vaultData.asset.symbol,
+  }
+
+  const totalSupply = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2,
+  }).format(vaultData.tvl.close)
+
+  const network = {
+    icon: CHAIN_ID_TO_ICON[vaultData.chainId],
+    name: CHAIN_ID_TO_NAME[vaultData.chainId],
+  }
+
+  const estimatedAPY = `${(vaultData.apy.net * 100).toFixed(2)}%`
+  const historicalAPY = `${(vaultData.apy.inceptionNet * 100).toFixed(2)}%`
+  const managementFee = `${(vaultData.fees.managementFee / 100).toFixed(0)}%`
+  const performanceFee = `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
+  const blockExplorerLink = `${CHAIN_ID_TO_BLOCK_EXPLORER[vaultData.chainId]}/address/${vaultData.address}`
+
+  return {
+    vaultId: vaultData.symbol,
+    deploymentDate,
+    vaultName,
+    description,
+    vaultToken,
+    totalSupply,
+    network,
+    estimatedAPY,
+    historicalAPY,
+    managementFee,
+    performanceFee,
+    vaultAddress: vaultData.address,
+    blockExplorerLink,
+  }
+}
+
+export function MainInfoPanel() {
+  const [copied, setCopied] = useState(false)
+  const data = hydrateMainInfoPanelData()
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(data.vaultAddress)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1000) // Reset after 1 seconds
+  }
+
+  return (
+    <div className="border border-border bg-white border-b-0 border-t-0">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         <div className="md:col-span-2">
-          <div className="mb-2">
-            <div className="text-sm text-gray-500 mb-1">{vaultId}</div>
-            <div className="bg-gray-100 text-xs inline-block px-2 py-1">{deploymentDate}</div>
+          <div className="mb-2 flex items-center gap-2">
+            <div className="text-sm text-gray-500">{data.vaultId}</div>
+            <div className="bg-gray-100 text-xs inline-block px-2 py-1">
+              Deployed: {data.deploymentDate}
+            </div>
           </div>
           <div className="max-w-md">
-            <h1 className="text-3xl font-bold mb-3">{vaultName}</h1>
-            <p className="text-gray-600 mb-4">{description}</p>
+            <h1 className="text-3xl font-bold mb-3">{data.vaultName}</h1>
+            <p className="text-gray-600 mb-4">{data.description}</p>
             <Button className="bg-[#0657f9] hover:bg-[#0657f9]/90 rounded-none">
               Go to Vault <ExternalLink className="ml-2 h-4 w-4" />
             </Button>
@@ -64,53 +117,73 @@ export function MainInfoPanel({
           <div>
             <div className="text-sm text-gray-500 mb-1">Vault Token</div>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-[#0657f9] flex items-center justify-center text-white text-xs">
-                {vaultToken.icon.charAt(0)}
-              </div>
-              <span>{vaultToken.name}</span>
+              <img
+                src={data.vaultToken.icon}
+                alt={data.vaultToken.name}
+                className="h-6 w-6 rounded-full"
+              />
+              <span>{data.vaultToken.name}</span>
             </div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1">Total Supply</div>
-            <div>{totalSupply}</div>
+            <div>{data.totalSupply}</div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1">Network</div>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-[#627eea] flex items-center justify-center text-white text-xs">
-                {network.icon.charAt(0)}
-              </div>
-              <span>{network.name}</span>
+              <img
+                src={data.network.icon}
+                alt={data.network.name}
+                className="h-6 w-6 rounded-full"
+              />
+              <span>{data.network.name}</span>
             </div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1">Vault Address</div>
             <div className="flex items-center gap-2">
-              <span className="text-[#0657f9]">{vaultAddress}</span>
-              <Copy className="h-4 w-4 text-gray-400 cursor-pointer" />
-              <ArrowUpRight className="h-4 w-4 text-gray-400 cursor-pointer" />
+              <span className="text-[#0657f9]">
+                {data.vaultAddress.slice(0, 5) +
+                  '...' +
+                  data.vaultAddress.slice(-4)}
+              </span>
+              <div
+                className="h-4 w-4 text-gray-400 cursor-pointer"
+                onClick={handleCopy}
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-grey-400" />
+                ) : (
+                  <Copy className="h-4 w-4 text-gray-400 cursor-pointer" />
+                )}
+              </div>
+              <a href={data.blockExplorerLink} target="_blank" rel="noreferrer">
+                <ArrowUpRight className="h-4 w-4 text-gray-400 cursor-pointer" />
+              </a>
             </div>
           </div>
 
           <div>
-            <div className="text-sm text-gray-500 mb-1">Estimated APY</div>
-            <div className="text-xl font-bold">{estimatedAPY}</div>
+            <div className="text-sm text-gray-500 mb-1">Est. Current APY</div>
+            <div>{data.estimatedAPY}</div>
 
-            <div className="text-sm text-gray-500 mt-4 mb-1">Historical APY</div>
-            <div>{historicalAPY}</div>
+            <div className="text-sm text-gray-500 mt-4 mb-1">
+              Historical APY
+            </div>
+            <div>{data.historicalAPY}</div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1 flex items-center gap-1">
               Management Fee
               <Info className="h-4 w-4 text-gray-400" />
             </div>
-            <div>{managementFee}</div>
+            <div>{data.managementFee}</div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1 flex items-center gap-1">
               Performance Fee
               <Info className="h-4 w-4 text-gray-400" />
             </div>
-            <div>{performanceFee}</div>
+            <div>{data.performanceFee}</div>
           </div>
         </div>
       </div>
     </div>
   )
 }
-

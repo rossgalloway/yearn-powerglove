@@ -1,4 +1,3 @@
-
 /** @type {import('tailwindcss').Config} */
 
 const config = {
@@ -7,7 +6,7 @@ const config = {
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
     './src/routes/**/*.{ts,tsx}',
-    './src/components/**/*.{ts,tsx}'
+    './src/components/**/*.{ts,tsx}',
   ],
   prefix: '',
   theme: {
@@ -15,7 +14,7 @@ const config = {
       center: true,
       padding: '2rem',
       screens: {
-        '2xl': '1400px',
+        '2xl': '1920px',
       },
     },
     extend: {
