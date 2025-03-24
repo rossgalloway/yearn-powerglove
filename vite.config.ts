@@ -14,4 +14,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: [
+      '536f0260-30a3-49ae-89bc-ade79cbcbd08-00-2yheak3122zc8.riker.replit.dev',
+    ],
+  },
 })
