@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import './styles/globals.css'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
