@@ -2,13 +2,16 @@ import { createFileRoute } from '@tanstack/react-router'
 import { YearnVaultsSummary } from '../components/YearnVaultsSummary'
 import VaultsList from '../components/VaultsList'
 import { useQuery } from '@apollo/client'
-import { GET_VAULTS } from '@/graphql/queries/vaults'
+import { GET_VAULTS_SIMPLE } from '@/graphql/queries/vaults'
 import { Skeleton } from '@/components/ui/skeleton'
+import * as filters from '@/graphql/filters/vaultFilters'
+import { Vault } from '@/types/vaultTypes'
 
 export default function AllVaultsPage() {
-  const { data, loading, error } = useQuery(GET_VAULTS)
-  console.log('data', data)
-  //process data
+  const { data, loading, error } = useQuery(GET_VAULTS_SIMPLE)
+
+  // Ensure data is defined before accessing `data.vaults`
+  const vaults: Vault[] = data?.vaults || []
 
   if (loading) {
     return (
@@ -28,11 +31,14 @@ export default function AllVaultsPage() {
       </main>
     )
   }
+
+  const filteredVaults = filters.filterYearnV3Vaults(vaults)
+
   return (
     <main className="flex-1 container pt-0 pb-0">
       <div className="space-y-0">
         <YearnVaultsSummary />
-        <VaultsList />
+        <VaultsList vaults={filteredVaults} />
       </div>
     </main>
   )

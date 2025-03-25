@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
+import { Vault } from '../types/vaultTypes'
 
-interface Vault {
-  id: number
+interface VaultListData {
+  id: string // Updated to match the Vault type's ID
   name: string
   chain: string
   token: string
@@ -15,40 +16,21 @@ interface Vault {
 type SortColumn = 'name' | 'chain' | 'token' | 'type' | 'estimatedAPY' | 'tvl'
 type SortDirection = 'asc' | 'desc'
 
-const mockVaults: Vault[] = [
-  {
-    id: 1,
-    name: 'Vault A',
-    chain: 'Ethereum',
-    token: 'USDC',
-    type: 'Yield',
-    estimatedAPY: '5.23%',
-    tvl: '$10,000,000',
-  },
-  {
-    id: 2,
-    name: 'Vault B',
-    chain: 'Polygon',
-    token: 'DAI',
-    type: 'Lending',
-    estimatedAPY: '3.45%',
-    tvl: '$5,000,000',
-  },
-  {
-    id: 3,
-    name: 'Vault C',
-    chain: 'Arbitrum',
-    token: 'ETH',
-    type: 'Staking',
-    estimatedAPY: '7.89%',
-    tvl: '$2,500,000',
-  },
-]
-
-export default function VaultsList() {
+export default function VaultsList({ vaults }: { vaults: Vault[] }) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const navigate = useNavigate()
+
+  // Map the Vault array to VaultListData format
+  const vaultListData: VaultListData[] = vaults.map(vault => ({
+    id: vault.address, // Use the vault's address as a unique ID
+    name: vault.name,
+    chain: vault.chainId.toString(), // Convert chainId to a string
+    token: vault.asset.symbol,
+    type: vault.vaultType,
+    estimatedAPY: `${(vault.apy.net * 100).toFixed(2)}%`, // Format APY as a percentage
+    tvl: `$${vault.tvl.close.toLocaleString()}`, // Format TVL with commas
+  }))
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -59,15 +41,15 @@ export default function VaultsList() {
     }
   }
 
-  const sortedVaults = [...mockVaults].sort((a, b) => {
+  const sortedVaults = [...vaultListData].sort((a, b) => {
     const compare = (valA: string | number, valB: string | number) => {
       if (valA < valB) return -1
       if (valA > valB) return 1
       return 0
     }
 
-    const valueA = a[sortColumn as keyof Vault]
-    const valueB = b[sortColumn as keyof Vault]
+    const valueA = a[sortColumn as keyof VaultListData]
+    const valueB = b[sortColumn as keyof VaultListData]
 
     return sortDirection === 'asc'
       ? compare(valueA, valueB)
@@ -135,7 +117,7 @@ export default function VaultsList() {
         <div
           key={vault.id}
           className="flex items-center p-3 border-t border-[#f5f5f5] hover:bg-[#f5f5f5]/50 cursor-pointer"
-          onClick={() => navigate({ to: '/vault' })}
+          onClick={() => navigate({ to: `/vaults/${vault.chain}/${vault.id}` })}
         >
           <div className="w-1/6">{vault.name}</div>
           <div className="w-1/6">{vault.chain}</div>

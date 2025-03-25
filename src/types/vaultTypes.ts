@@ -1,53 +1,50 @@
-export type ChainId = number
-
-export type Vault = {
-  yearn: boolean
-  v3: boolean
-  name: string
-  chainId: ChainId
+export type VaultSimple = {
   address: string
+  symbol: string
+  name: string
+  chainId: number
+  inceptTime: string
   asset: {
     name: string
     symbol: string
-    decimals: Number
+    decimals: number
     address: string
   }
   apiVersion: string
-  tvl: {
-    blockTime: string
-    close: number
-    component: string
-    label: string
-  }
   pricePerShare: number
-  meta: {
-    displayName: string
-    displaySymbol: string
-    description: string
-    protocols: string
-    token: {
-      category: string
-      description: string
-      displayName: string
-      displaySymbol: string
-      icon: string
-      type: string
-    }
+  apy: {
+    grossApr: number
+    net: number
+    inceptionNet: number
+  }
+  tvl: {
+    close: number
   }
   vaultType: string
-  apy: {
-    weeklyNet: number
-  }
-  debts: {
-    strategy: string
-    currentDebt: string
-    maxDebt: string
-    maxDebtUsd: number
-    debtRatio: number
-    targetDebtRatio: number
-    maxDebtRatio: number
+  yearn: boolean
+  v3: boolean
+  erc4626: boolean
+  fees: {
+    managementFee: number
+    performanceFee: number
   }
 }
+
+export type Vault = VaultSimple &
+  Partial<{
+    tvl: {
+      blockTime: string
+      close: number
+      component: string
+      label: string
+    }
+    strategies: string[]
+    debts: {
+      strategy: string
+      currentDebt: string
+      currentDebtUsd: number
+    }
+  }>
 
 export type VaultDebt = {
   strategy: string
@@ -59,7 +56,7 @@ export type VaultDebt = {
 }
 
 export type VaultStrategy = {
-  chainId: ChainId
+  chainId: number
   address: string
   name: string
   erc4626?: string

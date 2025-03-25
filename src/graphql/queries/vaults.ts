@@ -1,7 +1,42 @@
 // src/graphql/queries/vaults.ts
 import { gql } from '@apollo/client'
 
-// Modified query to match the API playground query
+export const GET_VAULTS_SIMPLE = gql`
+  query GeVaultData {
+    vaults {
+      address
+      symbol
+      name
+      chainId
+      inceptTime
+      asset {
+        name
+        symbol
+        decimals
+        address
+      }
+      apiVersion
+      pricePerShare
+      apy {
+        grossApr
+        net
+        inceptionNet
+      }
+      tvl {
+        close
+      }
+      vaultType
+      yearn
+      v3
+      erc4626
+      fees {
+        managementFee
+        performanceFee
+      }
+    }
+  }
+`
+
 export const GET_VAULTS = gql`
   query GetVaultData {
     vaults {
@@ -38,10 +73,6 @@ export const GET_VAULTS = gql`
         strategy
         currentDebt
         currentDebtUsd
-      }
-      fees {
-        managementFee
-        performanceFee
       }
     }
   }
