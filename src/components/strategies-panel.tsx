@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useMemo } from 'react'
 import {
   ChevronDown,
@@ -19,6 +17,7 @@ import {
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
 } from '@/constants/chains'
+// import smolAssets from '@/data/smolAssets.json'
 
 // Define the type for strategy details
 interface StrategyDetails {
@@ -58,6 +57,7 @@ interface VaultDebt {
     managementFee: number
     performanceFee: number
   }
+  assetIcon?: string
 }
 
 // Define sort column types
@@ -155,6 +155,7 @@ export default function StrategiesPanel() {
   const [activeTab, setActiveTab] = useState<string>('Strategies')
   const [sortColumn, setSortColumn] = useState<SortColumn>('allocationPercent')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [showUnallocated, setShowUnallocated] = useState<boolean>(false)
 
   const toggleRow = (index: number) => {
     setExpandedRow(expandedRow === index ? null : index)
@@ -314,7 +315,14 @@ export default function StrategiesPanel() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'Strategies':
+      case 'Strategies': {
+        const allocatedStrategies = sortedStrategies.filter(
+          strategy => strategy.allocationPercent > 0
+        )
+        const unallocatedStrategies = sortedStrategies.filter(
+          strategy => strategy.allocationPercent === 0
+        )
+
         return (
           <div className="pb-4 lg:flex lg:flex-row flex-col">
             {/* Table Section */}
@@ -348,8 +356,8 @@ export default function StrategiesPanel() {
                   </div>
                 </div>
 
-                {/* Table Rows */}
-                {sortedStrategies.map(strategy => (
+                {/* Allocated Strategies Table Rows */}
+                {allocatedStrategies.map(strategy => (
                   <div
                     key={strategy.id}
                     className={cn(
@@ -446,6 +454,137 @@ export default function StrategiesPanel() {
                     )}
                   </div>
                 ))}
+
+                {/* Accordion for Unallocated Strategies */}
+                {unallocatedStrategies.length > 0 && (
+                  <div className="border-t border-[#f5f5f5]">
+                    <div
+                      className="flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer"
+                      onClick={() => setShowUnallocated(!showUnallocated)}
+                    >
+                      <div className="w-8 flex justify-center">
+                        {showUnallocated ? (
+                          <ChevronDown className="w-4 h-4 text-[#4f4f4f]" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-[#4f4f4f]" />
+                        )}
+                      </div>
+                      <div className="flex-1 ml-2 text-sm font-medium">
+                        View unallocated strategies
+                      </div>
+                    </div>
+                    {showUnallocated &&
+                      unallocatedStrategies.map(strategy => (
+                        <div
+                          key={strategy.id}
+                          className={cn(
+                            'border-t border-[#f5f5f5]',
+                            'opacity-50'
+                          )}
+                        >
+                          {/* Main Row for unallocated strategies */}
+                          <div
+                            className={cn(
+                              'flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer',
+                              expandedRow === strategy.id && 'bg-[#f5f5f5]/30'
+                            )}
+                            onClick={() => toggleRow(strategy.id)}
+                          >
+                            <div className="w-8 flex justify-center">
+                              {expandedRow === strategy.id ? (
+                                <ChevronDown className="w-4 h-4 text-[#4f4f4f]" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-[#4f4f4f]" />
+                              )}
+                            </div>
+                            <div className="w-[calc(50%-2rem)] flex items-center">
+                              <div className="w-6 h-6 rounded-full bg-[#f5f5f5] flex items-center justify-center mr-2 text-yellow-500">
+                                <span className="text-xs">$</span>
+                              </div>
+                              <span className="font-medium">
+                                {strategy.name}
+                              </span>
+                            </div>
+                            <div className="w-1/6 text-right">
+                              {strategy.allocationPercent.toFixed(1)}%
+                            </div>
+                            <div className="w-1/6 text-right">
+                              {Number(strategy.allocationAmount).toLocaleString(
+                                'en-US',
+                                {
+                                  style: 'currency',
+                                  currency: 'USD',
+                                }
+                              )}
+                            </div>
+                            <div className="w-1/6 text-right">
+                              {strategy.estimatedAPY} APY
+                            </div>
+                          </div>
+
+                          {/* Expanded Details for unallocated strategy */}
+                          {expandedRow === strategy.id && (
+                            <div className="bg-[#f5f5f5]/30 px-12 py-4 border-t border-[#f5f5f5]">
+                              <div className="flex gap-4 mb-4">
+                                <div className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center">
+                                  {
+                                    CHAIN_ID_TO_NAME[
+                                      Number(strategy.details.chainId)
+                                    ]
+                                  }
+                                </div>
+                                {strategy.details.isVault && (
+                                  <a
+                                    href={`/vault/${strategy.details.vaultAddress}`}
+                                    target="_blank"
+                                    className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
+                                  >
+                                    Data
+                                    <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
+                                  </a>
+                                )}
+                                {strategy.details.isEndorsed &&
+                                  strategy.details.isVault && (
+                                    <a
+                                      href={`https://yearn.fi/v3/${strategy.details.chainId}/${strategy.details.vaultAddress}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
+                                    >
+                                      Vault
+                                      <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
+                                    </a>
+                                  )}
+                                <a
+                                  href={`${
+                                    CHAIN_ID_TO_BLOCK_EXPLORER[
+                                      Number(strategy.details.chainId)
+                                    ]
+                                  }/address/${strategy.details.vaultAddress}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
+                                >
+                                  {strategy.details.vaultAddress}
+                                  <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
+                                </a>
+                              </div>
+                              <div className="space-y-1 text-sm">
+                                <div>
+                                  Management Fee:{' '}
+                                  {strategy.details.managementFee}
+                                </div>
+                                <div>
+                                  Performance Fee:{' '}
+                                  {strategy.details.performanceFee}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -529,6 +668,7 @@ export default function StrategiesPanel() {
             </div>
           </div>
         )
+      }
       case 'Info':
         return (
           <div className="p-8">

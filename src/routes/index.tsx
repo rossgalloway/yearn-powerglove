@@ -1,39 +1,43 @@
-import { MainInfoPanel } from '@/components/main-info-panel'
-import { ChartsPanel } from '@/components/charts-panel'
-import StrategiesPanel from '@/components/strategies-panel'
 import { createFileRoute } from '@tanstack/react-router'
+import { YearnVaultsSummary } from '../components/YearnVaultsSummary'
+import VaultsList from '../components/VaultsList'
+import { useQuery } from '@apollo/client'
+import { GET_VAULTS } from '@/graphql/queries/vaults'
+import { Skeleton } from '@/components/ui/skeleton'
 
-export default function VaultDashboard() {
+export default function AllVaultsPage() {
+  const { data, loading, error } = useQuery(GET_VAULTS)
+  console.log('data', data)
+  //process data
+
+  if (loading) {
+    return (
+      <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+        <Skeleton className="h-10 w-full" />
+        Loading vaults...
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+        <div className="text-red-500">
+          Error loading vaults: {error.message}
+        </div>
+      </main>
+    )
+  }
   return (
     <main className="flex-1 container pt-0 pb-0">
       <div className="space-y-0">
-        <MainInfoPanel
-          vaultId="yvUSDC-1"
-          deploymentDate="Deployment Date: May 2024"
-          vaultName="Yearn USDC Prime"
-          description="The USDC Prime vault aims to optimize for risk-adjusted yield across large market cap and high liquidity collateral markets."
-          vaultToken={{
-            icon: 'USDC',
-            name: 'USDC',
-          }}
-          totalSupply="$82.7M"
-          network={{
-            icon: 'Ethereum',
-            name: 'Ethereum',
-          }}
-          estimatedAPY="7.92%"
-          historicalAPY="6.52%"
-          managementFee="0%"
-          performanceFee="10%"
-          vaultAddress="0x8e...d458"
-        />
-        <ChartsPanel />
-        <StrategiesPanel />
+        <YearnVaultsSummary />
+        <VaultsList />
       </div>
     </main>
   )
 }
 
 export const Route = createFileRoute('/')({
-  component: VaultDashboard,
+  component: AllVaultsPage,
 })

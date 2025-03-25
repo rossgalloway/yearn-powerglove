@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { ArrowUpRight, Copy, Check, ExternalLink, Info } from 'lucide-react'
 import { format } from 'date-fns'
 import usdc1VaultData from '@/data/usdc1VaultData.json'

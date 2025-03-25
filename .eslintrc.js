@@ -12,6 +12,10 @@ module.exports = {
     'plugin:import/typescript',
     'prettier',
   ],
+  rules: {
+    '@typescript-eslint/no-unused-vars': ['warn'], // Warn for unused variables
+    '@typescript-eslint/no-explicit-any': ['warn'], // Warn for explicit 'any'
+  },
   settings: {
     react: {
       version: 'detect',

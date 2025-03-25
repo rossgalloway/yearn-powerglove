@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 
+# environment files
 .env
 
 # Editor directories and files
@@ -25,5 +26,6 @@ dist-ssr
 *.sln
 *.sw?
 
+# Other misc
 /src/data
-.env
+
