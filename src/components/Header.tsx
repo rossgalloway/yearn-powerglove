@@ -1,10 +1,16 @@
+import { useNavigate } from '@tanstack/react-router' // Import the router's navigation hook
 import { Button } from '@/components/ui/button'
 
 export default function Header() {
+  const navigate = useNavigate() // Initialize the navigation function
+
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-white py-2">
       <div className="container flex items-center justify-between px-8">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate({ to: '/' })}
+        >
           <img
             src="/logo.svg"
             alt="Yearn PowerGlove Logo"
