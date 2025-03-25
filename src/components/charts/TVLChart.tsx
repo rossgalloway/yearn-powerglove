@@ -26,6 +26,7 @@ export const TVLChart: React.FC<TVLChartProps> = ({
   hideAxes,
   hideTooltip,
 }) => {
+  console.log('TVL chartData:', chartData, 'Type:', typeof chartData)
   const filteredData = chartData.slice(-getTimeframeLimit(timeframe))
 
   return (
@@ -64,7 +65,7 @@ export const TVLChart: React.FC<TVLChartProps> = ({
           />
           <YAxis
             domain={[0, 'auto']}
-            tickFormatter={(value) => `$${(value / 1_000_000).toFixed(1)}M`}
+            tickFormatter={value => `$${(value / 1_000_000).toFixed(1)}M`}
             label={
               hideAxes
                 ? undefined
@@ -128,4 +129,3 @@ function getTimeframeLimit(timeframe: string): number {
 }
 
 export default TVLChart
-

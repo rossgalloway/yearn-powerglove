@@ -2,7 +2,7 @@
 import { gql } from '@apollo/client'
 
 export const GET_VAULTS_SIMPLE = gql`
-  query GeVaultData {
+  query GetSimpleVaultData {
     vaults {
       address
       symbol
@@ -82,24 +82,33 @@ export const GET_VAULT_DETAILS = gql`
   query GetVaultData($address: String, $chainId: Int) {
     vault(address: $address, chainId: $chainId) {
       address
-      name
       symbol
+      name
       chainId
+      inceptTime
       asset {
         name
         symbol
         decimals
         address
       }
-      inceptTime
+      apiVersion
       pricePerShare
-      tvl {
-        close
-      }
       apy {
         grossApr
         net
         inceptionNet
+      }
+      tvl {
+        close
+      }
+      vaultType
+      yearn
+      v3
+      erc4626
+      fees {
+        managementFee
+        performanceFee
       }
       strategies
       debts {
@@ -107,19 +116,10 @@ export const GET_VAULT_DETAILS = gql`
         currentDebt
         currentDebtUsd
       }
-      apiVersion
       decimals
-      erc4626
-      fees {
-        managementFee
-        performanceFee
-      }
       governance
       guardian
       management
-      yearn
-      v3
-      vaultType
       allocator
       meta {
         description

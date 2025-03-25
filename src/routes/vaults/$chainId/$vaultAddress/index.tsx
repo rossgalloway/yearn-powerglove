@@ -1,6 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client'
 import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
+import { queryAPY, queryPPS, queryTVL } from '@/graphql/queries/timeseries'
+import {
+  GET_VAULT_STRATEGIES,
+  GET_VAULT_DEBTS,
+  VaultStrategiesQuery,
+} from '@/graphql/queries/strategies'
 import { MainInfoPanel } from '@/components/main-info-panel'
 import { ChartsPanel } from '@/components/charts-panel'
 import StrategiesPanel from '@/components/strategies-panel'
@@ -11,28 +17,174 @@ import {
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
 } from '@/constants/chains'
-import { Vault } from '@/types/vaultTypes'
-import { MainInfoPanelProps } from '@/types/dataTypes'
+import {
+  DebtResult,
+  VaultDebt,
+  VaultExtended,
+  VaultStrategy,
+} from '@/types/vaultTypes'
+import {
+  MainInfoPanelProps,
+  TimeseriesDataPoint,
+  apyChartData,
+  tvlChartData,
+  ppsChartData,
+  Strategy,
+  VaultDebtData,
+} from '@/types/dataTypes'
+import {
+  calculateSMA,
+  fillMissingDailyData,
+  formatUnixTimestamp,
+  getEarliestAndLatestTimestamps,
+} from '@/lib/utils'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
   const vaultChainId = Number(chainId)
-  const { data, loading, error } = useQuery(GET_VAULT_DETAILS, {
+
+  // Fetch vault details
+  const {
+    data: vaultData,
+    loading: vaultLoading,
+    error: vaultError,
+  } = useQuery<{ vault: VaultExtended }>(GET_VAULT_DETAILS, {
     variables: { address: vaultAddress, chainId: vaultChainId },
   })
-  const vaultData = data?.vault || []
 
-  if (loading) return <div>Loading Vault...</div>
-  if (error) return <div>Error fetching vault data</div>
+  // Fetch APY data
+  const {
+    data: apyData,
+    loading: apyLoading,
+    error: apyError,
+  } = useQuery(queryAPY, {
+    variables: {
+      chainId: vaultChainId,
+      address: vaultAddress,
+      label: 'apy-bwd-delta-pps',
+      component: 'net',
+      limit: 1000,
+    },
+  })
 
-  const mainInfoPanelData = hydrateMainInfoPanelData(vaultData)
-  console.log('VaultDetails', mainInfoPanelData)
+  // Fetch TVL data
+  const {
+    data: tvlData,
+    loading: tvlLoading,
+    error: tvlError,
+  } = useQuery(queryTVL, {
+    variables: {
+      chainId: vaultChainId,
+      address: vaultAddress,
+      label: 'tvl',
+      limit: 1000,
+    },
+  })
+
+  // Fetch PPS data
+  const {
+    data: ppsData,
+    loading: ppsLoading,
+    error: ppsError,
+  } = useQuery(queryPPS, {
+    variables: {
+      address: vaultAddress,
+      label: 'pps',
+      component: 'humanized',
+      limit: 1000,
+    },
+  })
+
+  // Fetch strategies data
+  const {
+    data: strategyData,
+    loading: strategyLoading,
+    error: strategyError,
+  } = useQuery<{ vaultStrategies: VaultStrategiesQuery[] }>(
+    GET_VAULT_STRATEGIES,
+    {
+      variables: { vault: vaultAddress, chainId: vaultChainId },
+    }
+  )
+
+  // Fetch debts data
+  const {
+    data: debtsData,
+    loading: debtsLoading,
+    error: debtsError,
+  } = useQuery<DebtResult>(GET_VAULT_DEBTS, {
+    variables: { addresses: [vaultAddress], chainId: vaultChainId },
+  })
+
+  // Handle loading states
+  if (
+    vaultLoading ||
+    apyLoading ||
+    tvlLoading ||
+    ppsLoading ||
+    strategyLoading ||
+    debtsLoading
+  ) {
+    return <div>Loading Vault...</div>
+  }
+
+  // Handle errors
+  if (
+    vaultError ||
+    apyError ||
+    tvlError ||
+    ppsError ||
+    strategyError ||
+    debtsError
+  ) {
+    return <div>Error fetching vault data</div>
+  }
+
+  // Extract data
+  const vaultDetails: VaultExtended =
+    vaultData?.vault ??
+    (() => {
+      throw new Error('Vault data is undefined')
+    })() // Ensure vaultData?.vault is not undefined
+  console.log('vaultDetails:', vaultDetails)
+  const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails)
+  const apyDataClean = apyData.timeseries || {}
+  const tvlDataClean = tvlData.timeseries || {}
+  const ppsDataClean = ppsData.timeseries || {}
+  const { transformedApyData, transformedTvlData, transformedPpsData } =
+    processChartData(apyDataClean, tvlDataClean, ppsDataClean)
+
+  const strategyDataClean = strategyData?.vaultStrategies
+  console.log('strategyDataClean:', strategyDataClean)
+
+  // Extract the "address" value from each element in the array
+  const strategyAddresses =
+    strategyDataClean?.map(strategy => strategy.address) || []
+  console.log('strategyAddresses:', strategyAddresses)
+  const vaultDebts = extractDebts(debtsData)
+  console.log('vaultDebts:', vaultDebts)
+  const mergedStrategyDebts = mergeStrategiesAndDebts(
+    strategyDataClean,
+    vaultDebts
+  )
+  console.log('MergedStrategyDebts:', mergedStrategyDebts)
+  const strategyDashboardData = hydrateStrategiesPanelData(
+    mergedStrategyDebts,
+    vaultDetails
+  )
+  console.log('strategyDashboardData:', strategyDashboardData)
+
   return (
     <main className="flex-1 container pt-0 pb-0">
       <div className="space-y-0">
         <MainInfoPanel {...mainInfoPanelData} />
-        <ChartsPanel />
-        <StrategiesPanel />
+        <ChartsPanel
+          apyData={transformedApyData}
+          tvlData={transformedTvlData}
+          ppsData={transformedPpsData}
+        />
+        <StrategiesPanel {...strategyDashboardData} /> // Pass the array
+        directly
       </div>
     </main>
   )
@@ -42,7 +194,9 @@ export const Route = createFileRoute('/vaults/$chainId/$vaultAddress/')({
   component: SingleVaultPage,
 })
 
-function hydrateMainInfoPanelData(vaultData: Vault): MainInfoPanelProps {
+function hydrateMainInfoPanelData(
+  vaultData: VaultExtended
+): MainInfoPanelProps {
   const deploymentDate = format(
     new Date(parseInt(vaultData.inceptTime) * 1000),
     'MMMM yyyy'
@@ -95,4 +249,150 @@ function hydrateMainInfoPanelData(vaultData: Vault): MainInfoPanelProps {
     blockExplorerLink,
     yearnVaultLink,
   }
+}
+
+function processChartData(
+  apyData: TimeseriesDataPoint[],
+  tvlData: TimeseriesDataPoint[],
+  ppsData: TimeseriesDataPoint[]
+) {
+  const { earliest, latest } = getEarliestAndLatestTimestamps(
+    apyData,
+    tvlData,
+    ppsData
+  )
+
+  // Fill missing data
+  const apyFilled = fillMissingDailyData(apyData, earliest, latest)
+  const tvlFilled = fillMissingDailyData(tvlData, earliest, latest)
+  const ppsFilled = fillMissingDailyData(ppsData, earliest, latest)
+
+  // Apply transformations
+  const rawValues = apyFilled.map(p => p.value ?? 0)
+  const sma15Values = calculateSMA(rawValues, 15)
+  const sma30Values = calculateSMA(rawValues, 30)
+
+  // Transform APY data
+  const transformedApyData: apyChartData = apyFilled.map((dataPoint, i) => ({
+    date: formatUnixTimestamp(dataPoint.time),
+    APY: dataPoint.value ? dataPoint.value * 100 : null,
+    SMA15: sma15Values[i] !== null ? sma15Values[i]! * 100 : null,
+    SMA30: sma30Values[i] !== null ? sma30Values[i]! * 100 : null,
+  }))
+
+  const transformedTvlData: tvlChartData = tvlFilled.map(dataPoint => ({
+    date: formatUnixTimestamp(dataPoint.time),
+    TVL: dataPoint.value ?? null,
+  }))
+
+  const transformedPpsData: ppsChartData = ppsFilled.map(dataPoint => ({
+    date: formatUnixTimestamp(dataPoint.time),
+    PPS: dataPoint.value ?? null,
+  }))
+
+  return {
+    transformedApyData,
+    transformedTvlData,
+    transformedPpsData,
+  }
+}
+
+// Helper to extract the debts array from the debts query response.
+const extractDebts = (data?: DebtResult): VaultDebt[] => {
+  // If there are any vaults and the first vault has a debts array, return it.
+  return Array.isArray(data?.vaults?.[0]?.debts)
+    ? (data!.vaults![0].debts as VaultDebt[])
+    : []
+}
+
+const mergeStrategiesAndDebts = (
+  strategies: VaultStrategiesQuery[] | undefined,
+  debts: VaultDebt[]
+): VaultStrategy[] => {
+  if (!strategies?.length) return []
+  return strategies.map(strategy => {
+    const debt = debts.find(d => d.strategy === strategy.address) // Matching strategy by address.
+    return {
+      ...strategy,
+      currentDebt: debt?.currentDebt || '0', // Inline defaults if debt is not found.
+      currentDebtUsd: debt?.currentDebtUsd || 0,
+      maxDebt: debt?.maxDebt || '0',
+      maxDebtUsd: debt?.maxDebtUsd || '0',
+      targetDebtRatio: debt?.targetDebtRatio || '0',
+      maxDebtRatio: debt?.maxDebtRatio || '0',
+    }
+  })
+}
+
+export function hydrateStrategiesPanelData(
+  strategyData: VaultStrategy[],
+  vaultDetails: VaultExtended
+): Strategy[] {
+  // Convert VaultStrategy to VaultDebtData using vaultDetails
+  const enrichedDebts = strategyData.map((strategy: VaultStrategy) => {
+    // Create the VaultDebtData object
+    const extendedDebt: VaultDebtData = {
+      address: strategy.address,
+      name: strategy.name || '',
+      chainId: strategy.chainId,
+      currentDebt: strategy.currentDebt,
+      currentDebtUsd: strategy.currentDebtUsd || '0',
+      erc4626: strategy.erc4626 || false,
+      yearn: strategy.yearn || false,
+      apy: {
+        ...vaultDetails.apy,
+        InceptionNet: vaultDetails.apy.inceptionNet, // Map inceptionNet to InceptionNet
+      }, // Use APY from vaultDetails
+      fees: vaultDetails.fees, // Use fees from vaultDetails
+    }
+
+    return extendedDebt
+  })
+  console.log('enriched Debts:', enrichedDebts)
+
+  // Sort the enriched debts by currentDebt (convert strings to numbers)
+  const sortedDebts = enrichedDebts.sort(
+    (a, b) => Number(b.currentDebt) - Number(a.currentDebt)
+  )
+  console.log('sortedDebts:', sortedDebts)
+
+  // Sum currentDebtUsd values to get totalDebt
+  const totalDebt = sortedDebts.reduce(
+    (sum: number, debt: VaultDebtData) => sum + Number(debt.currentDebtUsd),
+    0
+  )
+  console.log('totalDebt:', totalDebt)
+
+  // Map each debt into the Strategy type
+  const strategies = sortedDebts.map(
+    (debt: VaultDebtData, index: number): Strategy => {
+      const allocationPercent = totalDebt
+        ? (Number(debt.currentDebtUsd) / totalDebt) * 100
+        : 0
+
+      return {
+        id: index,
+        name: debt.name || '',
+        allocationPercent,
+        allocationAmount: String(debt.currentDebtUsd),
+        estimatedAPY: debt.apy
+          ? `${(Number(debt.apy.net) * 100).toFixed(2)}%`
+          : '0%',
+        details: {
+          chainId: debt.chainId || 0,
+          vaultAddress: debt.address || '',
+          managementFee: debt.fees
+            ? `${(Number(debt.fees.managementFee) / 100).toFixed(0)}%`
+            : '0%',
+          performanceFee: debt.fees
+            ? `${(Number(debt.fees.performanceFee) / 100).toFixed(0)}%`
+            : '0%',
+          isVault: !!debt.erc4626,
+          isEndorsed: debt.yearn || false,
+        },
+      }
+    }
+  )
+
+  return strategies
 }

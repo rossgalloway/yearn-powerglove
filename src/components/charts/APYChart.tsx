@@ -21,6 +21,7 @@ export const APYChart: React.FC<APYChartProps> = ({
   hideAxes,
   hideTooltip,
 }) => {
+  console.log('APY chartData:', chartData, 'Type:', typeof chartData)
   const filteredData = chartData.slice(-getTimeframeLimit(timeframe))
 
   return (
@@ -68,7 +69,7 @@ export const APYChart: React.FC<APYChartProps> = ({
           />
           <YAxis
             domain={[0, 'auto']}
-            tickFormatter={(value) => `${value}%`}
+            tickFormatter={value => `${value}%`}
             label={
               hideAxes
                 ? undefined
@@ -162,4 +163,3 @@ function getTimeframeLimit(timeframe: string): number {
 }
 
 export default APYChart
-

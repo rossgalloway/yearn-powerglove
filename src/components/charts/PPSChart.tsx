@@ -1,6 +1,13 @@
-import type React from "react"
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
+import type React from 'react'
+import {
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts'
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
 
 interface PPSChartProps {
   chartData: any[]
@@ -9,18 +16,24 @@ interface PPSChartProps {
   hideTooltip?: boolean // Added prop for hiding tooltip
 }
 
-export const PPSChart: React.FC<PPSChartProps> = ({ chartData, timeframe, hideAxes, hideTooltip }) => {
+export const PPSChart: React.FC<PPSChartProps> = ({
+  chartData,
+  timeframe,
+  hideAxes,
+  hideTooltip,
+}) => {
+  console.log('PPS chartData:', chartData, 'Type:', typeof chartData)
   const filteredData = chartData.slice(-getTimeframeLimit(timeframe))
 
   return (
     <ChartContainer
       config={{
         pps: {
-          label: "Price Per Share",
-          color: hideAxes ? "black" : "var(--chart-1)",
+          label: 'Price Per Share',
+          color: hideAxes ? 'black' : 'var(--chart-1)',
         },
       }}
-      style={{ height: "inherit" }}
+      style={{ height: 'inherit' }}
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
@@ -40,26 +53,32 @@ export const PPSChart: React.FC<PPSChartProps> = ({ chartData, timeframe, hideAx
               hideAxes
                 ? false
                 : {
-                    fill: "hsl(var(--muted-foreground))",
+                    fill: 'hsl(var(--muted-foreground))',
                   }
             }
-            axisLine={hideAxes ? false : { stroke: "hsl(var(--muted-foreground))" }} // Hide axis line
-            tickLine={hideAxes ? false : { stroke: "hsl(var(--muted-foreground))" }}
+            axisLine={
+              hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+            } // Hide axis line
+            tickLine={
+              hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+            }
           />
           <YAxis
-            domain={["auto", "auto"]}
-            tickFormatter={(value) => value.toFixed(3)} // Round to 3 decimals and remove %
+            domain={['auto', 'auto']}
+            tickFormatter={value => value.toFixed(3)} // Round to 3 decimals and remove %
             label={
               hideAxes
                 ? undefined
                 : {
-                    value: "Price Per Share",
+                    value: 'Price Per Share',
                     angle: -90,
-                    position: "insideLeft", // Changed from 'center' to 'insideLeft'
+                    position: 'insideLeft', // Changed from 'center' to 'insideLeft'
                     offset: 10, // Negative offset moves label closer to axis
                     style: {
-                      textAnchor: "middle",
-                      fill: hideAxes ? "transparent" : "hsl(var(--muted-foreground))", // Make label transparent when hiding axes
+                      textAnchor: 'middle',
+                      fill: hideAxes
+                        ? 'transparent'
+                        : 'hsl(var(--muted-foreground))', // Make label transparent when hiding axes
                     },
                   }
             }
@@ -67,11 +86,15 @@ export const PPSChart: React.FC<PPSChartProps> = ({ chartData, timeframe, hideAx
               hideAxes
                 ? false
                 : {
-                    fill: "hsl(var(--muted-foreground))",
+                    fill: 'hsl(var(--muted-foreground))',
                   }
             } // Hide ticks when hideAxes is true
-            axisLine={hideAxes ? false : { stroke: "hsl(var(--muted-foreground))" }} // Hide axis line
-            tickLine={hideAxes ? false : { stroke: "hsl(var(--muted-foreground))" }} // Hide tick lines
+            axisLine={
+              hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+            } // Hide axis line
+            tickLine={
+              hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+            } // Hide tick lines
           />
           {!hideTooltip && <ChartTooltip />}
 
@@ -91,21 +114,20 @@ export const PPSChart: React.FC<PPSChartProps> = ({ chartData, timeframe, hideAx
 
 function getTimeframeLimit(timeframe: string): number {
   switch (timeframe) {
-    case "7d":
+    case '7d':
       return 7
-    case "30d":
+    case '30d':
       return 30
-    case "90d":
+    case '90d':
       return 90
-    case "180d":
+    case '180d':
       return 180
-    case "1y":
+    case '1y':
       return 365
-    case "all":
+    case 'all':
     default:
       return 1000
   }
 }
 
 export default PPSChart
-

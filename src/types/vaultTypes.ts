@@ -46,6 +46,30 @@ export type Vault = VaultSimple &
     }
   }>
 
+export type VaultExtended = VaultSimple &
+  Vault &
+  Partial<{
+    decimals: number
+    governance: string
+    guardian: string
+    management: string
+    allocator: string
+    meta: {
+      description: string
+      displayName: string
+      displaySymbol: string
+      protocols: string[]
+      token: {
+        category: string
+        description: string
+        displayName: string
+        displaySymbol: string
+        icon: string
+        type: string
+      }
+    }
+  }>
+
 export type VaultDebt = {
   strategy: string
   currentDebt: string
@@ -53,16 +77,18 @@ export type VaultDebt = {
   maxDebtUsd?: string
   targetDebtRatio?: string
   maxDebtRatio?: string
+  currentDebtUsd: number
 }
 
 export type VaultStrategy = {
   chainId: number
   address: string
   name: string
-  erc4626?: string
-  v3?: string
-  yearn?: string
+  erc4626?: boolean
+  v3?: boolean
+  yearn?: boolean
   currentDebt: string
+  currentDebtUsd?: number
   maxDebt: string
   maxDebtUsd?: string
   targetDebtRatio?: string

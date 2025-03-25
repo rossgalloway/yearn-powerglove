@@ -9,56 +9,13 @@ import {
 } from 'lucide-react'
 import { Cell, Label, Pie, PieChart, Tooltip } from 'recharts'
 import { cn } from '@/lib/utils'
-import usdc1VaultData from '@/data/usdc1VaultData.json'
-import usdc1StrategyData from '@/data/usdc1StrategyData.json'
-import allVaultsData from '@/data/allVaultsData.json'
 import {
-  CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
 } from '@/constants/chains'
+import { Strategy } from '@/types/dataTypes'
+
 // import smolAssets from '@/data/smolAssets.json'
-
-// Define the type for strategy details
-interface StrategyDetails {
-  chainId: string
-  vaultAddress: string
-  managementFee: string
-  performanceFee: string
-  isVault: boolean
-  isEndorsed?: boolean
-}
-
-// Define the type for strategy data
-export interface Strategy {
-  id: number
-  name: string
-  allocationPercent: number
-  allocationAmount: string
-  estimatedAPY: string
-  details: StrategyDetails
-}
-
-interface VaultDebt {
-  address: string
-  currentDebt: string
-  currentDebtUsd: string
-  chainId?: number
-  name?: string
-  erc4626?: boolean
-  v3?: boolean
-  yearn?: boolean
-  apy?: {
-    net: number
-    InceptionNet: number
-    grossApr: number
-  }
-  fees?: {
-    managementFee: number
-    performanceFee: number
-  }
-  assetIcon?: string
-}
 
 // Define sort column types
 type SortColumn =
@@ -68,89 +25,9 @@ type SortColumn =
   | 'estimatedAPY'
 type SortDirection = 'asc' | 'desc'
 
-// Hydrate strategies data for the Strategies Panel
-function hydrateStrategiesPanelData(): Strategy[] {
-  // Extract the vaultDebts array from usdc1VaultData.json
-  const vaultDebts = usdc1VaultData.data.vault.debts || []
-  // Enrich each debt with matching strategy info from usdc1StrategyData.json
-  const enrichedDebts = vaultDebts.map((debt: any) => {
-    // Match by comparing the 'strategy' field
-    const matchingStrategy = usdc1StrategyData.find(
-      (item: any) =>
-        item.address.toLowerCase() === (debt.strategy || '').toLowerCase()
-    )
-    let extendedDebt = { ...debt }
-    if (matchingStrategy) {
-      extendedDebt = {
-        ...extendedDebt,
-        chainId: matchingStrategy.chainId,
-        name: matchingStrategy.name,
-        erc4626: matchingStrategy.erc4626,
-        v3: matchingStrategy.v3,
-        yearn: matchingStrategy.yearn,
-      }
-    }
-    // For entries where erc4626 == true, enrich with apy and fees from allVaultsData.json
-    if (extendedDebt.erc4626) {
-      const matchingVault = allVaultsData.data.vaults.find(
-        (v: any) =>
-          v.address.toLowerCase() === (debt.strategy || '').toLowerCase()
-      )
-      if (matchingVault) {
-        extendedDebt = {
-          ...extendedDebt,
-          apy: matchingVault.apy,
-          fees: matchingVault.fees,
-        }
-      }
-    }
-    return extendedDebt
-  })
+export default function StrategiesPanel(strategies: Strategy[]) {
+  console.log('strategies for dash:', strategies)
 
-  // Sort the enriched debts by currentDebt (convert strings to numbers)
-  const sortedDebts = enrichedDebts.sort(
-    (a, b) => Number(a.currentDebt) - Number(b.currentDebt)
-  )
-
-  // Sum currentDebtUsd values to get totalDebt
-  const totalDebt = sortedDebts.reduce(
-    (sum: number, debt: any) => sum + Number(debt.currentDebtUsd),
-    0
-  )
-
-  // Map each debt into the Strategy type
-  const strategies = sortedDebts.map((debt: any, index: number): Strategy => {
-    const allocationPercent = totalDebt
-      ? (Number(debt.currentDebtUsd) / totalDebt) * 100
-      : 0
-
-    return {
-      id: index,
-      name: debt.name || '',
-      allocationPercent,
-      allocationAmount: String(debt.currentDebtUsd),
-      estimatedAPY: debt.apy
-        ? `${(Number(debt.apy.net) * 100).toFixed(2)}%`
-        : '0%',
-      details: {
-        chainId: debt.chainId, // using chainId from enriched data
-        vaultAddress: debt.strategy || '', // rename vaultAddress to strategyAddress
-        managementFee: debt.fees
-          ? `${(Number(debt.fees.managementFee) / 100).toFixed(0)}%`
-          : '0%',
-        performanceFee: debt.fees
-          ? `${(Number(debt.fees.performanceFee) / 100).toFixed(0)}%`
-          : '0%',
-        isVault: !!debt.erc4626,
-        isEndorsed: debt.yearn || false,
-      },
-    }
-  })
-
-  return strategies
-}
-
-export default function StrategiesPanel() {
   const [expandedRow, setExpandedRow] = useState<number | null>(1)
   const [activeTab, setActiveTab] = useState<string>('Strategies')
   const [sortColumn, setSortColumn] = useState<SortColumn>('allocationPercent')
@@ -169,9 +46,6 @@ export default function StrategiesPanel() {
       setSortDirection('asc')
     }
   }
-
-  // Use the hydrated strategies data instead of the static array
-  const strategies: Strategy[] = hydrateStrategiesPanelData()
 
   // Sort strategies based on current sort column and direction
   const sortedStrategies = [...strategies].sort((a, b) => {

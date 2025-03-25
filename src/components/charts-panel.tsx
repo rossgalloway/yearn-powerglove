@@ -1,26 +1,27 @@
-'use client'
-
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import APYChart from '@/components/charts/APYChart'
 import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/chart-container'
+import { apyChartData, tvlChartData, ppsChartData } from '@/types/dataTypes'
 
-// Import mock data
-import apyChartData from '@/data/apyChartData.json'
-import tvlChartData from '@/data/tvlChartData.json'
-import ppsChartData from '@/data/ppsChartData.json'
+type ChartData = {
+  apyData: apyChartData
+  tvlData: tvlChartData
+  ppsData: ppsChartData
+}
 
-export function ChartsPanel() {
+export function ChartsPanel(data: ChartData) {
   const [activeTab, setActiveTab] = useState('historical-apy')
+  const apyChartData = data.apyData
+  const tvlChartData = data.tvlData
+  const ppsChartData = data.ppsData
 
   // Define timeframe options with values that match the chart component expectations
   const timeframes = [
-    { label: '7 Days', value: '7d' },
     { label: '30 Days', value: '30d' },
     { label: '90 Days', value: '90d' },
-    { label: '180 Days', value: '180d' },
     { label: '1 Year', value: '1y' },
     { label: 'All Time', value: 'all' },
   ]
