@@ -1,6 +1,8 @@
 import React from 'react'
+import { Vault } from '../types/vaultTypes'
 
-export function YearnVaultsSummary() {
+export function YearnVaultsSummary({ vaults }: { vaults: Vault[] }) {
+  console.log('vaults:', vaults)
   return (
     <div className="border border-border bg-white p-6">
       {/* Content Layout */}
@@ -10,7 +12,7 @@ export function YearnVaultsSummary() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Yearn Vaults Overview</h1>
-            <p className="text-gray-600">Aggregate info on all Yearn vaults</p>
+            <p className="text-gray-600">Aggregate info on Yearn vaults</p>
           </div>
 
           {/* Vault Types Information */}

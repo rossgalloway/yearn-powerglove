@@ -37,7 +37,7 @@ export default function AllVaultsPage() {
   return (
     <main className="flex-1 container pt-0 pb-0">
       <div className="space-y-0">
-        <YearnVaultsSummary />
+        <YearnVaultsSummary vaults={filteredVaults} />
         <VaultsList vaults={filteredVaults} />
       </div>
     </main>
