@@ -52,7 +52,7 @@ export function ChartsPanel(data: ChartData) {
         onValueChange={value => setActiveTab(value)}
       >
         <div className="border-b border-border">
-          <div className="px-6 pt-4">
+          <div className="px-0 pt-4">
             <TabsList className="grid w-fit grid-cols-3 bg-transparent p-0">
               <TabsTrigger
                 value="historical-apy"

@@ -103,7 +103,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
       {' '}
       {/* added bg-white */}
       {/* Header */}
-      <div className="flex px-4 py-2 bg-white text-gray-900 font-medium border-b">
+      <div className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b">
         {' '}
         {/* updated background and text color */}
         {headers.map(({ label, key }) => (
@@ -125,7 +125,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
       {sortedVaults.map(vault => (
         <div
           key={vault.id}
-          className="flex px-4 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white" // added bg-white
+          className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white" // added bg-white
           onClick={() => navigate({ to: `/vaults/${vault.chain}/${vault.id}` })}
         >
           <div className="flex-[2] text-left">{vault.name}</div>
