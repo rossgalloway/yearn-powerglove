@@ -73,11 +73,18 @@ export type VaultExtended = VaultSimple &
 export type VaultDebt = {
   strategy: string
   currentDebt: string
-  maxDebt: string
-  maxDebtUsd?: string
-  targetDebtRatio?: string
-  maxDebtRatio?: string
   currentDebtUsd: number
+  maxDebt: string
+  maxDebtUsd: number
+  targetDebtRatio: string
+  maxDebtRatio: string
+  address?: string
+  name?: string
+  erc4626?: boolean
+  yearn?: boolean
+  v3?: boolean
+  managementFee?: number
+  performanceFee?: number
 }
 
 export type VaultStrategy = {

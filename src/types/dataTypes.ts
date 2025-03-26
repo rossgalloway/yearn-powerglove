@@ -58,8 +58,8 @@ export type ppsChartData = {
 type StrategyDetails = {
   chainId: number
   vaultAddress: string
-  managementFee: string
-  performanceFee: string
+  managementFee: number
+  performanceFee: number
   isVault: boolean
   isEndorsed?: boolean
 }

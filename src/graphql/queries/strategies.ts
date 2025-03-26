@@ -27,17 +27,28 @@ export type VaultDebtsQuery = {
   chainId: number
   address: string
   name: string
-  debts: VaultDebt[]
-}
-
-type VaultDebt = {
-  strategy: string
-  currentDebt: string
-  currentDebtUsd: number
-  maxDebt: string
-  maxDebtUsd: number
-  targetDebtRatio: string
-  maxDebtRatio: string
+  debts: {
+    strategy: string
+    currentDebt: string
+    currentDebtUsd: number
+    maxDebt: string
+    maxDebtUsd: number
+    targetDebtRatio: string
+    maxDebtRatio: string
+  }[]
+  apy: {
+    grossApr: number
+    net: number
+    inceptionNet: number
+  }
+  fees: {
+    managementFee: number
+    performanceFee: number
+  }
+  apiVersion: string
+  erc4626: boolean
+  v3: boolean
+  yearn: boolean
 }
 
 export const GET_VAULT_DEBTS = gql`
@@ -55,6 +66,51 @@ export const GET_VAULT_DEBTS = gql`
         targetDebtRatio
         maxDebtRatio
       }
+      apy {
+        grossApr
+        net
+        inceptionNet
+      }
+      fees {
+        managementFee
+        performanceFee
+      }
+      apiVersion
+      erc4626
+      v3
+      yearn
+    }
+  }
+`
+
+export type StrategyDetailsQuery = {
+  address: string
+  apy: {
+    grossApr: number
+    net: number
+    inceptionNet: number
+  }
+  fees: {
+    managementFee: number
+    performanceFee: number
+  }
+  apiVersion: string
+}
+
+export const GET_STRATEGY_DETAILS = gql`
+  query Vaults($addresses: [String]) {
+    vaults(addresses: $addresses) {
+      address
+      apy {
+        grossApr
+        net
+        inceptionNet
+      }
+      fees {
+        managementFee
+        performanceFee
+      }
+      apiVersion
     }
   }
 `

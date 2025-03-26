@@ -4,8 +4,6 @@ import {
   ChevronRight,
   ChevronUp,
   ExternalLink,
-  Shield,
-  Share2,
 } from 'lucide-react'
 import { Cell, Label, Pie, PieChart, Tooltip } from 'recharts'
 import { cn } from '@/lib/utils'
@@ -13,7 +11,15 @@ import {
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
 } from '@/constants/chains'
-import { Strategy } from '@/types/dataTypes'
+import { useQuery } from '@apollo/client'
+import {
+  GET_VAULT_DEBTS,
+  GET_VAULT_STRATEGIES,
+  VaultDebtsQuery,
+  VaultStrategiesQuery,
+} from '../graphql/queries/strategies'
+import { VaultDebt } from '@/types/vaultTypes'
+import { Strategy } from '../types/dataTypes'
 
 // import smolAssets from '@/data/smolAssets.json'
 
@@ -25,8 +31,113 @@ type SortColumn =
   | 'estimatedAPY'
 type SortDirection = 'asc' | 'desc'
 
-export default function StrategiesPanel(strategies: Strategy[]) {
-  console.log('strategies for dash:', strategies)
+export default function StrategiesPanel({
+  props,
+}: {
+  props: { vaultChainId: number; vaultAddress: string }
+}) {
+  // Destructure chainId and address from props
+  const { vaultChainId, vaultAddress } = props
+  console.log('welcome to the strategies panel')
+
+  // Fetches the component strategies of the current vault
+  const {
+    data: strategyData,
+    loading: strategyLoading,
+    error: strategyError,
+  } = useQuery<{ vaultStrategies: VaultStrategiesQuery[] }>(
+    GET_VAULT_STRATEGIES,
+    {
+      variables: { vault: vaultAddress, chainId: vaultChainId },
+    }
+  )
+  // Add the current vault address to the array and
+  // Extract the "address" value from each strategy in the fetched array
+  console.log('vaultAddress:', vaultAddress)
+  const strategyAddresses = [
+    vaultAddress,
+    ...(strategyData?.vaultStrategies.map(strategy => strategy.address) || []),
+  ]
+  console.log('strategyAddresses:', strategyAddresses)
+
+  // Fetch debts data for the current vault
+  const {
+    data: debtsData,
+    loading: debtsLoading,
+    error: debtsError,
+  } = useQuery<{ vaults: VaultDebtsQuery[] }>(GET_VAULT_DEBTS, {
+    variables: { addresses: strategyAddresses, chainId: vaultChainId },
+  })
+  let enrichedVaultDebts: VaultDebt[] = [] // Declare enrichedVaultDebts outside the block
+  if (debtsData) {
+    const preppedDebtsData = debtsData.vaults
+    console.log('debtsData:', preppedDebtsData)
+    // Find the vault that matches the current vaultAddress
+    const selectedVault: VaultDebtsQuery | undefined = preppedDebtsData.find(
+      vault => vault.address === vaultAddress
+    )
+
+    if (!selectedVault) {
+      throw new Error(`Vault with address ${vaultAddress} not found.`) // Handle undefined case
+    }
+
+    // Extract the debts array from the selected vault
+    const selectedVaultDebts: VaultDebt[] = selectedVault?.debts
+    console.log('vaultDebts:', selectedVaultDebts)
+
+    // Remove the selected vault from the remaining strategies
+    const remainingStrategies =
+      preppedDebtsData?.filter(vault => vault.address !== vaultAddress) || []
+    console.log('remainingStrategies:', remainingStrategies)
+
+    // Iterate through the vaultDebts array and enrich it with additional fields
+    enrichedVaultDebts = selectedVaultDebts.map(debt => {
+      // Find the matching strategy in the remaining strategies array
+      const matchingStrategy = remainingStrategies.find(
+        strategy => strategy.address === debt.strategy
+      )
+
+      return {
+        ...debt,
+        address: debt.strategy, // Rename `strategy` to `address`
+        name: matchingStrategy?.name || '',
+        erc4626: matchingStrategy?.erc4626 || undefined,
+        yearn: matchingStrategy?.yearn || undefined,
+        v3: matchingStrategy?.v3 || undefined,
+        managementFee: matchingStrategy?.fees.managementFee || 0,
+        performanceFee: matchingStrategy?.fees.performanceFee || 0,
+      }
+    })
+  }
+  console.log('enrichedVaultDebts:', enrichedVaultDebts)
+
+  // Map enrichedVaultDebts to Strategy objects
+  const strategies: Strategy[] = enrichedVaultDebts.map((debt, index) => ({
+    id: index, // Use the index as the ID (or replace with a unique identifier if available)
+    name: debt.name || 'Unknown Strategy', // Use the name from enrichedVaultDebts or a default value
+    allocationPercent: debt.targetDebtRatio
+      ? parseFloat(debt.targetDebtRatio)
+      : 0, // Convert targetDebtRatio to a number
+    allocationAmount: debt.currentDebtUsd
+      ? debt.currentDebtUsd.toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD',
+        })
+      : '$0.00', // Format currentDebtUsd as a currency string
+    estimatedAPY: debt.maxDebtRatio
+      ? `${parseFloat(debt.maxDebtRatio).toFixed(2)}%`
+      : '0.00%', // Format maxDebtRatio as a percentage string
+    details: {
+      chainId: vaultChainId, // Use the chainId from props
+      vaultAddress: vaultAddress, // Use the vaultAddress from props
+      managementFee: debt.managementFee || 0, // Use managementFee or a default value
+      performanceFee: debt.performanceFee || 0, // Use performanceFee or a default value
+      isVault: true, // Assume it's a vault (adjust if needed)
+      isEndorsed: debt.yearn || false, // Use the yearn field to determine endorsement
+    },
+  }))
+
+  console.log('strategies:', strategies)
 
   const [expandedRow, setExpandedRow] = useState<number | null>(1)
   const [activeTab, setActiveTab] = useState<string>('Strategies')
@@ -190,6 +301,27 @@ export default function StrategiesPanel(strategies: Strategy[]) {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Strategies': {
+        if (debtsLoading || strategyLoading) {
+          return (
+            <div className="flex justify-center items-center h-full">
+              <p>Loading...</p>
+            </div>
+          )
+        }
+
+        // Add error state handling
+        if (debtsError || strategyError) {
+          return (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-red-500">
+                {debtsError?.message ||
+                  strategyError?.message ||
+                  'An error occurred.'}
+              </p>
+            </div>
+          )
+        }
+
         const allocatedStrategies = sortedStrategies.filter(
           strategy => strategy.allocationPercent > 0
         )
@@ -585,14 +717,6 @@ export default function StrategiesPanel(strategies: Strategy[]) {
               {tab}
             </div>
           ))}
-          <div className="ml-auto flex gap-4 pr-4">
-            <button className="text-[#4f4f4f]">
-              <Shield className="w-5 h-5" />
-            </button>
-            <button className="text-[#4f4f4f]">
-              <Share2 className="w-5 h-5" />
-            </button>
-          </div>
         </div>
 
         {/* Tab Content */}
