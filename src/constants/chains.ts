@@ -30,3 +30,7 @@ export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<number, string> = {
   42161: 'https://arbiscan.io',
 }
 
+export const VAULT_TYPE_TO_NAME: Record<string, string> = {
+  1: 'Allocator Vault',
+  2: 'Strategy Vault',
+}

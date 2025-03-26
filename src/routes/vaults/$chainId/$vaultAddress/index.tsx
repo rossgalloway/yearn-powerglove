@@ -6,7 +6,7 @@ import { MainInfoPanel } from '@/components/main-info-panel'
 import { ChartsPanel } from '@/components/charts-panel'
 import StrategiesPanel from '@/components/strategies-panel'
 import { format } from 'date-fns'
-import smolAssets from '@/data/smolAssets.json'
+import smolAssets from '@/constants/smolAssets.json'
 import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
