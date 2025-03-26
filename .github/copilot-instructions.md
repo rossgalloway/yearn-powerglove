@@ -71,6 +71,130 @@ built by running `tree -I "node_modules"` project directory
 │   ├── components
 │   │   ├── Footer.tsx
 │   │   ├── Header.tsx
+│   │   ├── ScrollToTop.tsx
+│   │   ├── VaultsList.tsx
+│   │   ├── YearnVaultsSummary.tsx
+│   │   ├── chart-container.tsx
+│   │   ├── charts
+│   │   │   ├── APYChart.tsx
+│   │   │   ├── PPSChart.tsx
+│   │   │   └── TVLChart.tsx
+│   │   ├── charts-panel.tsx
+│   │   ├── main-info-panel.tsx
+│   │   ├── strategies-panel.tsx
+│   │   └── ui
+│   │       ├── accordion.tsx
+│   │       ├── alert-dialog.tsx
+│   │       ├── alert.tsx
+│   │       ├── aspect-ratio.tsx
+│   │       ├── avatar.tsx
+│   │       ├── badge.tsx
+│   │       ├── breadcrumb.tsx
+│   │       ├── button.tsx
+│   │       ├── calendar.tsx
+│   │       ├── card.tsx
+│   │       ├── carousel.tsx
+│   │       ├── chart.tsx
+│   │       ├── checkbox.tsx
+│   │       ├── collapsible.tsx
+│   │       ├── command.tsx
+│   │       ├── context-menu.tsx
+│   │       ├── dialog.tsx
+│   │       ├── drawer.tsx
+│   │       ├── dropdown-menu.tsx
+│   │       ├── form.tsx
+│   │       ├── hover-card.tsx
+│   │       ├── input-otp.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── menubar.tsx
+│   │       ├── navigation-menu.tsx
+│   │       ├── pagination.tsx
+│   │       ├── popover.tsx
+│   │       ├── progress.tsx
+│   │       ├── radio-group.tsx
+│   │       ├── resizable.tsx
+│   │       ├── scroll-area.tsx
+│   │       ├── select.tsx
+│   │       ├── separator.tsx
+│   │       ├── sheet.tsx
+│   │       ├── sidebar.tsx
+│   │       ├── skeleton.tsx
+│   │       ├── slider.tsx
+│   │       ├── sonner.tsx
+│   │       ├── switch.tsx
+│   │       ├── table.tsx
+│   │       ├── tabs.tsx
+│   │       ├── textarea.tsx
+│   │       ├── toast.tsx
+│   │       ├── toaster.tsx
+│   │       ├── toggle-group.tsx
+│   │       ├── toggle.tsx
+│   │       ├── tooltip.tsx
+│   │       ├── use-mobile.tsx
+│   │       └── use-toast.ts
+│   ├── config
+│   ├── constants
+│   │   ├── chains.ts
+│   │   └── smolAssets.json
+│   ├── graphql
+│   │   ├── filters
+│   │   │   └── vaultFilters.ts
+│   │   ├── queries
+│   │   │   ├── strategies.ts
+│   │   │   ├── timeseries.ts
+│   │   │   └── vaults.ts
+│   │   └── schema.graphql
+│   ├── hooks
+│   ├── lib
+│   │   ├── apollo-client.ts
+│   │   ├── queries.ts
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── routeTree.gen.ts
+│   ├── routes
+│   │   ├── __root.tsx
+│   │   ├── index.tsx
+│   │   └── vaults
+│   │       └── $chainId
+│   │           └── $vaultAddress
+│   │               └── index.tsx
+│   ├── styles
+│   │   └── globals.css
+│   ├── types
+│   │   ├── dataTypes.ts
+│   │   └── vaultTypes.ts
+│   ├── utils
+│   │   ├── filterChains.ts
+│   │   └── format-date.ts
+│   ├── vite-env.d.ts
+│   └── wagmi.ts
+├── tailwind.config.js
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+.
+├── README.md
+├── components.json
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   ├── YFILogoGradient.jpg
+│   ├── favicon.ico
+│   ├── fonts
+│   │   ├── //fonts removed from tree diagram to save space
+│   │   └── fonts.css
+│   ├── github-icon.svg
+│   ├── logo.svg
+│   ├── twitter-x.svg
+│   └── yearn-link-icon.svg
+├── src
+│   ├── components
+│   │   ├── Footer.tsx
+│   │   ├── Header.tsx
 │   │   ├── VaultsList.tsx
 │   │   ├── YearnVaultsSummary.tsx
 │   │   ├── chart-container.tsx
