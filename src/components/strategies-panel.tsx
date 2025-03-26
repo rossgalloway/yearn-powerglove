@@ -21,6 +21,7 @@ import {
 } from '../graphql/queries/strategies'
 import { VaultDebt } from '@/types/vaultTypes'
 import { Strategy } from '../types/dataTypes'
+import smolAssets from '@/constants/smolAssets.json'
 
 // import smolAssets from '@/data/smolAssets.json'
 
@@ -111,6 +112,7 @@ export default function StrategiesPanel({
         grossApr: matchingStrategy?.apy?.grossApr,
         netApy: matchingStrategy?.apy?.net,
         inceptionNetApy: matchingStrategy?.apy?.inceptionNet,
+        assetSymbol: matchingStrategy?.asset?.symbol,
       }
     })
   }
@@ -144,6 +146,10 @@ export default function StrategiesPanel({
     estimatedAPY: debt.netApy
       ? `${(Number(debt.netApy) * 100).toFixed(2)}%`
       : '0.00%', // Format maxDebtRatio as a percentage string
+    tokenSymbol: debt.assetSymbol || '', // Use the asset symbol from enrichedVaultDebts or a default value
+    tokenIconUri:
+      smolAssets.tokens.find(token => token.symbol === debt.assetSymbol)
+        ?.logoURI || '',
     details: {
       chainId: vaultChainId, // Use the chainId from props
       vaultAddress: debt.address ? debt.address : '', // Use the vaultAddress from props
@@ -415,9 +421,19 @@ export default function StrategiesPanel({
                           <ChevronRight className="w-4 h-4 text-[#4f4f4f]" />
                         )}
                       </div>
-                      <div className="w-[calc(50%-2rem)] flex items-center">
-                        <div className="w-6 h-6 rounded-full bg-[#f5f5f5] flex items-center justify-center mr-2 text-yellow-500">
-                          <span className="text-xs">$</span>
+                      <div className="w-[calc(50%-2rem)] flex items-center gap-2">
+                        <div className="flex items-center">
+                          {strategy.tokenIconUri ? (
+                            <img
+                              src={strategy.tokenIconUri}
+                              alt={strategy.tokenSymbol}
+                              className="w-6 h-6"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
+                              ?
+                            </div>
+                          )}
                         </div>
                         <span className="font-medium">{strategy.name}</span>
                       </div>
@@ -535,9 +551,19 @@ export default function StrategiesPanel({
                                 <ChevronRight className="w-4 h-4 text-[#4f4f4f]" />
                               )}
                             </div>
-                            <div className="w-[calc(50%-2rem)] flex items-center">
-                              <div className="w-6 h-6 rounded-full bg-[#f5f5f5] flex items-center justify-center mr-2 text-yellow-500">
-                                <span className="text-xs">$</span>
+                            <div className="w-[calc(50%-2rem)] flex items-center gap-2">
+                              <div className="flex items-center">
+                                {strategy.tokenIconUri ? (
+                                  <img
+                                    src={strategy.tokenIconUri}
+                                    alt={strategy.tokenSymbol}
+                                    className="w-6 h-6"
+                                  />
+                                ) : (
+                                  <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
+                                    ?
+                                  </div>
+                                )}
                               </div>
                               <span className="font-medium">
                                 {strategy.name}

@@ -3,9 +3,10 @@ import { YearnVaultsSummary } from '../components/YearnVaultsSummary'
 import VaultsList from '../components/VaultsList'
 import { useQuery } from '@apollo/client'
 import { GET_VAULTS_SIMPLE } from '@/graphql/queries/vaults'
-import { Skeleton } from '@/components/ui/skeleton'
+
 import * as filters from '@/graphql/filters/vaultFilters'
 import { Vault } from '@/types/vaultTypes'
+import YearnLoader from '@/components/YearnLoader'
 
 export default function AllVaultsPage() {
   const { data, loading, error } = useQuery(GET_VAULTS_SIMPLE)
@@ -16,8 +17,7 @@ export default function AllVaultsPage() {
   if (loading) {
     return (
       <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-        <Skeleton className="h-10 w-full" />
-        Loading vaults...
+        <YearnLoader />
       </main>
     )
   }

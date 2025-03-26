@@ -27,6 +27,9 @@ export type VaultDebtsQuery = {
   chainId: number
   address: string
   name: string
+  asset: {
+    symbol: string
+  }
   debts: {
     strategy: string
     currentDebt: string
@@ -57,6 +60,9 @@ export const GET_VAULT_DEBTS = gql`
       chainId
       address
       name
+      asset {
+        symbol
+      }
       debts {
         strategy
         currentDebt

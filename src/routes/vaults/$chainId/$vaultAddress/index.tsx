@@ -26,6 +26,15 @@ import {
   formatUnixTimestamp,
   getEarliestAndLatestTimestamps,
 } from '@/lib/utils'
+import YearnLoader from '@/components/YearnLoader'
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from '../../../../components/ui/breadcrumb'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
@@ -85,7 +94,11 @@ function SingleVaultPage() {
 
   // Handle loading states
   if (vaultLoading || apyLoading || tvlLoading || ppsLoading) {
-    return <div>Loading Vault...</div>
+    return (
+      <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+        <YearnLoader />
+      </div>
+    )
   }
 
   // Handle errors
@@ -109,6 +122,19 @@ function SingleVaultPage() {
 
   return (
     <main className="flex-1 container pt-0 pb-0">
+      <div className="px-6 pt-2 border border-border bg-white border-b-0 border-t-0">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Vaults</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{vaultDetails.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <div className="space-y-0">
         <MainInfoPanel {...mainInfoPanelData} />
         <ChartsPanel

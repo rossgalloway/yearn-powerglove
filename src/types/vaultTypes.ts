@@ -88,6 +88,7 @@ export type VaultDebt = {
   grossApr?: number
   netApy?: number
   inceptionNetApy?: number
+  assetSymbol?: string
 }
 
 export type VaultStrategy = {

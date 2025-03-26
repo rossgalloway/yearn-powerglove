@@ -71,6 +71,8 @@ export type Strategy = {
   allocationPercent: number
   allocationAmount: string
   estimatedAPY: string
+  tokenSymbol: string
+  tokenIconUri: string
   details: StrategyDetails
 }
 

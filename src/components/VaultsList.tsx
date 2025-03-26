@@ -26,7 +26,7 @@ type SortDirection = 'asc' | 'desc'
 
 export default function VaultsList({ vaults }: { vaults: Vault[] }) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const navigate = useNavigate()
 
   // Map the Vault array to VaultListData format

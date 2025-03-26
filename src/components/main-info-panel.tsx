@@ -78,7 +78,7 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
                 )}
               </div>
               <a href={data.blockExplorerLink} target="_blank" rel="noreferrer">
-                <ArrowUpRight className="h-4 w-4 text-gray-400 cursor-pointer" />
+                <ExternalLink className="h-4 w-4 text-gray-400 cursor-pointer" />
               </a>
             </div>
           </div>
