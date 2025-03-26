@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import {
   ChevronDown,
   ChevronRight,
@@ -36,6 +37,7 @@ export default function StrategiesPanel({
 }: {
   props: { vaultChainId: number; vaultAddress: string }
 }) {
+  const navigate = useNavigate()
   // Destructure chainId and address from props
   const { vaultChainId, vaultAddress } = props
   console.log('welcome to the strategies panel')
@@ -82,7 +84,7 @@ export default function StrategiesPanel({
     }
 
     // Extract the debts array from the selected vault
-    const selectedVaultDebts: VaultDebt[] = selectedVault?.debts
+    const selectedVaultDebts: VaultDebt[] = selectedVault?.debts || []
     console.log('vaultDebts:', selectedVaultDebts)
 
     // Remove the selected vault from the remaining strategies
@@ -104,32 +106,47 @@ export default function StrategiesPanel({
         erc4626: matchingStrategy?.erc4626 || undefined,
         yearn: matchingStrategy?.yearn || undefined,
         v3: matchingStrategy?.v3 || undefined,
-        managementFee: matchingStrategy?.fees.managementFee || 0,
-        performanceFee: matchingStrategy?.fees.performanceFee || 0,
+        managementFee: matchingStrategy?.fees?.managementFee || 0,
+        performanceFee: matchingStrategy?.fees?.performanceFee || 0,
+        grossApr: matchingStrategy?.apy?.grossApr,
+        netApy: matchingStrategy?.apy?.net,
+        inceptionNetApy: matchingStrategy?.apy?.inceptionNet,
       }
     })
   }
   console.log('enrichedVaultDebts:', enrichedVaultDebts)
+  // Sort the enriched debts by currentDebt (convert strings to numbers)
+  const sortedVaultDebts = enrichedVaultDebts.sort(
+    (a, b) => Number(b.currentDebt) - Number(a.currentDebt)
+  )
+  console.log('sortedDebts:', sortedVaultDebts)
+
+  // Sum currentDebtUsd values to get totalDebt
+  const totalVaultDebt = sortedVaultDebts.reduce(
+    (sum: number, debt: VaultDebt) => sum + Number(debt.currentDebtUsd),
+    0
+  )
+  console.log('totalDebt:', totalVaultDebt)
 
   // Map enrichedVaultDebts to Strategy objects
   const strategies: Strategy[] = enrichedVaultDebts.map((debt, index) => ({
     id: index, // Use the index as the ID (or replace with a unique identifier if available)
     name: debt.name || 'Unknown Strategy', // Use the name from enrichedVaultDebts or a default value
-    allocationPercent: debt.targetDebtRatio
-      ? parseFloat(debt.targetDebtRatio)
-      : 0, // Convert targetDebtRatio to a number
+    allocationPercent: totalVaultDebt
+      ? (Number(debt.currentDebtUsd) / totalVaultDebt) * 100
+      : 0,
     allocationAmount: debt.currentDebtUsd
       ? debt.currentDebtUsd.toLocaleString('en-US', {
           style: 'currency',
           currency: 'USD',
         })
       : '$0.00', // Format currentDebtUsd as a currency string
-    estimatedAPY: debt.maxDebtRatio
-      ? `${parseFloat(debt.maxDebtRatio).toFixed(2)}%`
+    estimatedAPY: debt.netApy
+      ? `${(Number(debt.netApy) * 100).toFixed(2)}%`
       : '0.00%', // Format maxDebtRatio as a percentage string
     details: {
       chainId: vaultChainId, // Use the chainId from props
-      vaultAddress: vaultAddress, // Use the vaultAddress from props
+      vaultAddress: debt.address ? debt.address : '', // Use the vaultAddress from props
       managementFee: debt.managementFee || 0, // Use managementFee or a default value
       performanceFee: debt.performanceFee || 0, // Use performanceFee or a default value
       isVault: true, // Assume it's a vault (adjust if needed)
@@ -322,6 +339,18 @@ export default function StrategiesPanel({
           )
         }
 
+        // Check if sortedStrategies is empty or null
+        if (!sortedStrategies || sortedStrategies.length === 0) {
+          return (
+            <div className="flex justify-center items-center h-full p-20">
+              <p className="text-gray-500 text-center">
+                This vault contains no strategies, and most likely is a strategy
+                for an allocator vault.
+              </p>
+            </div>
+          )
+        }
+
         const allocatedStrategies = sortedStrategies.filter(
           strategy => strategy.allocationPercent > 0
         )
@@ -396,13 +425,7 @@ export default function StrategiesPanel({
                         {strategy.allocationPercent.toFixed(1)}%
                       </div>
                       <div className="w-1/6 text-right">
-                        {Number(strategy.allocationAmount).toLocaleString(
-                          'en-US',
-                          {
-                            style: 'currency',
-                            currency: 'USD',
-                          }
-                        )}
+                        {strategy.allocationAmount}
                       </div>
                       <div className="w-1/6 text-right">
                         {strategy.estimatedAPY} APY
@@ -417,14 +440,17 @@ export default function StrategiesPanel({
                             {CHAIN_ID_TO_NAME[Number(strategy.details.chainId)]}
                           </div>
                           {strategy.details.isVault && (
-                            <a
-                              href={`/vault/${strategy.details.vaultAddress}`}
-                              target="_blank"
+                            <button
+                              onClick={() =>
+                                navigate({
+                                  to: `/vaults/${strategy.details.chainId}/${strategy.details.vaultAddress}`,
+                                })
+                              }
                               className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                             >
                               Data
                               <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
-                            </a>
+                            </button>
                           )}
                           {strategy.details.isEndorsed &&
                             strategy.details.isVault && (
@@ -450,10 +476,16 @@ export default function StrategiesPanel({
                         </div>
                         <div className="space-y-1 text-sm">
                           <div>
-                            Management Fee: {strategy.details.managementFee}
+                            Management Fee:{' '}
+                            {strategy.details.managementFee
+                              ? `${(Number(strategy.details.managementFee) / 100).toFixed(0)}%`
+                              : '0%'}
                           </div>
                           <div>
-                            Performance Fee: {strategy.details.performanceFee}
+                            Performance Fee:{' '}
+                            {strategy.details.performanceFee
+                              ? `${(Number(strategy.details.performanceFee) / 100).toFixed(0)}%`
+                              : '0%'}
                           </div>
                         </div>
                       </div>
@@ -515,13 +547,7 @@ export default function StrategiesPanel({
                               {strategy.allocationPercent.toFixed(1)}%
                             </div>
                             <div className="w-1/6 text-right">
-                              {Number(strategy.allocationAmount).toLocaleString(
-                                'en-US',
-                                {
-                                  style: 'currency',
-                                  currency: 'USD',
-                                }
-                              )}
+                              {strategy.allocationAmount}
                             </div>
                             <div className="w-1/6 text-right">
                               {strategy.estimatedAPY} APY
@@ -540,14 +566,17 @@ export default function StrategiesPanel({
                                   }
                                 </div>
                                 {strategy.details.isVault && (
-                                  <a
-                                    href={`/vault/${strategy.details.vaultAddress}`}
-                                    target="_blank"
+                                  <button
+                                    onClick={() =>
+                                      navigate({
+                                        to: `/vaults/${strategy.details.chainId}/${strategy.details.vaultAddress}`,
+                                      })
+                                    }
                                     className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                                   >
                                     Data
                                     <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
-                                  </a>
+                                  </button>
                                 )}
                                 {strategy.details.isEndorsed &&
                                   strategy.details.isVault && (

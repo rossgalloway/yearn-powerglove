@@ -154,16 +154,34 @@ function hydrateMainInfoPanelData(
     name: CHAIN_ID_TO_NAME[vaultData.chainId],
   }
 
-  const estimatedAPY = `${(vaultData.apy.net * 100).toFixed(2)}%`
-  const historicalAPY = `${(vaultData.apy.inceptionNet * 100).toFixed(2)}%`
-  const managementFee = `${(vaultData.fees.managementFee / 100).toFixed(0)}%`
-  const performanceFee = `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
-  const apiVersion = vaultData.apiVersion
-  const blockExplorerLink = `${CHAIN_ID_TO_BLOCK_EXPLORER[vaultData.chainId]}/address/${vaultData.address}`
-  const yearnVaultLink = vaultData.apiVersion.startsWith('3')
-    ? `https://yearn.fi/v3/${vaultData.chainId}/${vaultData.address}`
-    : `https://yearn.fi/vaults/${vaultData.chainId}/${vaultData.address}`
+  const estimatedAPY = vaultData?.apy?.net
+    ? `${(vaultData.apy.net * 100).toFixed(2)}%`
+    : '0%' // Default to 'N/A' if undefined
 
+  const historicalAPY = vaultData?.apy?.inceptionNet
+    ? `${(vaultData.apy.inceptionNet * 100).toFixed(2)}%`
+    : '0%' // Default to 'N/A' if undefined
+
+  const managementFee = vaultData?.fees?.managementFee
+    ? `${(vaultData.fees.managementFee / 100).toFixed(0)}%`
+    : '0%' // Default to '0%' if undefined
+
+  const performanceFee = vaultData?.fees?.performanceFee
+    ? `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
+    : '0%' // Default to '0%' if undefined
+
+  const apiVersion = vaultData?.apiVersion || 'N/A' // Default to 'N/A' if undefined
+
+  const blockExplorerLink =
+    vaultData?.chainId && vaultData?.address
+      ? `${CHAIN_ID_TO_BLOCK_EXPLORER[vaultData.chainId]}/address/${vaultData.address}`
+      : '#' // Default to '#' if chainId or address is undefined
+
+  const yearnVaultLink = vaultData?.apiVersion?.startsWith('3')
+    ? `https://yearn.fi/v3/${vaultData.chainId}/${vaultData.address}`
+    : vaultData?.chainId && vaultData?.address
+      ? `https://yearn.fi/vaults/${vaultData.chainId}/${vaultData.address}`
+      : '#' // Default to '#' if chainId or address is undefined
   return {
     vaultId: vaultData.symbol,
     deploymentDate,

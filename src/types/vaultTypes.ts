@@ -85,6 +85,9 @@ export type VaultDebt = {
   v3?: boolean
   managementFee?: number
   performanceFee?: number
+  grossApr?: number
+  netApy?: number
+  inceptionNetApy?: number
 }
 
 export type VaultStrategy = {
