@@ -39,24 +39,35 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
           <div>
             <div className="text-sm text-gray-500 mb-1">Vault Token</div>
             <div className="flex items-center gap-2">
-              <img
-                src={data.vaultToken.icon}
-                alt={data.vaultToken.name}
-                className="h-6 w-6 rounded-full"
-              />
+              {data.vaultToken.icon ? (
+                <img
+                  src={data.vaultToken.icon}
+                  alt={data.vaultToken.name}
+                  className="h-6 w-6 rounded-full"
+                />
+              ) : (
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
+                  ?
+                </div>
+              )}
               <span>{data.vaultToken.name}</span>
             </div>
-
             <div className="text-sm text-gray-500 mt-4 mb-1">Total Supply</div>
             <div>{data.totalSupply}</div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1">Network</div>
             <div className="flex items-center gap-2">
-              <img
-                src={data.network.icon}
-                alt={data.network.name}
-                className="h-6 w-6 rounded-full"
-              />
+              {data.network.icon ? (
+                <img
+                  src={data.network.icon}
+                  alt={data.network.name}
+                  className="h-6 w-6 rounded-full"
+                />
+              ) : (
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
+                  ?
+                </div>
+              )}
               <span>{data.network.name}</span>
             </div>
 

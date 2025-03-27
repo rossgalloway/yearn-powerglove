@@ -64,6 +64,13 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
         const numB = parseFloat(String(valB).replace(/[$,]/g, ''))
         return numA - numB
       }
+      if (sortColumn === 'estimatedAPY') {
+        // fixed to match the correct key in VaultListData
+        // Remove $ and commas, then convert to number for proper numeric sort
+        const numA = parseFloat(String(valA).replace(/[%]/g, ''))
+        const numB = parseFloat(String(valB).replace(/[%]/g, ''))
+        return numA - numB
+      }
       // Default string/number comparison for other columns
       if (valA < valB) return -1
       if (valA > valB) return 1
