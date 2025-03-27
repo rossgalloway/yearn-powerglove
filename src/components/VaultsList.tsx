@@ -6,6 +6,7 @@ import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
   VAULT_TYPE_TO_NAME,
+  getChainIdByName,
 } from '@/constants/chains'
 import smolAssets from '@/constants/smolAssets.json'
 
@@ -17,7 +18,7 @@ interface VaultListData {
   token: string
   tokenUri: string
   type: string
-  estimatedAPY: string
+  APY: string
   tvl: string
 }
 
@@ -27,20 +28,33 @@ type SortDirection = 'asc' | 'desc'
 export default function VaultsList({ vaults }: { vaults: Vault[] }) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [searchTerms, setSearchTerms] = useState<Record<string, string>>({
+    name: '',
+    chain: '',
+    token: '',
+    type: '',
+    APY: '',
+    tvl: '',
+  })
+  const [rangeFilters, setRangeFilters] = useState({
+    APY: { min: '', max: '' },
+    tvl: { min: '', max: '' },
+  })
+
   const navigate = useNavigate()
 
   // Map the Vault array to VaultListData format
   const vaultListData: VaultListData[] = vaults.map(vault => ({
     id: vault.address, // Use the vault's address as a unique ID
     name: vault.name,
-    chain: vault.chainId.toString(), // Convert chainId to a string
+    chain: `${CHAIN_ID_TO_NAME[Number(vault.chainId)]}`, // Convert chainId to a string
     chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
     token: vault.asset.symbol,
     tokenUri:
       smolAssets.tokens.find(token => token.symbol === vault.asset.symbol)
         ?.logoURI || '',
-    type: vault.vaultType,
-    estimatedAPY: `${(vault.apy.net * 100).toFixed(2)}%`, // Format APY as a percentage
+    type: `${VAULT_TYPE_TO_NAME[Number(vault.vaultType)]}`,
+    APY: `${(vault.apy.net * 100).toFixed(2)}%`, // Renamed to match the VaultListData interface
     tvl: `$${vault.tvl.close.toLocaleString(undefined, {
       minimumFractionDigits: 2, // modified to display 2 decimals
       maximumFractionDigits: 2,
@@ -64,7 +78,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
         const numB = parseFloat(String(valB).replace(/[$,]/g, ''))
         return numA - numB
       }
-      if (sortColumn === 'estimatedAPY') {
+      if (sortColumn === 'APY') {
         // fixed to match the correct key in VaultListData
         // Remove $ and commas, then convert to number for proper numeric sort
         const numA = parseFloat(String(valA).replace(/[%]/g, ''))
@@ -85,6 +99,33 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
       : compare(valueB, valueA)
   })
 
+  const filteredVaults = sortedVaults.filter(vault => {
+    // Filter based on search terms
+    const matchesSearchTerms = Object.entries(searchTerms).every(
+      ([key, term]) => {
+        if (!term) return true // Skip filtering if no search term
+        const value = vault[key as keyof VaultListData]
+          ?.toString()
+          .toLowerCase()
+        return value.includes(term.toLowerCase())
+      }
+    )
+
+    // Filter based on APY range
+    const apyValue = parseFloat(vault.APY.replace('%', '')) // Convert APY to a number
+    const apyMin = parseFloat(rangeFilters.APY.min) || -Infinity
+    const apyMax = parseFloat(rangeFilters.APY.max) || Infinity
+    const matchesAPY = apyValue >= apyMin && apyValue <= apyMax
+
+    // Filter based on TVL range
+    const tvlValue = parseFloat(vault.tvl.replace(/[$,]/g, '')) // Convert TVL to a number
+    const tvlMin = parseFloat(rangeFilters.tvl.min) || -Infinity
+    const tvlMax = parseFloat(rangeFilters.tvl.max) || Infinity
+    const matchesTVL = tvlValue >= tvlMin && tvlValue <= tvlMax
+
+    return matchesSearchTerms && matchesAPY && matchesTVL
+  })
+
   const renderSortIcon = (column: SortColumn) => {
     if (sortColumn !== column) {
       return <ChevronDown className="w-4 h-4 inline-block" />
@@ -101,25 +142,21 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
     { label: 'Chain', key: 'chain' },
     { label: 'Token', key: 'token' },
     { label: 'Type', key: 'type' },
-    { label: 'Est. APY', key: 'estimatedAPY' },
+    { label: 'Est. APY', key: 'APY' },
     { label: 'TVL', key: 'tvl' },
   ]
 
   return (
     <div className="border rounded text-sm overflow-hidden bg-white">
-      {' '}
-      {/* added bg-white */}
-      {/* Header */}
+      {/* Headers Row */}
       <div className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b">
-        {' '}
-        {/* updated background and text color */}
         {headers.map(({ label, key }) => (
           <div
             key={key}
             className={`${
               key === 'name'
-                ? 'flex-[2] cursor-pointer select-none flex items-center gap-1 justify-start' // vault name: left-aligned with more room
-                : 'flex-1 cursor-pointer select-none flex items-center gap-1 justify-end' // other headers: right-aligned
+                ? 'flex-[2] cursor-pointer select-none flex items-center gap-1 justify-start'
+                : 'flex-1 cursor-pointer select-none flex items-center gap-1 justify-end'
             }`}
             onClick={() => handleSort(key)}
           >
@@ -128,17 +165,96 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
           </div>
         ))}
       </div>
+
+      {/* Search Bar Row */}
+      <div className="flex px-.05 py-.05 gap-0.5 bg-gray-100 text-gray-900 border-b">
+        {headers.map(({ key }) => (
+          <div
+            key={key}
+            className={`${
+              key === 'name'
+                ? 'flex-[2] flex items-center gap-1 justify-start'
+                : 'flex-1 flex items-center gap-1 justify-end'
+            }`}
+          >
+            {key === 'APY' || key === 'tvl' ? (
+              // APY and TVL: Range filter with "greater than" and "less than" inputs
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  placeholder={key === 'APY' ? 'Min %' : 'Min $'} // Dynamic placeholder
+                  value={
+                    rangeFilters[key].min
+                      ? key === 'APY'
+                        ? `${rangeFilters[key].min}%` // Append % for APY
+                        : `$${rangeFilters[key].min}` // Prepend $ for TVL
+                      : '' // Empty if no value
+                  }
+                  onChange={e => {
+                    const rawValue = e.target.value.replace(/[$%]/g, '') // Remove $ or % from input
+                    if (!isNaN(Number(rawValue))) {
+                      setRangeFilters(prev => ({
+                        ...prev,
+                        [key]: { ...prev[key], min: rawValue }, // Update state with raw numeric value
+                      }))
+                    }
+                  }}
+                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none"
+                />
+                <input
+                  type="text"
+                  placeholder={key === 'APY' ? 'Max %' : 'Max $'} // Dynamic placeholder
+                  value={
+                    rangeFilters[key].max
+                      ? key === 'APY'
+                        ? `${rangeFilters[key].max}%` // Append % for APY
+                        : `$${rangeFilters[key].max}` // Prepend $ for TVL
+                      : '' // Empty if no value
+                  }
+                  onChange={e => {
+                    const rawValue = e.target.value.replace(/[$%]/g, '') // Remove $ or % from input
+                    if (!isNaN(Number(rawValue))) {
+                      setRangeFilters(prev => ({
+                        ...prev,
+                        [key]: { ...prev[key], max: rawValue }, // Update state with raw numeric value
+                      }))
+                    }
+                  }}
+                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none"
+                />
+              </div>
+            ) : (
+              // Default search input for other columns
+              <input
+                type="text"
+                placeholder={`Search ${key}`}
+                value={searchTerms[key] || ''}
+                onChange={e =>
+                  setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
+                }
+                className={`w-full border border-gray-300 rounded px-2 py-1 text-sm ${
+                  key === 'name' ? 'text-left' : 'text-right'
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
       {/* Rows */}
-      {sortedVaults.map(vault => (
+      {filteredVaults.map(vault => (
         <div
           key={vault.id}
-          className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white" // added bg-white
-          onClick={() => navigate({ to: `/vaults/${vault.chain}/${vault.id}` })}
+          className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
+          onClick={() =>
+            navigate({
+              to: `/vaults/${getChainIdByName(vault.chain)}/${vault.id}`,
+            })
+          }
         >
           <div className="flex-[2] text-left">{vault.name}</div>
-          {/* vault name gets more space and left-aligned */}
           <div className="flex-1 flex justify-end items-center gap-2">
-            {CHAIN_ID_TO_NAME[Number(vault.chain)]}
+            {vault.chain}
             {vault.chainIconUri ? (
               <img
                 src={vault.chainIconUri}
@@ -161,10 +277,8 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
               </div>
             )}
           </div>
-          <div className="flex-1 text-right">
-            {VAULT_TYPE_TO_NAME[Number(vault.type)]}
-          </div>
-          <div className="flex-1 text-right">{vault.estimatedAPY}</div>
+          <div className="flex-1 text-right">{vault.type}</div>
+          <div className="flex-1 text-right">{vault.APY}</div>
           <div className="flex-1 text-right">{vault.tvl}</div>
         </div>
       ))}

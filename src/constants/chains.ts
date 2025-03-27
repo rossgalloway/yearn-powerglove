@@ -10,6 +10,13 @@ export const CHAIN_ID_TO_NAME: Record<number, string> = {
   42161: 'Arbitrum',
 }
 
+export function getChainIdByName(name: string): number | undefined {
+  const entry = Object.entries(CHAIN_ID_TO_NAME).find(
+    ([, chainName]) => chainName === name
+  )
+  return entry ? Number(entry[0]) : undefined
+}
+
 export const CHAIN_ID_TO_ICON: Record<number, string> = {
   1: 'https://assets.smold.app/api/chains/1/logo-32.png',
   10: 'https://assets.smold.app/api/chains/10/logo-32.png',
