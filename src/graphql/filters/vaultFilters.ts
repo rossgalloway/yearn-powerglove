@@ -1,6 +1,8 @@
 // src/graphql/filters/vaultFilters.ts
 import type { Vault } from '@/types/vaultTypes'
 
+export const filterNoVaults = (vaults: Vault[]) => vaults
+
 export const filterYearnVaults = (vaults: Vault[]) =>
   vaults.filter(vault => vault.yearn)
 
