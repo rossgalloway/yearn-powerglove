@@ -32,7 +32,7 @@ export default function AllVaultsPage() {
     )
   }
 
-  const filteredVaults = filters.filterYearnVaults(vaults)
+  const filteredVaults = filters.filterYearnV3Vaults(vaults)
 
   return (
     <main className="flex-1 container pt-0 pb-0">
