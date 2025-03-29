@@ -8,7 +8,7 @@ export function VaultsProvider({ children }: { children: React.ReactNode }) {
   const { data, loading, error: apolloError } = useQuery(GET_VAULTS_SIMPLE)
   const error = apolloError || null
   const vaults = data?.vaults || []
-  const filteredVaults = filters.filterYearnV3Vaults(vaults)
+  const filteredVaults = filters.filterYearnVaults(vaults)
 
   return (
     <VaultsContext.Provider value={{ vaults: filteredVaults, loading, error }}>

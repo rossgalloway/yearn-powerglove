@@ -53,7 +53,11 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
     tokenUri:
       smolAssets.tokens.find(token => token.symbol === vault.asset.symbol)
         ?.logoURI || '',
-    type: `${VAULT_TYPE_TO_NAME[Number(vault.vaultType)]}`,
+    type: vault.apiVersion.startsWith('3')
+      ? `V3 ${VAULT_TYPE_TO_NAME[Number(vault.vaultType)]}` // Check if apiVersion starts with 3
+      : vault.name.includes('Factory')
+        ? 'V2 - Factory Vault' // Check if name includes "Factory"
+        : 'V2 - Legacy Vault', // Default to "V2 - Legacy Vault"
     APY: `${(vault.apy.net * 100).toFixed(2)}%`, // Renamed to match the VaultListData interface
     tvl: `$${vault.tvl.close.toLocaleString(undefined, {
       minimumFractionDigits: 2, // modified to display 2 decimals
