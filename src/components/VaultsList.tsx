@@ -5,7 +5,6 @@ import { Vault } from '@/types/vaultTypes'
 import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
-  VAULT_TYPE_TO_NAME,
   getChainIdByName,
 } from '@/constants/chains'
 import smolAssets from '@/constants/smolAssets.json'
@@ -43,6 +42,14 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
 
   const navigate = useNavigate()
 
+  const vaultTypes: Record<string, string> = {
+    1: 'V3 Allocator Vault',
+    2: 'V3 Strategy Vault',
+    3: 'V2 Factory Vault',
+    4: 'V2 Legacy Vault',
+  }
+  const chainOptions = Object.values(CHAIN_ID_TO_NAME)
+
   // Map the Vault array to VaultListData format
   const vaultListData: VaultListData[] = vaults.map(vault => ({
     id: vault.address, // Use the vault's address as a unique ID
@@ -54,10 +61,10 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
       smolAssets.tokens.find(token => token.symbol === vault.asset.symbol)
         ?.logoURI || '',
     type: vault.apiVersion.startsWith('3')
-      ? `V3 ${VAULT_TYPE_TO_NAME[Number(vault.vaultType)]}` // Check if apiVersion starts with 3
+      ? `${vaultTypes[Number(vault.vaultType)]}`
       : vault.name.includes('Factory')
-        ? 'V2 - Factory Vault' // Check if name includes "Factory"
-        : 'V2 - Legacy Vault', // Default to "V2 - Legacy Vault"
+        ? `${vaultTypes[3]}` // "V2 Factory Vault"
+        : `${vaultTypes[4]}`, // "V2 Legacy Vault"
     APY: `${(vault.apy.net * 100).toFixed(2)}%`, // Renamed to match the VaultListData interface
     tvl: `$${vault.tvl.close.toLocaleString(undefined, {
       minimumFractionDigits: 2, // modified to display 2 decimals
@@ -171,7 +178,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
       </div>
 
       {/* Search Bar Row */}
-      <div className="flex px-.05 py-.05 gap-0.5 bg-gray-100 text-gray-900 border-b">
+      <div className="flex px-.05 py-.05 gap-0.5 bg-white text-gray-900 border-b">
         {headers.map(({ key }) => (
           <div
             key={key}
@@ -203,7 +210,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
                       }))
                     }
                   }}
-                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none"
+                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none text-gray-500"
                 />
                 <input
                   type="text"
@@ -224,9 +231,39 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
                       }))
                     }
                   }}
-                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none"
+                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none text-gray-500"
                 />
               </div>
+            ) : key === 'type' ? (
+              <select
+                value={searchTerms[key] || ''}
+                onChange={e =>
+                  setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
+                }
+                className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
+              >
+                <option value="">All Types</option>
+                {Object.values(vaultTypes).map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : key === 'chain' ? (
+              <select
+                value={searchTerms[key] || ''}
+                onChange={e =>
+                  setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
+                }
+                className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
+              >
+                <option value="">All Chains</option>
+                {chainOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             ) : (
               // Default search input for other columns
               <input
@@ -236,7 +273,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
                 onChange={e =>
                   setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
                 }
-                className={`w-full border border-gray-300 rounded px-2 py-1 text-sm ${
+                className={`w-full border border-gray-300 rounded px-2 py-1 text-sm text-gray-500 ${
                   key === 'name' ? 'text-left' : 'text-right'
                 }`}
               />

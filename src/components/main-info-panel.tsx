@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowUpRight, Copy, Check, ExternalLink, Info } from 'lucide-react'
+import { Copy, Check, ExternalLink, Info } from 'lucide-react'
 import { MainInfoPanelProps } from '@/types/dataTypes'
 
 export function MainInfoPanel(data: MainInfoPanelProps) {
