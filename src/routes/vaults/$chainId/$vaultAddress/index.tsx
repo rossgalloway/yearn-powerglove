@@ -4,7 +4,8 @@ import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
 import { queryAPY, queryPPS, queryTVL } from '@/graphql/queries/timeseries'
 import { MainInfoPanel } from '@/components/main-info-panel'
 import { ChartsPanel } from '@/components/charts-panel'
-import StrategiesPanel from '@/components/strategies-panel'
+// import StrategiesPanel from '@/components/strategies-panel'
+import StrategiesPanel from '@/components/TEST-strategies-panel'
 import { format } from 'date-fns'
 import smolAssets from '@/constants/smolAssets.json'
 import {
@@ -34,7 +35,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from '../../../../components/ui/breadcrumb'
+} from '@/components/ui/breadcrumb'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
@@ -142,7 +143,7 @@ function SingleVaultPage() {
           tvlData={transformedTvlData}
           ppsData={transformedPpsData}
         />
-        <StrategiesPanel props={{ vaultAddress, vaultChainId }} />
+        <StrategiesPanel props={{ vaultAddress, vaultChainId, vaultDetails }} />
       </div>
     </main>
   )

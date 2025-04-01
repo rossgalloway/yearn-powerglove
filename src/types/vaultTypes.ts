@@ -28,6 +28,8 @@ export type VaultSimple = {
     managementFee: number
     performanceFee: number
   }
+  managementFee: number
+  performanceFee: number
 }
 
 export type Vault = VaultSimple &
@@ -43,6 +45,17 @@ export type Vault = VaultSimple &
       strategy: string
       currentDebt: string
       currentDebtUsd: number
+      maxDebt: string
+      maxDebtUsd: number
+      targetDebtRatio: string
+      maxDebtRatio: string
+      DebtRatio: number
+      totalDebt: number
+      totalDebtUsd: number
+      totalGain: number
+      totalGainUsd: number
+      totalLoss: number
+      totalLossUsd: number
     }
   }>
 
@@ -72,12 +85,22 @@ export type VaultExtended = VaultSimple &
 
 export type VaultDebt = {
   strategy: string
-  currentDebt: string
-  currentDebtUsd: number
-  maxDebt: string
-  maxDebtUsd: number
-  targetDebtRatio: string
-  maxDebtRatio: string
+  v3Debt: {
+    currentDebt: string
+    currentDebtUsd: number
+    maxDebt: string
+    maxDebtUsd: number
+    targetDebtRatio: string
+    maxDebtRatio: string
+  }
+  v2Debt: {
+    totalDebt: number
+    totalDebtUsd: number
+    totalGain: number
+    totalGainUsd: number
+    totalLoss: number
+    totalLossUsd: number
+  }
   address?: string
   name?: string
   erc4626?: boolean
