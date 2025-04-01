@@ -76,7 +76,7 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
 
             <div className="text-sm text-gray-500 mt-4 mb-1">Vault Address</div>
             <div className="flex items-center gap-2">
-              <span className="text-[#0657f9]">
+              <span>
                 {data.vaultAddress.slice(0, 5) +
                   '...' +
                   data.vaultAddress.slice(-4)}
@@ -108,13 +108,13 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
 
             <div className="text-sm text-gray-500 mt-4 mb-1 flex items-center gap-1">
               Management Fee
-              <Info className="h-4 w-4 text-gray-400" />
+              {/* <Info className="h-4 w-4 text-gray-400" /> */}
             </div>
             <div>{data.managementFee}</div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1 flex items-center gap-1">
               Performance Fee
-              <Info className="h-4 w-4 text-gray-400" />
+              {/* <Info className="h-4 w-4 text-gray-400" /> */}
             </div>
             <div>{data.performanceFee}</div>
           </div>

@@ -160,7 +160,7 @@ function hydrateMainInfoPanelData(
     'MMMM yyyy'
   )
   const vaultName = vaultData.name
-  const description = `The ${vaultName} aims to optimize for risk-adjusted yield across established lending and yield-farming markets.`
+  const description = vaultData.meta?.description
 
   const vaultToken = {
     icon:
@@ -194,7 +194,9 @@ function hydrateMainInfoPanelData(
 
   const performanceFee = vaultData?.fees?.performanceFee
     ? `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
-    : '0%' // Default to '0%' if undefined
+    : vaultData?.performanceFee
+      ? `${(vaultData.performanceFee / 100).toFixed(0)}%`
+      : '0%' // Default to '0%' if undefined
 
   const apiVersion = vaultData?.apiVersion || 'N/A' // Default to 'N/A' if undefined
 
