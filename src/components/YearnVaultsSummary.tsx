@@ -75,11 +75,11 @@ export function YearnVaultsSummary({
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? (
-            <span className="flex items-center gap-2  p-2">
+            <span className="flex items-center gap-2 pt-2">
               Hide <ChevronsUp className="w-6 h-6 " />
             </span>
           ) : (
-            <span className="flex items-center gap-2 p-2">
+            <span className="flex items-center gap-2 ">
               Show More Info <ChevronsDown className="w-6 h-6 " />
             </span>
           )}
