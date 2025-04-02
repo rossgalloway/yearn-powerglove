@@ -21,12 +21,12 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
               Deployed: {data.deploymentDate}
             </div>
           </div>
-          <div className="max-w-md">
+          <div className="">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold mb-3">{data.vaultName}</h1>
               <div className="text-sm text-gray-500">{data.apiVersion}</div>
             </div>
-            <p className="text-gray-600 mb-4">{data.description}</p>
+            <p className="text-gray-600 mb-4 max-w-md">{data.description}</p>
             <a
               className="bg-[#0657f9] hover:bg-[#0657f9]/90 rounded-none text-white px-4 py-2 inline-flex items-center"
               href={data.yearnVaultLink}
