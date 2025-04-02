@@ -60,13 +60,14 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
     tokenUri:
       smolAssets.tokens.find(token => token.symbol === vault.asset.symbol)
         ?.logoURI || '',
-    type: vault.apiVersion.startsWith('3')
+    type: vault.apiVersion?.startsWith('3') // Safely check if apiVersion exists
       ? `${vaultTypes[Number(vault.vaultType)]}`
       : vault.name.includes('Factory')
         ? `${vaultTypes[3]}` // "V2 Factory Vault"
         : `${vaultTypes[4]}`, // "V2 Legacy Vault"
-    APY: `${(vault.apy.net * 100).toFixed(2)}%`, // Renamed to match the VaultListData interface
-    tvl: `$${vault.tvl.close.toLocaleString(undefined, {
+    APY: `${((vault.apy?.net ?? 0) * 100).toFixed(2)}%`, // Added nullish coalescing to handle undefined 'vault.apy'
+    tvl: `$${vault.tvl?.close?.toLocaleString(undefined, {
+      // Added optional chaining to handle undefined 'vault.tvl'
       minimumFractionDigits: 2, // modified to display 2 decimals
       maximumFractionDigits: 2,
     })}`,

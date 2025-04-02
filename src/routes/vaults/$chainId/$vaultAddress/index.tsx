@@ -160,7 +160,7 @@ function hydrateMainInfoPanelData(
     'MMMM yyyy'
   )
   const vaultName = vaultData.name
-  const description = vaultData.meta?.description
+  const description = vaultData.meta?.description || ''
 
   const vaultToken = {
     icon:
@@ -173,7 +173,7 @@ function hydrateMainInfoPanelData(
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 2,
-  }).format(vaultData.tvl.close)
+  }).format(vaultData.tvl?.close ?? 0) // Added nullish coalescing operator to handle undefined 'tvl'
 
   const network = {
     icon: CHAIN_ID_TO_ICON[vaultData.chainId],

@@ -10,20 +10,21 @@ export type VaultSimple = {
     decimals: number
     address: string
   }
-  apiVersion: string
+  apiVersion?: string
   pricePerShare: number
-  apy: {
+  apy?: {
     grossApr: number
     net: number
     inceptionNet: number
   }
-  tvl: {
+  tvl?: {
     close: number
   }
-  vaultType: string
-  yearn: boolean
-  v3: boolean
-  erc4626: boolean
+  vaultType?: string
+  yearn?: boolean
+  v3?: boolean
+  erc4626?: boolean
+  liquidLocker?: boolean
   fees: {
     managementFee: number
     performanceFee: number
