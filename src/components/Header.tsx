@@ -64,7 +64,7 @@ export default function Header() {
               setIsDropdownOpen(true) // Open dropdown when typing
             }}
             onFocus={() => setIsDropdownOpen(true)} // Open dropdown on focus
-            className="border border-gray-300 rounded px-2 py-1"
+            className="border border-gray-300 rounded px-2 py-1 w-[300px]"
           />
           {/* Dropdown for filtered vaults */}
           {isDropdownOpen && searchTerm && (
@@ -78,14 +78,18 @@ export default function Header() {
               {filteredVaults.map(vault => (
                 <div
                   key={vault.address}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex gap-2 items-center"
                   onClick={() => {
                     navigate({
                       to: `/vaults/${vault.chainId}/${vault.address}`,
                     })
                   }}
                 >
-                  {vault.name}
+                  <span>{vault.name}</span>
+                  <span className="text-gray-600 text-sm">
+                    {vault.apiVersion}
+                  </span>{' '}
+                  {/* Added apiVersion */}
                 </div>
               ))}
             </div>
