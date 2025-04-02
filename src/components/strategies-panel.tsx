@@ -14,14 +14,13 @@ import {
 } from '@/constants/chains'
 import { useQuery } from '@apollo/client'
 import {
-  GET_VAULT_DEBTS,
-  GET_VAULT_STRATEGIES,
-  VaultDebtsQuery,
-  VaultStrategiesQuery,
+  GET_STRATEGY_DETAILS,
+  StrategyDetailsQuery,
 } from '../graphql/queries/strategies'
-import { VaultDebt } from '@/types/vaultTypes'
+import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
 import { Strategy } from '../types/dataTypes'
 import smolAssets from '@/constants/smolAssets.json'
+import { useQueryStrategies } from '../contexts/useQueryStrategies'
 
 // import smolAssets from '@/data/smolAssets.json'
 
@@ -36,113 +35,170 @@ type SortDirection = 'asc' | 'desc'
 export default function StrategiesPanel({
   props,
 }: {
-  props: { vaultChainId: number; vaultAddress: string }
+  props: {
+    vaultChainId: number
+    vaultAddress: string
+    vaultDetails: VaultExtended
+  }
 }) {
+  console.log('welcome to the strategies panel')
   const navigate = useNavigate()
   // Destructure chainId and address from props
   const { vaultChainId, vaultAddress } = props
-  console.log('welcome to the strategies panel')
+  const selectedVaultDetails = props.vaultDetails
+  console.log('vault Details:', selectedVaultDetails)
+  const vaultStrategyAddresses = props.vaultDetails.strategies
+  console.log('vaultStrategyAddresses:', vaultStrategyAddresses)
+  const allStrategies = useQueryStrategies()
 
-  // Fetches the component strategies of the current vault
+  // Fetches data bout the component strategies of the current vault
+  // if the strategies are vaults (v3) then this gets me chainId, address, name, erc4626, v3, yearn
+  // all strategies that the current vault uses.
+  // if not vaults then it returns undefined
   const {
     data: strategyData,
-    loading: strategyLoading,
-    error: strategyError,
-  } = useQuery<{ vaultStrategies: VaultStrategiesQuery[] }>(
-    GET_VAULT_STRATEGIES,
-    {
-      variables: { vault: vaultAddress, chainId: vaultChainId },
-    }
-  )
-  // Add the current vault address to the array and
-  // Extract the "address" value from each strategy in the fetched array
-  console.log('vaultAddress:', vaultAddress)
-  const strategyAddresses = [
-    vaultAddress,
-    ...(strategyData?.vaultStrategies.map(strategy => strategy.address) || []),
-  ]
-  console.log('strategyAddresses:', strategyAddresses)
-
-  // Fetch debts data for the current vault
-  const {
-    data: debtsData,
-    loading: debtsLoading,
-    error: debtsError,
-  } = useQuery<{ vaults: VaultDebtsQuery[] }>(GET_VAULT_DEBTS, {
-    variables: { addresses: strategyAddresses, chainId: vaultChainId },
+    loading,
+    error,
+  } = useQuery<{ vaults: StrategyDetailsQuery[] }>(GET_STRATEGY_DETAILS, {
+    variables: { addresses: vaultStrategyAddresses },
   })
-  let enrichedVaultDebts: VaultDebt[] = [] // Declare enrichedVaultDebts outside the block
-  if (debtsData) {
-    const preppedDebtsData = debtsData.vaults
-    console.log('debtsData:', preppedDebtsData)
-    // Find the vault that matches the current vaultAddress
-    const selectedVault: VaultDebtsQuery | undefined = preppedDebtsData.find(
-      vault => vault.address === vaultAddress
-    )
+  const v3StrategyData = strategyData?.vaults
+  console.log('strategyData:', v3StrategyData)
 
-    if (!selectedVault) {
-      throw new Error(`Vault with address ${vaultAddress} not found.`) // Handle undefined case
+  // Get the array of strategy debts from the passed in vault data object (V2 and V3)
+  const selectedVaultDebts: VaultDebt[] = Array.isArray(
+    props.vaultDetails?.debts
+  )
+    ? (props.vaultDetails.debts as VaultDebt[])
+    : [] // Ensure debts is treated as an array
+  console.log('selectedVaultDebts:', selectedVaultDebts)
+
+  const vaultStrategyData = selectedVaultDebts.map(debt => {
+    // Map the debts object to the VaultDebt type structure
+    const mappedDebt: EnrichedVaultDebt = {
+      strategy: debt.strategy,
+      v3Debt: {
+        currentDebt: debt.currentDebt,
+        currentDebtUsd: debt.currentDebtUsd,
+        maxDebt: debt.maxDebt,
+        maxDebtUsd: debt.maxDebtUsd,
+        targetDebtRatio: debt.targetDebtRatio,
+        maxDebtRatio: debt.maxDebtRatio,
+      },
+      v2Debt: {
+        debtRatio: debt.debtRatio,
+        totalDebt: debt.totalDebt,
+        totalDebtUsd: debt.totalDebtUsd,
+        totalGain: debt.totalGain,
+        totalGainUsd: debt.totalGainUsd,
+        totalLoss: debt.totalLoss,
+        totalLossUsd: debt.totalLossUsd,
+      },
+      // Optional fields populated based on matching strategy data
+      address: debt.strategy, // Rename `strategy` to `address`
+      name: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.name || ''
+        : allStrategies.strategies.find(
+            strategy => strategy.address === debt.strategy
+          )?.name || '',
+      erc4626: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.erc4626 || false
+        : allStrategies.strategies.find(
+            strategy => strategy.address === debt.strategy
+          )?.erc4626 || false,
+      yearn: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.yearn || false
+        : allStrategies.strategies.find(
+            strategy => strategy.address === debt.strategy
+          )?.yearn || false,
+      v3: selectedVaultDetails.v3 || false,
+      managementFee: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.fees?.managementFee || 0
+        : 0, // Default to 0 for non-v3 strategies
+      performanceFee: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.fees?.performanceFee || 0
+        : allStrategies.strategies.find(
+            strategy => strategy.address === debt.strategy
+          )?.performanceFee || 0,
+      grossApr: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.apy?.grossApr
+        : allStrategies.strategies.find(
+            strategy => strategy.address === debt.strategy
+          )?.lastReportDetail?.apr.gross,
+      netApy: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.apy?.net
+        : allStrategies.strategies.find(
+            strategy => strategy.address === debt.strategy
+          )?.lastReportDetail?.apr.net,
+      inceptionNetApy: selectedVaultDetails.v3
+        ? (v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.apy?.inceptionNet ?? undefined) // Convert null to undefined
+        : undefined, // Default to undefined for non-v3 strategies
+      assetSymbol: selectedVaultDetails.v3
+        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
+            ?.asset?.symbol
+        : selectedVaultDetails?.asset.symbol,
     }
 
-    // Extract the debts array from the selected vault
-    const selectedVaultDebts: VaultDebt[] = selectedVault?.debts || []
-    console.log('vaultDebts:', selectedVaultDebts)
+    return mappedDebt // Return the mapped debt object
+  })
 
-    // Remove the selected vault from the remaining strategies
-    const remainingStrategies =
-      preppedDebtsData?.filter(vault => vault.address !== vaultAddress) || []
-    console.log('remainingStrategies:', remainingStrategies)
-
-    // Iterate through the vaultDebts array and enrich it with additional fields
-    enrichedVaultDebts = selectedVaultDebts.map(debt => {
-      // Find the matching strategy in the remaining strategies array
-      const matchingStrategy = remainingStrategies.find(
-        strategy => strategy.address === debt.strategy
-      )
-
-      return {
-        ...debt,
-        address: debt.strategy, // Rename `strategy` to `address`
-        name: matchingStrategy?.name || '',
-        erc4626: matchingStrategy?.erc4626 || undefined,
-        yearn: matchingStrategy?.yearn || undefined,
-        v3: matchingStrategy?.v3 || undefined,
-        managementFee: matchingStrategy?.fees?.managementFee || 0,
-        performanceFee: matchingStrategy?.fees?.performanceFee || 0,
-        grossApr: matchingStrategy?.apy?.grossApr,
-        netApy: matchingStrategy?.apy?.net,
-        inceptionNetApy: matchingStrategy?.apy?.inceptionNet,
-        assetSymbol: matchingStrategy?.asset?.symbol,
-      }
-    })
-  }
-  console.log('enrichedVaultDebts:', enrichedVaultDebts)
-  // Sort the enriched debts by currentDebt (convert strings to numbers)
-  const sortedVaultDebts = enrichedVaultDebts.sort(
-    (a, b) => Number(b.currentDebt) - Number(a.currentDebt)
-  )
+  // Sort the enriched debts based on the vault type (V3 or V2)
+  const sortedVaultDebts = vaultStrategyData.sort((a, b) => {
+    if (selectedVaultDetails.v3) {
+      // Sort by v3Debt.currentDebt for V3 vaults
+      return Number(b.v3Debt.currentDebt) - Number(a.v3Debt.currentDebt)
+    } else {
+      // Sort by v2Debt.debtRatio for V2 vaults
+      return Number(b.v2Debt.debtRatio) - Number(a.v2Debt.debtRatio)
+    }
+  })
   console.log('sortedDebts:', sortedVaultDebts)
 
-  // Sum currentDebtUsd values to get totalDebt
+  // Calculate total vault debt based on the vault type (V3 or V2)
   const totalVaultDebt = sortedVaultDebts.reduce(
-    (sum: number, debt: VaultDebt) => sum + Number(debt.currentDebtUsd),
+    (sum: number, debt: EnrichedVaultDebt) => {
+      if (selectedVaultDetails.v3) {
+        // Use v3Debt.currentDebtUsd for V3 vaults
+        return sum + Number(debt.v3Debt.currentDebtUsd)
+      } else {
+        // Use v2Debt.totalDebtUsd for V2 vaults
+        return sum + Number(debt.v2Debt.totalDebtUsd)
+      }
+    },
     0
   )
   console.log('totalDebt:', totalVaultDebt)
 
   // Map enrichedVaultDebts to Strategy objects
-  const strategies: Strategy[] = enrichedVaultDebts.map((debt, index) => ({
+  const strategies: Strategy[] = vaultStrategyData.map((debt, index) => ({
     id: index, // Use the index as the ID (or replace with a unique identifier if available)
     name: debt.name || 'Unknown Strategy', // Use the name from enrichedVaultDebts or a default value
     allocationPercent: totalVaultDebt
-      ? (Number(debt.currentDebtUsd) / totalVaultDebt) * 100
+      ? selectedVaultDetails.v3
+        ? (Number(debt.v3Debt.currentDebtUsd) / totalVaultDebt) * 100 // Use v3Debt.currentDebtUsd for V3 vaults
+        : (Number(debt.v2Debt.totalDebtUsd) / totalVaultDebt) * 100 // Use v2Debt.totalDebtUsd for V2 vaults
       : 0,
-    allocationAmount: debt.currentDebtUsd
-      ? debt.currentDebtUsd.toLocaleString('en-US', {
-          style: 'currency',
-          currency: 'USD',
-        })
-      : '$0.00', // Format currentDebtUsd as a currency string
+    allocationAmount: selectedVaultDetails.v3
+      ? debt.v3Debt.currentDebtUsd
+        ? debt.v3Debt.currentDebtUsd.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+          })
+        : '$0.00' // Default for V3 vaults
+      : debt.v2Debt.totalDebtUsd
+        ? debt.v2Debt.totalDebtUsd.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+          })
+        : '$0.00', // Default for V2 vaults
     estimatedAPY: debt.netApy
       ? `${(Number(debt.netApy) * 100).toFixed(2)}%`
       : '0.00%', // Format maxDebtRatio as a percentage string
@@ -155,14 +211,14 @@ export default function StrategiesPanel({
       vaultAddress: debt.address ? debt.address : '', // Use the vaultAddress from props
       managementFee: debt.managementFee || 0, // Use managementFee or a default value
       performanceFee: debt.performanceFee || 0, // Use performanceFee or a default value
-      isVault: true, // Assume it's a vault (adjust if needed)
+      isVault: debt.v3 || false, // Assume it's a vault (adjust if needed)
       isEndorsed: debt.yearn || false, // Use the yearn field to determine endorsement
     },
   }))
 
   console.log('strategies:', strategies)
 
-  const [expandedRow, setExpandedRow] = useState<number | null>(1)
+  const [expandedRow, setExpandedRow] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<string>('Strategies')
   const [sortColumn, setSortColumn] = useState<SortColumn>('allocationPercent')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -324,7 +380,7 @@ export default function StrategiesPanel({
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Strategies': {
-        if (debtsLoading || strategyLoading) {
+        if (loading) {
           return (
             <div className="flex justify-center items-center h-full">
               <p>Loading...</p>
@@ -333,14 +389,10 @@ export default function StrategiesPanel({
         }
 
         // Add error state handling
-        if (debtsError || strategyError) {
+        if (error) {
           return (
             <div className="flex justify-center items-center h-full">
-              <p className="text-red-500">
-                {debtsError?.message ||
-                  strategyError?.message ||
-                  'An error occurred.'}
-              </p>
+              <p className="text-red-500">error?.message</p>
             </div>
           )
         }

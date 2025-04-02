@@ -34,7 +34,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from '../../../../components/ui/breadcrumb'
+} from '@/components/ui/breadcrumb'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
@@ -142,7 +142,7 @@ function SingleVaultPage() {
           tvlData={transformedTvlData}
           ppsData={transformedPpsData}
         />
-        <StrategiesPanel props={{ vaultAddress, vaultChainId }} />
+        <StrategiesPanel props={{ vaultAddress, vaultChainId, vaultDetails }} />
       </div>
     </main>
   )
@@ -160,7 +160,7 @@ function hydrateMainInfoPanelData(
     'MMMM yyyy'
   )
   const vaultName = vaultData.name
-  const description = `The ${vaultName} aims to optimize for risk-adjusted yield across established lending and yield-farming markets.`
+  const description = vaultData.meta?.description || ''
 
   const vaultToken = {
     icon:
@@ -173,7 +173,7 @@ function hydrateMainInfoPanelData(
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 2,
-  }).format(vaultData.tvl.close)
+  }).format(vaultData.tvl?.close ?? 0) // Added nullish coalescing operator to handle undefined 'tvl'
 
   const network = {
     icon: CHAIN_ID_TO_ICON[vaultData.chainId],
@@ -194,7 +194,9 @@ function hydrateMainInfoPanelData(
 
   const performanceFee = vaultData?.fees?.performanceFee
     ? `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
-    : '0%' // Default to '0%' if undefined
+    : vaultData?.performanceFee
+      ? `${(vaultData.performanceFee / 100).toFixed(0)}%`
+      : '0%' // Default to '0%' if undefined
 
   const apiVersion = vaultData?.apiVersion || 'N/A' // Default to 'N/A' if undefined
 

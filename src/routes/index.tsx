@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { YearnVaultsSummary } from '../components/YearnVaultsSummary'
 import VaultsList from '../components/VaultsList'
 import { useVaults } from '@/contexts/useVaults'
 import { Vault } from '@/types/vaultTypes'
@@ -32,7 +31,6 @@ export default function AllVaultsPage() {
   return (
     <main className="flex-1 container pt-0 pb-0">
       <div className="space-y-0">
-        <YearnVaultsSummary vaults={retrievedVaults} />
         <VaultsList vaults={retrievedVaults} />
       </div>
     </main>

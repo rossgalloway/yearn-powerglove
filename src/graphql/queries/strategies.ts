@@ -5,24 +5,71 @@ export type VaultStrategiesQuery = {
   chainId: number
   address: string
   name: string
+  performanceFee: number
+  symbol: string
   erc4626: boolean
   v3: boolean
   yearn: boolean
+  apiVersion: string
+  lastReport: number
+  lastReportDetail: {
+    apr: {
+      net: number
+      gross: number
+    }
+    profit: number
+    loss: number
+    lossUsd: number
+    profitUsd: number
+  }
 }
 
+// this query will get all the strategies for a vault
 export const GET_VAULT_STRATEGIES = gql`
   query VaultStrategies($chainId: Int, $vault: String) {
     vaultStrategies(chainId: $chainId, vault: $vault) {
       chainId
       address
       name
+      symbol
+      performanceFee
+      erc4626
+      v3
+      yearn
+      apiVersion
+      lastReport
+      lastReportDetail {
+        apr {
+          net
+          gross
+        }
+        profit
+        loss
+        lossUsd
+        profitUsd
+      }
+    }
+  }
+`
+// This gets all strategies that are registered
+export const GET_STRATEGIES = gql`
+  query Query {
+    strategies {
+      chainId
+      address
+      name
+      symbol
+      performanceFee
       erc4626
       v3
       yearn
     }
   }
 `
-
+/**
+ * v3 vaults use the first 7 fields in the debts section
+ * v2 vaults use the last 7 fields in the debts section
+ */
 export type VaultDebtsQuery = {
   chainId: number
   address: string
@@ -38,6 +85,13 @@ export type VaultDebtsQuery = {
     maxDebtUsd: number
     targetDebtRatio: string
     maxDebtRatio: string
+    DebtRatio: number
+    totalDebt: number
+    totalDebtUsd: number
+    totalGain: number
+    totalGainUsd: number
+    totalLoss: number
+    totalLossUsd: number
   }[]
   apy: {
     grossApr: number
@@ -71,6 +125,13 @@ export const GET_VAULT_DEBTS = gql`
         maxDebtUsd
         targetDebtRatio
         maxDebtRatio
+        debtRatio
+        totalDebt
+        totalDebtUsd
+        totalGain
+        totalGainUsd
+        totalLoss
+        totalLossUsd
       }
       apy {
         grossApr
@@ -90,7 +151,12 @@ export const GET_VAULT_DEBTS = gql`
 `
 
 export type StrategyDetailsQuery = {
+  chainId: number
   address: string
+  name: string
+  asset: {
+    symbol: string
+  }
   apy: {
     grossApr: number
     net: number
@@ -101,12 +167,20 @@ export type StrategyDetailsQuery = {
     performanceFee: number
   }
   apiVersion: string
+  erc4626: boolean
+  v3: boolean
+  yearn: boolean
 }
 
 export const GET_STRATEGY_DETAILS = gql`
   query Vaults($addresses: [String]) {
     vaults(addresses: $addresses) {
+      chainId
       address
+      name
+      asset {
+        symbol
+      }
       apy {
         grossApr
         net
@@ -117,6 +191,9 @@ export const GET_STRATEGY_DETAILS = gql`
         performanceFee
       }
       apiVersion
+      erc4626
+      v3
+      yearn
     }
   }
 `

@@ -110,11 +110,24 @@ export const GET_VAULT_DETAILS = gql`
         managementFee
         performanceFee
       }
+      managementFee
+      performanceFee
       strategies
       debts {
         strategy
         currentDebt
         currentDebtUsd
+        maxDebt
+        maxDebtUsd
+        targetDebtRatio
+        maxDebtRatio
+        debtRatio
+        totalDebt
+        totalDebtUsd
+        totalGain
+        totalGainUsd
+        totalLoss
+        totalLossUsd
       }
       decimals
       governance

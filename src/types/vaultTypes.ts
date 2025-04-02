@@ -10,24 +10,27 @@ export type VaultSimple = {
     decimals: number
     address: string
   }
-  apiVersion: string
+  apiVersion?: string
   pricePerShare: number
-  apy: {
+  apy?: {
     grossApr: number
     net: number
     inceptionNet: number
   }
-  tvl: {
+  tvl?: {
     close: number
   }
-  vaultType: string
-  yearn: boolean
-  v3: boolean
-  erc4626: boolean
+  vaultType?: string
+  yearn?: boolean
+  v3?: boolean
+  erc4626?: boolean
+  liquidLocker?: boolean
   fees: {
     managementFee: number
     performanceFee: number
   }
+  managementFee: number
+  performanceFee: number
 }
 
 export type Vault = VaultSimple &
@@ -43,6 +46,17 @@ export type Vault = VaultSimple &
       strategy: string
       currentDebt: string
       currentDebtUsd: number
+      maxDebt: string
+      maxDebtUsd: number
+      targetDebtRatio: string
+      maxDebtRatio: string
+      DebtRatio: number
+      totalDebt: number
+      totalDebtUsd: number
+      totalGain: number
+      totalGainUsd: number
+      totalLoss: number
+      totalLossUsd: number
     }
   }>
 
@@ -78,6 +92,34 @@ export type VaultDebt = {
   maxDebtUsd: number
   targetDebtRatio: string
   maxDebtRatio: string
+  debtRatio: number
+  totalDebt: number
+  totalDebtUsd: number
+  totalGain: number
+  totalGainUsd: number
+  totalLoss: number
+  totalLossUsd: number
+}
+
+export type EnrichedVaultDebt = {
+  strategy: string
+  v3Debt: {
+    currentDebt: string
+    currentDebtUsd: number
+    maxDebt: string
+    maxDebtUsd: number
+    targetDebtRatio: string
+    maxDebtRatio: string
+  }
+  v2Debt: {
+    debtRatio: number
+    totalDebt: number
+    totalDebtUsd: number
+    totalGain: number
+    totalGainUsd: number
+    totalLoss: number
+    totalLossUsd: number
+  }
   address?: string
   name?: string
   erc4626?: boolean

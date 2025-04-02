@@ -5,10 +5,10 @@ import { Vault } from '@/types/vaultTypes'
 import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
-  VAULT_TYPE_TO_NAME,
   getChainIdByName,
 } from '@/constants/chains'
 import smolAssets from '@/constants/smolAssets.json'
+import { YearnVaultsSummary } from './YearnVaultsSummary'
 
 interface VaultListData {
   id: string
@@ -28,6 +28,8 @@ type SortDirection = 'asc' | 'desc'
 export default function VaultsList({ vaults }: { vaults: Vault[] }) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [isImageLoaded, setIsImageLoaded] = useState(false) // Added state to track image load status
+  const [selectedType, setSelectedType] = useState<string>('') // Track the selected type
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({
     name: '',
     chain: '',
@@ -43,6 +45,14 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
 
   const navigate = useNavigate()
 
+  const vaultTypes: Record<string, string> = {
+    1: 'V3 Allocator Vault',
+    2: 'V3 Strategy Vault',
+    3: 'V2 Factory Vault',
+    4: 'V2 Legacy Vault',
+  }
+  const chainOptions = Object.values(CHAIN_ID_TO_NAME)
+
   // Map the Vault array to VaultListData format
   const vaultListData: VaultListData[] = vaults.map(vault => ({
     id: vault.address, // Use the vault's address as a unique ID
@@ -53,9 +63,14 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
     tokenUri:
       smolAssets.tokens.find(token => token.symbol === vault.asset.symbol)
         ?.logoURI || '',
-    type: `${VAULT_TYPE_TO_NAME[Number(vault.vaultType)]}`,
-    APY: `${(vault.apy.net * 100).toFixed(2)}%`, // Renamed to match the VaultListData interface
-    tvl: `$${vault.tvl.close.toLocaleString(undefined, {
+    type: vault.apiVersion?.startsWith('3') // Safely check if apiVersion exists
+      ? `${vaultTypes[Number(vault.vaultType)]}`
+      : vault.name.includes('Factory')
+        ? `${vaultTypes[3]}` // "V2 Factory Vault"
+        : `${vaultTypes[4]}`, // "V2 Legacy Vault"
+    APY: `${((vault.apy?.net ?? 0) * 100).toFixed(2)}%`, // Added nullish coalescing to handle undefined 'vault.apy'
+    tvl: `$${vault.tvl?.close?.toLocaleString(undefined, {
+      // Added optional chaining to handle undefined 'vault.tvl'
       minimumFractionDigits: 2, // modified to display 2 decimals
       maximumFractionDigits: 2,
     })}`,
@@ -146,142 +161,213 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
     { label: 'TVL', key: 'tvl' },
   ]
 
+  // Function to update the "Type" filter
+  const handleTypeFilterChange = (type: string) => {
+    setSelectedType(type) // Update the selected type
+    setSearchTerms(prev => ({ ...prev, type })) // Update the search terms
+  }
+
   return (
-    <div className="border rounded text-sm overflow-hidden bg-white">
-      {/* Headers Row */}
-      <div className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b">
-        {headers.map(({ label, key }) => (
-          <div
-            key={key}
-            className={`${
-              key === 'name'
-                ? 'flex-[2] cursor-pointer select-none flex items-center gap-1 justify-start'
-                : 'flex-1 cursor-pointer select-none flex items-center gap-1 justify-end'
-            }`}
-            onClick={() => handleSort(key)}
-          >
-            {label}
-            {renderSortIcon(key)}
-          </div>
-        ))}
-      </div>
+    <div>
+      <YearnVaultsSummary
+        vaults={vaults}
+        selectedType={selectedType} // Pass the selected type
+        onTypeFilterChange={handleTypeFilterChange}
+      />
 
-      {/* Search Bar Row */}
-      <div className="flex px-.05 py-.05 gap-0.5 bg-gray-100 text-gray-900 border-b">
-        {headers.map(({ key }) => (
-          <div
-            key={key}
-            className={`${
-              key === 'name'
-                ? 'flex-[2] flex items-center gap-1 justify-start'
-                : 'flex-1 flex items-center gap-1 justify-end'
-            }`}
-          >
-            {key === 'APY' || key === 'tvl' ? (
-              // APY and TVL: Range filter with "greater than" and "less than" inputs
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  placeholder={key === 'APY' ? 'Min %' : 'Min $'} // Dynamic placeholder
-                  value={
-                    rangeFilters[key].min
-                      ? key === 'APY'
-                        ? `${rangeFilters[key].min}%` // Append % for APY
-                        : `$${rangeFilters[key].min}` // Prepend $ for TVL
-                      : '' // Empty if no value
-                  }
-                  onChange={e => {
-                    const rawValue = e.target.value.replace(/[$%]/g, '') // Remove $ or % from input
-                    if (!isNaN(Number(rawValue))) {
-                      setRangeFilters(prev => ({
-                        ...prev,
-                        [key]: { ...prev[key], min: rawValue }, // Update state with raw numeric value
-                      }))
-                    }
-                  }}
-                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none"
-                />
-                <input
-                  type="text"
-                  placeholder={key === 'APY' ? 'Max %' : 'Max $'} // Dynamic placeholder
-                  value={
-                    rangeFilters[key].max
-                      ? key === 'APY'
-                        ? `${rangeFilters[key].max}%` // Append % for APY
-                        : `$${rangeFilters[key].max}` // Prepend $ for TVL
-                      : '' // Empty if no value
-                  }
-                  onChange={e => {
-                    const rawValue = e.target.value.replace(/[$%]/g, '') // Remove $ or % from input
-                    if (!isNaN(Number(rawValue))) {
-                      setRangeFilters(prev => ({
-                        ...prev,
-                        [key]: { ...prev[key], max: rawValue }, // Update state with raw numeric value
-                      }))
-                    }
-                  }}
-                  className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none"
-                />
-              </div>
-            ) : (
-              // Default search input for other columns
-              <input
-                type="text"
-                placeholder={`Search ${key}`}
-                value={searchTerms[key] || ''}
-                onChange={e =>
-                  setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
-                }
-                className={`w-full border border-gray-300 rounded px-2 py-1 text-sm ${
-                  key === 'name' ? 'text-left' : 'text-right'
-                }`}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Rows */}
-      {filteredVaults.map(vault => (
-        <div
-          key={vault.id}
-          className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
-          onClick={() =>
-            navigate({
-              to: `/vaults/${getChainIdByName(vault.chain)}/${vault.id}`,
-            })
-          }
-        >
-          <div className="flex-[2] text-left">{vault.name}</div>
-          <div className="flex-1 flex justify-end items-center gap-2">
-            {vault.chain}
-            {vault.chainIconUri ? (
-              <img
-                src={vault.chainIconUri}
-                alt={vault.chain}
-                className="w-6 h-6"
-              />
-            ) : (
-              <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                ?
-              </div>
-            )}
-          </div>
-          <div className="flex-1 flex justify-end items-center gap-2">
-            {vault.token}
-            {vault.tokenUri ? (
-              <img src={vault.tokenUri} alt={vault.token} className="w-6 h-6" />
-            ) : (
-              <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                ?
-              </div>
-            )}
-          </div>
-          <div className="flex-1 text-right">{vault.type}</div>
-          <div className="flex-1 text-right">{vault.APY}</div>
-          <div className="flex-1 text-right">{vault.tvl}</div>
+      {/* Vaults List */}
+      <div className="border rounded text-sm overflow-hidden bg-white">
+        {/* Headers Row */}
+        <div className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b">
+          {headers.map(({ label, key }) => (
+            <div
+              key={key}
+              className={`${
+                key === 'name'
+                  ? 'flex-[2] cursor-pointer select-none flex items-center gap-1 justify-start'
+                  : 'flex-1 cursor-pointer select-none flex items-center gap-1 justify-end'
+              }`}
+              onClick={() => handleSort(key)}
+            >
+              {label}
+              {renderSortIcon(key)}
+            </div>
+          ))}
         </div>
-      ))}
+
+        {/* Search Bar Row */}
+        <div className="flex px-.05 py-.05 gap-0.5 bg-white text-gray-900 border-b">
+          {headers.map(({ key }) => (
+            <div
+              key={key}
+              className={`${
+                key === 'name'
+                  ? 'flex-[2] flex items-center gap-1 justify-start'
+                  : 'flex-1 flex items-center gap-1 justify-end'
+              }`}
+            >
+              {key === 'APY' || key === 'tvl' ? (
+                // APY and TVL: Range filter with "greater than" and "less than" inputs
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    placeholder={key === 'APY' ? 'Min %' : 'Min $'} // Dynamic placeholder
+                    value={
+                      rangeFilters[key].min
+                        ? key === 'APY'
+                          ? `${rangeFilters[key].min}%` // Append % for APY
+                          : `$${rangeFilters[key].min}` // Prepend $ for TVL
+                        : '' // Empty if no value
+                    }
+                    onChange={e => {
+                      const rawValue = e.target.value.replace(/[$%]/g, '') // Remove $ or % from input
+                      if (!isNaN(Number(rawValue))) {
+                        setRangeFilters(prev => ({
+                          ...prev,
+                          [key]: { ...prev[key], min: rawValue }, // Update state with raw numeric value
+                        }))
+                      }
+                    }}
+                    className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none text-gray-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder={key === 'APY' ? 'Max %' : 'Max $'} // Dynamic placeholder
+                    value={
+                      rangeFilters[key].max
+                        ? key === 'APY'
+                          ? `${rangeFilters[key].max}%` // Append % for APY
+                          : `$${rangeFilters[key].max}` // Prepend $ for TVL
+                        : '' // Empty if no value
+                    }
+                    onChange={e => {
+                      const rawValue = e.target.value.replace(/[$%]/g, '') // Remove $ or % from input
+                      if (!isNaN(Number(rawValue))) {
+                        setRangeFilters(prev => ({
+                          ...prev,
+                          [key]: { ...prev[key], max: rawValue }, // Update state with raw numeric value
+                        }))
+                      }
+                    }}
+                    className="w-1/2 border border-gray-300 rounded px-2 py-1 text-sm text-right appearance-none text-gray-500"
+                  />
+                </div>
+              ) : key === 'type' ? (
+                <select
+                  value={searchTerms[key] || ''}
+                  onChange={e => {
+                    const selectedValue = e.target.value
+                    setSearchTerms(prev => ({ ...prev, [key]: selectedValue }))
+                    handleTypeFilterChange(selectedValue) // Update the selected type state
+                  }}
+                  className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
+                >
+                  <option value="">All Types</option>
+                  {Object.values(vaultTypes).map(option => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : key === 'chain' ? (
+                <select
+                  value={searchTerms[key] || ''}
+                  onChange={e =>
+                    setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
+                  }
+                  className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
+                >
+                  <option value="">All Chains</option>
+                  {chainOptions.map(option => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                // Default search input for other columns
+                <input
+                  type="text"
+                  placeholder={`Search ${key}`}
+                  value={searchTerms[key] || ''}
+                  onChange={e =>
+                    setSearchTerms(prev => ({ ...prev, [key]: e.target.value }))
+                  }
+                  className={`w-full border border-gray-300 rounded px-2 py-1 text-sm text-gray-500 ${
+                    key === 'name' ? 'text-left' : 'text-right'
+                  }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Rows */}
+        {filteredVaults.map(vault => (
+          <div
+            key={vault.id}
+            className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
+            onClick={() =>
+              navigate({
+                to: `/vaults/${getChainIdByName(vault.chain)}/${vault.id}`,
+              })
+            }
+          >
+            <div className="flex-[2] text-left">{vault.name}</div>
+            <div className="flex-1 flex justify-end items-center gap-2">
+              {vault.chain}
+              {vault.chainIconUri ? (
+                <div className="w-6 h-6 relative">
+                  {/* Pulsing circle placeholder */}
+                  <div
+                    className={`absolute inset-0 bg-gray-300 rounded-full animate-pulse ${
+                      isImageLoaded ? 'hidden' : 'block'
+                    }`}
+                  ></div>
+                  <img
+                    src={vault.chainIconUri}
+                    alt={vault.chain}
+                    className={`w-6 h-6 ${isImageLoaded ? 'block' : 'hidden'}`}
+                    onLoad={() => setIsImageLoaded(true)} // Set loading state to true when the image loads
+                    onError={() => setIsImageLoaded(false)} // Keep the pulsing circle visible if the image fails to load
+                  />
+                </div>
+              ) : (
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
+                  ?
+                </div> // Pulsing grey circle as fallback
+              )}
+            </div>
+            <div className="flex-1 flex justify-end items-center gap-2">
+              {vault.token}
+              {vault.tokenUri ? (
+                <div className="w-6 h-6 relative">
+                  {/* Pulsing circle placeholder */}
+                  <div
+                    className={`absolute inset-0 bg-gray-300 rounded-full animate-pulse ${
+                      isImageLoaded ? 'hidden' : 'block'
+                    }`}
+                  ></div>
+                  <img
+                    src={vault.tokenUri}
+                    alt={vault.token}
+                    className={`w-6 h-6 ${isImageLoaded ? 'block' : 'hidden'}`}
+                    onLoad={() => setIsImageLoaded(true)} // Set loading state to true when the image loads
+                    onError={() => setIsImageLoaded(false)} // Keep the pulsing circle visible if the image fails to load
+                  />
+                </div>
+              ) : (
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full ">
+                  ❓
+                </div> // Pulsing grey circle as fallback
+              )}
+            </div>
+            <div className="flex-1 text-right">{vault.type}</div>
+            <div className="flex-1 text-right">{vault.APY}</div>
+            <div className="flex-1 text-right">{vault.tvl}</div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
