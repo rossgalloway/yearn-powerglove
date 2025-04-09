@@ -21,7 +21,7 @@ export function VaultsProvider({ children }: { children: React.ReactNode }) {
   const error = apolloError || apolloError2 || null
   const vaults = vaultsData?.vaults || []
   const strategies = strategiesData?.strategies || []
-  const filteredVaults = filters.filterYearnVaults(vaults)
+  const filteredVaults = filters.filterNotYearnV3Vaults(vaults)
 
   return (
     <VaultsContext.Provider value={{ vaults: filteredVaults, loading, error }}>
