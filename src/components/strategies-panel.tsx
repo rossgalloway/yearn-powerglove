@@ -782,24 +782,24 @@ export default function StrategiesPanel({
           </div>
         )
       }
-      case 'Info':
-        return (
-          <div className="p-8">
-            <h2 className="text-xl font-semibold mb-4">Info</h2>
-            <p className="text-[#4f4f4f]">
-              Additional information and details about the investment strategy.
-            </p>
-          </div>
-        )
-      case 'Risk':
-        return (
-          <div className="p-8">
-            <h2 className="text-xl font-semibold mb-4">Risk</h2>
-            <p className="text-[#4f4f4f]">
-              Risk assessment and considerations for this investment strategy.
-            </p>
-          </div>
-        )
+      // case 'Info':
+      //   return (
+      //     <div className="p-8">
+      //       <h2 className="text-xl font-semibold mb-4">Info</h2>
+      //       <p className="text-[#4f4f4f]">
+      //         Additional information and details about the investment strategy.
+      //       </p>
+      //     </div>
+      //   )
+      // case 'Risk':
+      //   return (
+      //     <div className="p-8">
+      //       <h2 className="text-xl font-semibold mb-4">Risk</h2>
+      //       <p className="text-[#4f4f4f]">
+      //         Risk assessment and considerations for this investment strategy.
+      //       </p>
+      //     </div>
+      //   )
       default:
         return null
     }
@@ -810,7 +810,8 @@ export default function StrategiesPanel({
       <div className="w-full mx-auto bg-white border-x border-b-0 border-border">
         {/* Tab Navigation */}
         <div className="flex items-center border-b border-border">
-          {['Strategies', 'Info', 'Risk'].map(tab => (
+          {/*{['Strategies', 'Info', 'Risk'].map(tab => (*/}
+          {['Strategies'].map(tab => (
             <div
               key={tab}
               className={cn(
