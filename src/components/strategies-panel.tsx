@@ -56,14 +56,16 @@ export default function StrategiesPanel({
   // if the strategies are vaults (v3) then this gets me chainId, address, name, erc4626, v3, yearn
   // all strategies that the current vault uses.
   // if not vaults then it returns undefined
+  const shouldFetch = vaultStrategyAddresses != null
   const {
     data: strategyData,
     loading,
     error,
   } = useQuery<{ vaults: StrategyDetailsQuery[] }>(GET_STRATEGY_DETAILS, {
     variables: { addresses: vaultStrategyAddresses },
+    skip: !shouldFetch,
   })
-  const v3StrategyData = strategyData?.vaults
+  const v3StrategyData = shouldFetch ? strategyData?.vaults : undefined
   console.log('strategyData:', v3StrategyData)
 
   // Get the array of strategy debts from the passed in vault data object (V2 and V3)
