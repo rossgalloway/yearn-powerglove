@@ -44,7 +44,9 @@ export default function StrategiesPanel({
   console.log('welcome to the strategies panel')
   const navigate = useNavigate()
   // Destructure chainId and address from props
-  console.log('props:', props)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('props:', props)
+  }
   const { vaultChainId, vaultAddress } = props
   const selectedVaultDetails = props.vaultDetails
   console.log('vault Details:', selectedVaultDetails)
