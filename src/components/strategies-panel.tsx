@@ -44,6 +44,7 @@ export default function StrategiesPanel({
   console.log('welcome to the strategies panel')
   const navigate = useNavigate()
   // Destructure chainId and address from props
+  console.log('props:', props)
   const { vaultChainId, vaultAddress } = props
   const selectedVaultDetails = props.vaultDetails
   console.log('vault Details:', selectedVaultDetails)
@@ -51,7 +52,7 @@ export default function StrategiesPanel({
   console.log('vaultStrategyAddresses:', vaultStrategyAddresses)
   const allStrategies = useQueryStrategies()
 
-  // Fetches data bout the component strategies of the current vault
+  // Fetches data about the component strategies of the current vault
   // if the strategies are vaults (v3) then this gets me chainId, address, name, erc4626, v3, yearn
   // all strategies that the current vault uses.
   // if not vaults then it returns undefined
@@ -392,7 +393,7 @@ export default function StrategiesPanel({
         if (error) {
           return (
             <div className="flex justify-center items-center h-full">
-              <p className="text-red-500">error?.message</p>
+              <p className="text-red-500">{error?.message}</p>
             </div>
           )
         }
