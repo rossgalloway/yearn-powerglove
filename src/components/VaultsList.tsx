@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { Vault } from '@/types/vaultTypes'
+import { TokenAsset } from '@/types/tokenAsset'
 import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
   getChainIdByName,
 } from '@/constants/chains'
-import smolAssets from '@/constants/smolAssets.json'
 import { YearnVaultsSummary } from './YearnVaultsSummary'
 
 interface VaultListData {
@@ -25,7 +25,13 @@ interface VaultListData {
 type SortColumn = keyof VaultListData
 type SortDirection = 'asc' | 'desc'
 
-export default function VaultsList({ vaults }: { vaults: Vault[] }) {
+export default function VaultsList({
+  vaults,
+  tokenAssets,
+}: {
+  vaults: Vault[]
+  tokenAssets: TokenAsset[]
+}) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [isImageLoaded, setIsImageLoaded] = useState(false) // Added state to track image load status
@@ -61,7 +67,7 @@ export default function VaultsList({ vaults }: { vaults: Vault[] }) {
     chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
     token: vault.asset.symbol,
     tokenUri:
-      smolAssets.tokens.find(token => token.symbol === vault.asset.symbol)
+      tokenAssets.find(token => token.symbol === vault.asset.symbol)
         ?.logoURI || '',
     type: vault.apiVersion?.startsWith('3') // Safely check if apiVersion exists
       ? `${vaultTypes[Number(vault.vaultType)]}`

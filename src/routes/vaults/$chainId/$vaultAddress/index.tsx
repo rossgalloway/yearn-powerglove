@@ -6,7 +6,6 @@ import { MainInfoPanel } from '@/components/main-info-panel'
 import { ChartsPanel } from '@/components/charts-panel'
 import StrategiesPanel from '@/components/strategies-panel'
 import { format } from 'date-fns'
-import smolAssets from '@/constants/smolAssets.json'
 import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
@@ -35,11 +34,13 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb'
+import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
+import { TokenAsset } from '@/types/tokenAsset'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
   const vaultChainId = Number(chainId)
-
+  const { assets: tokenAssets } = useTokenAssetsContext()
   // Fetch vault details
   const {
     data: vaultData,
@@ -113,7 +114,7 @@ function SingleVaultPage() {
       throw new Error('Vault data is undefined')
     })() // Ensure vaultData?.vault is not undefined
   console.log('vaultDetails:', vaultDetails)
-  const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails)
+  const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails, tokenAssets)
   const apyDataClean = apyData.timeseries || {}
   const tvlDataClean = tvlData.timeseries || {}
   const ppsDataClean = ppsData.timeseries || {}
@@ -153,7 +154,8 @@ export const Route = createFileRoute('/vaults/$chainId/$vaultAddress/')({
 })
 
 function hydrateMainInfoPanelData(
-  vaultData: VaultExtended
+  vaultData: VaultExtended,
+  tokenAssets: TokenAsset[]
 ): MainInfoPanelProps {
   const deploymentDate = format(
     new Date(parseInt(vaultData.inceptTime) * 1000),
@@ -164,7 +166,7 @@ function hydrateMainInfoPanelData(
 
   const vaultToken = {
     icon:
-      smolAssets.tokens.find(token => token.symbol === vaultData.asset.symbol)
+      tokenAssets.find(token => token.symbol === vaultData.asset.symbol)
         ?.logoURI || '',
     name: vaultData.asset.symbol,
   }

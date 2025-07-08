@@ -16,13 +16,11 @@ import { useQuery } from '@apollo/client'
 import {
   GET_STRATEGY_DETAILS,
   StrategyDetailsQuery,
-} from '../graphql/queries/strategies'
+} from '@/graphql/queries/strategies'
 import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
-import { Strategy } from '../types/dataTypes'
-import smolAssets from '@/constants/smolAssets.json'
-import { useQueryStrategies } from '../contexts/useQueryStrategies'
-
-// import smolAssets from '@/data/smolAssets.json'
+import { Strategy } from '@/types/dataTypes'
+import { useQueryStrategies } from '@/contexts/useQueryStrategies'
+import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 
 // Define sort column types
 type SortColumn =
@@ -41,17 +39,14 @@ export default function StrategiesPanel({
     vaultDetails: VaultExtended
   }
 }) {
-  console.log('welcome to the strategies panel')
   const navigate = useNavigate()
-  // Destructure chainId and address from props
+  const { assets: tokenAssets } = useTokenAssetsContext()
   if (import.meta.env.MODE === 'development') {
     console.log('props:', props)
   }
-  const { vaultChainId, vaultAddress } = props
+  const { vaultChainId } = props
   const selectedVaultDetails = props.vaultDetails
-  console.log('vault Details:', selectedVaultDetails)
   const vaultStrategyAddresses = props.vaultDetails.strategies
-  console.log('vaultStrategyAddresses:', vaultStrategyAddresses)
   const allStrategies = useQueryStrategies()
 
   // Fetches data about the component strategies of the current vault
@@ -209,8 +204,8 @@ export default function StrategiesPanel({
       : '0.00%', // Format maxDebtRatio as a percentage string
     tokenSymbol: debt.assetSymbol || '', // Use the asset symbol from enrichedVaultDebts or a default value
     tokenIconUri:
-      smolAssets.tokens.find(token => token.symbol === debt.assetSymbol)
-        ?.logoURI || '',
+      tokenAssets.find(token => token.symbol === debt.assetSymbol)?.logoURI ||
+      '',
     details: {
       chainId: vaultChainId, // Use the chainId from props
       vaultAddress: debt.address ? debt.address : '', // Use the vaultAddress from props
@@ -335,6 +330,7 @@ export default function StrategiesPanel({
   ]
 
   // Custom tooltip component for the charts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
