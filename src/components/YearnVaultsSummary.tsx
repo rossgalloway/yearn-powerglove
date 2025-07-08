@@ -10,7 +10,7 @@ export function YearnVaultsSummary({
   selectedType: string
   onTypeFilterChange: (type: string) => void
 }) {
-  const [isOpen, setIsOpen] = useState(true) // State to control tray visibility
+  const [isOpen, setIsOpen] = useState(false) // State to control tray visibility
 
   const vaultTypes = {
     'V3 Allocator Vaults': 'V3 Allocator Vault',
