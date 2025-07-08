@@ -1,4 +1,4 @@
-export type ChainId = 1 | 10 | 100 | 137 | 250 | 8453 | 42161
+export type ChainId = 1 | 10 | 100 | 137 | 250 | 8453 | 42161 | 747474
 
 export const CHAIN_ID_TO_NAME: Record<number, string> = {
   1: 'Ethereum',
@@ -8,6 +8,7 @@ export const CHAIN_ID_TO_NAME: Record<number, string> = {
   250: 'Fantom',
   8453: 'Base',
   42161: 'Arbitrum',
+  747474: 'Katana',
 }
 
 export function getChainIdByName(name: string): number | undefined {
@@ -25,6 +26,7 @@ export const CHAIN_ID_TO_ICON: Record<number, string> = {
   250: 'https://assets.smold.app/api/chains/250/logo-32.png',
   8453: 'https://assets.smold.app/api/chains/8453/logo-32.png',
   42161: 'https://assets.smold.app/api/chains/42161/logo-32.png',
+  747474: 'https://assets.smold.app/api/chains/747474/logo-32.png',
 }
 
 export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<number, string> = {
@@ -35,6 +37,7 @@ export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<number, string> = {
   250: 'https://ftmscan.com',
   8453: 'https://basescan.org/',
   42161: 'https://arbiscan.io',
+  747474: 'https://explorer.katanarpc.com/',
 }
 
 export const VAULT_TYPE_TO_NAME: Record<string, string> = {
