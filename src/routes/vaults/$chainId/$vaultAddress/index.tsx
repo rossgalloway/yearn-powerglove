@@ -95,11 +95,35 @@ function SingleVaultPage() {
 
   // Handle loading states
   if (vaultLoading || apyLoading || tvlLoading || ppsLoading) {
-    return (
-      <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-        <YearnLoader />
-      </div>
-    )
+    // Inline loading states for each query
+    if (vaultLoading) {
+      return (
+        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+          <YearnLoader loadingState="loading selected vault" />
+        </div>
+      )
+    }
+    if (apyLoading) {
+      return (
+        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+          <YearnLoader loadingState="loading APY data" />
+        </div>
+      )
+    }
+    if (tvlLoading) {
+      return (
+        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+          <YearnLoader loadingState="loading TVL data" />
+        </div>
+      )
+    }
+    if (ppsLoading) {
+      return (
+        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+          <YearnLoader loadingState="loading PPS data" />
+        </div>
+      )
+    }
   }
 
   // Handle errors
@@ -113,7 +137,6 @@ function SingleVaultPage() {
     (() => {
       throw new Error('Vault data is undefined')
     })() // Ensure vaultData?.vault is not undefined
-  console.log('vaultDetails:', vaultDetails)
   const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails, tokenAssets)
   const apyDataClean = apyData.timeseries || {}
   const tvlDataClean = tvlData.timeseries || {}

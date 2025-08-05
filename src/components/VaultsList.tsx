@@ -56,6 +56,7 @@ export default function VaultsList({
     2: 'V3 Strategy Vault',
     3: 'V2 Factory Vault',
     4: 'V2 Legacy Vault',
+    5: 'External Vault',
   }
   const chainOptions = Object.values(CHAIN_ID_TO_NAME)
 
@@ -67,13 +68,16 @@ export default function VaultsList({
     chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
     token: vault.asset.symbol,
     tokenUri:
-      tokenAssets.find(token => token.symbol === vault.asset.symbol)
-        ?.logoURI || '',
-    type: vault.apiVersion?.startsWith('3') // Safely check if apiVersion exists
+      tokenAssets.find(token => token.symbol === vault.asset.symbol)?.logoURI ||
+      '',
+    // Modified vault type logic per user request
+    type: vault.apiVersion?.startsWith('3')
       ? `${vaultTypes[Number(vault.vaultType)]}`
-      : vault.name.includes('Factory')
-        ? `${vaultTypes[3]}` // "V2 Factory Vault"
-        : `${vaultTypes[4]}`, // "V2 Legacy Vault"
+      : vault.apiVersion?.startsWith('0')
+        ? vault.name.includes('Factory')
+          ? `${vaultTypes[3]}` // V2 Factory Vault
+          : `${vaultTypes[4]}` // V2 Legacy Vault
+        : `${vaultTypes[5]}`,
     APY: `${((vault.apy?.net ?? 0) * 100).toFixed(2)}%`, // Added nullish coalescing to handle undefined 'vault.apy'
     tvl: `$${vault.tvl?.close?.toLocaleString(undefined, {
       // Added optional chaining to handle undefined 'vault.tvl'
@@ -91,19 +95,25 @@ export default function VaultsList({
     }
   }
 
+  // Improved sorting logic to handle NaN values
   const sortedVaults = [...vaultListData].sort((a, b) => {
     const compare = (valA: string | number, valB: string | number) => {
       if (sortColumn === 'tvl') {
-        // Remove $ and commas, then convert to number for proper numeric sort
         const numA = parseFloat(String(valA).replace(/[$,]/g, ''))
         const numB = parseFloat(String(valB).replace(/[$,]/g, ''))
+        // Handle NaN values so they sort to the end
+        if (isNaN(numA) && isNaN(numB)) return 0
+        if (isNaN(numA)) return 1
+        if (isNaN(numB)) return -1
         return numA - numB
       }
       if (sortColumn === 'APY') {
-        // fixed to match the correct key in VaultListData
-        // Remove $ and commas, then convert to number for proper numeric sort
         const numA = parseFloat(String(valA).replace(/[%]/g, ''))
         const numB = parseFloat(String(valB).replace(/[%]/g, ''))
+        // Handle NaN values so they sort to the end
+        if (isNaN(numA) && isNaN(numB)) return 0
+        if (isNaN(numA)) return 1
+        if (isNaN(numB)) return -1
         return numA - numB
       }
       // Default string/number comparison for other columns
@@ -311,7 +321,7 @@ export default function VaultsList({
         {/* Rows */}
         {filteredVaults.map(vault => (
           <div
-            key={vault.id}
+            key={`${vault.chain}-${vault.id}`}
             className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
             onClick={() =>
               navigate({
