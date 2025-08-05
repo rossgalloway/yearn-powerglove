@@ -17,11 +17,20 @@ export default function AllVaultsPage() {
   const retrievedVaults: Vault[] = vaults || []
 
   if (loading || assetsLoading) {
-    return (
-      <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-        <YearnLoader />
-      </main>
-    )
+    if (loading) {
+      return (
+        <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+          <YearnLoader loadingState="loading vaults" />
+        </main>
+      )
+    }
+    if (assetsLoading) {
+      return (
+        <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+          <YearnLoader loadingState="loading assets" />
+        </main>
+      )
+    }
   }
 
   if (error || assetsError) {
