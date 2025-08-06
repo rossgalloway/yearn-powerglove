@@ -29,3 +29,12 @@ dist-ssr
 # Other misc
 /src/data
 
+# TypeScript build info (incremental compilation cache)
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
+
+# Compiled config files (keep only .ts versions)
+vite.config.js
+vite.config.d.ts
+
