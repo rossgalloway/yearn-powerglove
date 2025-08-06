@@ -40,6 +40,12 @@ export interface Timeseries {
   pps: TimeseriesDataPoint[]
 }
 
+// Chart data point interface for type safety
+export interface ChartDataPoint {
+  date: string
+  [key: string]: number | string | null
+}
+
 export type apyChartData = {
   date: string
   APY: number | null

@@ -4,6 +4,7 @@ import APYChart from '@/components/charts/APYChart'
 import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/chart-container'
+import { ChartErrorBoundary } from '@/components/ErrorBoundary'
 import { apyChartData, tvlChartData, ppsChartData } from '@/types/dataTypes'
 
 type ChartData = {
@@ -105,54 +106,77 @@ export function ChartsPanel(data: ChartData) {
 
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
-              <APYChart chartData={apyChartData} timeframe={timeframe.value} />
+              <ChartErrorBoundary>
+                <APYChart
+                  chartData={apyChartData}
+                  timeframe={timeframe.value}
+                />
+              </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
-                <TVLChart
-                  chartData={tvlChartData}
-                  timeframe={timeframe.value}
-                  hideAxes={true}
-                  hideTooltip={true}
-                />
+                <ChartErrorBoundary>
+                  <TVLChart
+                    chartData={tvlChartData}
+                    timeframe={timeframe.value}
+                    hideAxes={true}
+                    hideTooltip={true}
+                  />
+                </ChartErrorBoundary>
               </div>
             </FixedHeightChartContainer>
           </TabsContent>
 
           <TabsContent value="historical-pps" className="mt-0">
             <FixedHeightChartContainer>
-              <PPSChart chartData={ppsChartData} timeframe={timeframe.value} />
+              <ChartErrorBoundary>
+                <PPSChart
+                  chartData={ppsChartData}
+                  timeframe={timeframe.value}
+                />
+              </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-20 pointer-events-none">
                 {/* Ghosted APY chart */}
-                <APYChart
-                  chartData={apyChartData}
-                  timeframe={timeframe.value}
-                  hideAxes={true}
-                  hideTooltip={true}
-                />
+                <ChartErrorBoundary>
+                  <APYChart
+                    chartData={apyChartData}
+                    timeframe={timeframe.value}
+                    hideAxes={true}
+                    hideTooltip={true}
+                  />
+                </ChartErrorBoundary>
               </div>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
-                <TVLChart
-                  chartData={tvlChartData}
-                  timeframe={timeframe.value}
-                  hideAxes={true}
-                  hideTooltip={true}
-                />
+                <ChartErrorBoundary>
+                  <TVLChart
+                    chartData={tvlChartData}
+                    timeframe={timeframe.value}
+                    hideAxes={true}
+                    hideTooltip={true}
+                  />
+                </ChartErrorBoundary>
               </div>
             </FixedHeightChartContainer>
           </TabsContent>
 
           <TabsContent value="historical-tvl" className="mt-0">
             <FixedHeightChartContainer>
-              <TVLChart chartData={tvlChartData} timeframe={timeframe.value} />
+              <ChartErrorBoundary>
+                <TVLChart
+                  chartData={tvlChartData}
+                  timeframe={timeframe.value}
+                />
+              </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-20 pointer-events-none">
                 {/* Ghosted APY chart */}
-                <APYChart
-                  chartData={apyChartData}
-                  timeframe={timeframe.value}
-                  hideAxes={true}
-                  hideTooltip={true}
-                />
+                <ChartErrorBoundary>
+                  <APYChart
+                    chartData={apyChartData}
+                    timeframe={timeframe.value}
+                    hideAxes={true}
+                    hideTooltip={true}
+                  />
+                </ChartErrorBoundary>
               </div>
             </FixedHeightChartContainer>
           </TabsContent>

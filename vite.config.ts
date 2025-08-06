@@ -14,9 +14,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: {
-    allowedHosts: [
-      '536f0260-30a3-49ae-89bc-ade79cbcbd08-00-2yheak3122zc8.riker.replit.dev',
-    ],
-  },
+  server:
+    process.env.NODE_ENV === 'development'
+      ? {
+          allowedHosts: ['localhost', '127.0.0.1'],
+        }
+      : {},
 })

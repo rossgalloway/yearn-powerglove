@@ -7,9 +7,10 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import { ChartDataPoint } from '@/types/dataTypes'
 
 interface TVLChartProps {
-  chartData: any[]
+  chartData: ChartDataPoint[]
   timeframe: string
   hideAxes?: boolean // Added prop for hiding axes
   hideTooltip?: boolean // Added prop for hiding tooltip

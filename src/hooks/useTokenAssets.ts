@@ -12,7 +12,7 @@ export function useTokenAssets() {
       setError(null)
       try {
         const res = await fetch(
-          'https://raw.githubusercontent.com/yearn/tokenLists/main/lists/smolAssets.json'
+          'https://raw.githubusercontent.com/smoldapp/tokenLists/main/lists/tokenlistooor.json'
         )
         if (!res.ok) throw new Error('Failed to fetch token assets')
         const data = await res.json()
