@@ -3,7 +3,11 @@ import { useQuery } from '@apollo/client'
 import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
 import { queryAPY, queryPPS, queryTVL } from '@/graphql/queries/timeseries'
 import { MainInfoPanel } from '@/components/main-info-panel'
-import { ChartsPanel } from '@/components/charts-panel'
+import React, { Suspense, lazy } from 'react'
+// Lazy load ChartsPanel for code splitting (reduces initial bundle size)
+const ChartsPanel = lazy(() =>
+  import('@/components/charts-panel').then(m => ({ default: m.ChartsPanel }))
+)
 import StrategiesPanel from '@/components/strategies-panel'
 import { format } from 'date-fns'
 import {
@@ -161,11 +165,19 @@ function SingleVaultPage() {
       </div>
       <div className="space-y-0">
         <MainInfoPanel {...mainInfoPanelData} />
-        <ChartsPanel
-          apyData={transformedApyData}
-          tvlData={transformedTvlData}
-          ppsData={transformedPpsData}
-        />
+        <Suspense
+          fallback={
+            <div className="h-72 flex items-center justify-center border border-border bg-white">
+              <YearnLoader loadingState="loading charts" />
+            </div>
+          }
+        >
+          <ChartsPanel
+            apyData={transformedApyData}
+            tvlData={transformedTvlData}
+            ppsData={transformedPpsData}
+          />
+        </Suspense>
         <StrategiesPanel props={{ vaultAddress, vaultChainId, vaultDetails }} />
       </div>
     </main>

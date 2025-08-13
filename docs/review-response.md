@@ -217,6 +217,13 @@ class ChartErrorBoundary extends React.Component {
 - **Progress Feedback:** Users see detailed loading progress and status
 - **Type Safety:** Maintained throughout all enhancements
 
+### (Aug 13 2025) Immediate Actions Follow-up
+
+- Removed debug console logging from chart components.
+- Wrapped APY, PPS, TVL charts in `React.memo` and memoized timeframe slicing for performance.
+- Added dynamic import (code splitting) for `ChartsPanel` inside the single vault route.
+- Introduced initial test harness (Vitest + Testing Library) – smoke test added for APYChart.
+
 ---
 
 ## 🔮 **Phase 3: Medium Term (Improvements) - FUTURE**
@@ -408,6 +415,7 @@ npm run build
 npm run dev
 ```
 
+````bash
 ### File Tree Impact
 
 ```
