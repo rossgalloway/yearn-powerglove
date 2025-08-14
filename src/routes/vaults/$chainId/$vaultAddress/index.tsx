@@ -141,6 +141,7 @@ function SingleVaultPage() {
     (() => {
       throw new Error('Vault data is undefined')
     })() // Ensure vaultData?.vault is not undefined
+  console.dir(vaultDetails, { depth: null })
   const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails, tokenAssets)
   const apyDataClean = apyData.timeseries || {}
   const tvlDataClean = tvlData.timeseries || {}
@@ -201,8 +202,19 @@ function hydrateMainInfoPanelData(
 
   const vaultToken = {
     icon:
-      tokenAssets.find(token => token.symbol === vaultData.asset.symbol)
-        ?.logoURI || '',
+      tokenAssets.find(token => {
+        const isMatch =
+          token.address.toLowerCase() === vaultData.asset.address.toLowerCase()
+        // Only log when there's a match
+        if (isMatch) {
+          console.log('✅ Token match found:', {
+            tokenSymbol: token.symbol,
+            vaultAssetSymbol: vaultData.asset.symbol,
+            logoURI: token.logoURI,
+          })
+        }
+        return isMatch
+      })?.logoURI || '',
     name: vaultData.asset.symbol,
   }
 

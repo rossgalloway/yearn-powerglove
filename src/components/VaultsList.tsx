@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { Vault } from '@/types/vaultTypes'
@@ -9,6 +10,7 @@ import {
   getChainIdByName,
 } from '@/constants/chains'
 import { YearnVaultsSummary } from './YearnVaultsSummary'
+import { OptimizedImage } from './ui/OptimizedImage'
 
 interface VaultListData {
   id: string
@@ -25,16 +27,12 @@ interface VaultListData {
 type SortColumn = keyof VaultListData
 type SortDirection = 'asc' | 'desc'
 
-export default function VaultsList({
-  vaults,
-  tokenAssets,
-}: {
+const VaultsList: React.FC<{
   vaults: Vault[]
   tokenAssets: TokenAsset[]
-}) {
+}> = React.memo(({ vaults, tokenAssets }) => {
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [isImageLoaded, setIsImageLoaded] = useState(false) // Added state to track image load status
   const [selectedType, setSelectedType] = useState<string>('') // Track the selected type
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({
     name: '',
@@ -68,8 +66,10 @@ export default function VaultsList({
     chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
     token: vault.asset.symbol,
     tokenUri:
-      tokenAssets.find(token => token.symbol === vault.asset.symbol)?.logoURI ||
-      '',
+      tokenAssets.find(
+        token =>
+          token.address.toLowerCase() === vault.asset.address.toLowerCase()
+      )?.logoURI || '',
     // Modified vault type logic per user request
     type: vault.apiVersion?.startsWith('3')
       ? `${vaultTypes[Number(vault.vaultType)]}`
@@ -333,49 +333,31 @@ export default function VaultsList({
             <div className="flex-1 flex justify-end items-center gap-2">
               {vault.chain}
               {vault.chainIconUri ? (
-                <div className="w-6 h-6 relative">
-                  {/* Pulsing circle placeholder */}
-                  <div
-                    className={`absolute inset-0 bg-gray-300 rounded-full animate-pulse ${
-                      isImageLoaded ? 'hidden' : 'block'
-                    }`}
-                  ></div>
-                  <img
-                    src={vault.chainIconUri}
-                    alt={vault.chain}
-                    className={`w-6 h-6 ${isImageLoaded ? 'block' : 'hidden'}`}
-                    onLoad={() => setIsImageLoaded(true)} // Set loading state to true when the image loads
-                    onError={() => setIsImageLoaded(false)} // Keep the pulsing circle visible if the image fails to load
-                  />
-                </div>
+                <OptimizedImage
+                  src={vault.chainIconUri}
+                  alt={vault.chain}
+                  className="w-6 h-6"
+                  fallbackClassName="w-6 h-6"
+                />
               ) : (
                 <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
                   ?
-                </div> // Pulsing grey circle as fallback
+                </div>
               )}
             </div>
             <div className="flex-1 flex justify-end items-center gap-2">
               {vault.token}
               {vault.tokenUri ? (
-                <div className="w-6 h-6 relative">
-                  {/* Pulsing circle placeholder */}
-                  <div
-                    className={`absolute inset-0 bg-gray-300 rounded-full animate-pulse ${
-                      isImageLoaded ? 'hidden' : 'block'
-                    }`}
-                  ></div>
-                  <img
-                    src={vault.tokenUri}
-                    alt={vault.token}
-                    className={`w-6 h-6 ${isImageLoaded ? 'block' : 'hidden'}`}
-                    onLoad={() => setIsImageLoaded(true)} // Set loading state to true when the image loads
-                    onError={() => setIsImageLoaded(false)} // Keep the pulsing circle visible if the image fails to load
-                  />
-                </div>
+                <OptimizedImage
+                  src={vault.tokenUri}
+                  alt={vault.token}
+                  className="w-6 h-6"
+                  fallbackClassName="w-6 h-6"
+                />
               ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full ">
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full">
                   ❓
-                </div> // Pulsing grey circle as fallback
+                </div>
               )}
             </div>
             <div className="flex-1 text-right">{vault.type}</div>
@@ -386,4 +368,8 @@ export default function VaultsList({
       </div>
     </div>
   )
-}
+})
+
+VaultsList.displayName = 'VaultsList'
+
+export default VaultsList
