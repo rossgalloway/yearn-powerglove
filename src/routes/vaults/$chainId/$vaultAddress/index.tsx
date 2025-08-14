@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client'
 import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
 import { queryAPY, queryPPS, queryTVL } from '@/graphql/queries/timeseries'
@@ -150,7 +150,9 @@ function SingleVaultPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Vaults</BreadcrumbLink>
+              <BreadcrumbLink asChild>
+                <Link to="/">Vaults</Link>
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
