@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Vault } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
 import {
@@ -47,7 +47,7 @@ const VaultsList: React.FC<{
     tvl: { min: '', max: '' },
   })
 
-  const navigate = useNavigate()
+  // Removed navigate since we're using Link components now
 
   const vaultTypes: Record<string, string> = {
     1: 'V3 Allocator Vault',
@@ -320,14 +320,14 @@ const VaultsList: React.FC<{
 
         {/* Rows */}
         {filteredVaults.map(vault => (
-          <div
+          <Link
             key={`${vault.chain}-${vault.id}`}
+            to="/vaults/$chainId/$vaultAddress"
+            params={{
+              chainId: (getChainIdByName(vault.chain) || 1).toString(),
+              vaultAddress: vault.id,
+            }}
             className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
-            onClick={() =>
-              navigate({
-                to: `/vaults/${getChainIdByName(vault.chain)}/${vault.id}`,
-              })
-            }
           >
             <div className="flex-[2] text-left">{vault.name}</div>
             <div className="flex-1 flex justify-end items-center gap-2">
@@ -363,7 +363,7 @@ const VaultsList: React.FC<{
             <div className="flex-1 text-right">{vault.type}</div>
             <div className="flex-1 text-right">{vault.APY}</div>
             <div className="flex-1 text-right">{vault.tvl}</div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

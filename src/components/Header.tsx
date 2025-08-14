@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useVaults } from '@/contexts/useVaults'
-import { useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 
 export default function Header() {
-  const navigate = useNavigate()
   const { vaults } = useVaults()
   const [searchTerm, setSearchTerm] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false) // State to control dropdown visibility
@@ -41,17 +40,14 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-white py-2">
       <div className="container flex items-center justify-between px-8">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate({ to: '/' })}
-        >
+        <Link to="/" className="flex items-center gap-2 cursor-pointer">
           <img
             src="/logo.svg"
             alt="Yearn PowerGlove Logo"
             className="w-6 h-6"
           />
           <span className="text-lg font-bold">Yearn PowerGlove</span>
-        </div>
+        </Link>
         <div className="flex items-center gap-4 relative">
           {/* Search Bar */}
           <input
@@ -76,13 +72,17 @@ export default function Header() {
               }}
             >
               {filteredVaults.map(vault => (
-                <div
+                <Link
                   key={vault.address}
+                  to="/vaults/$chainId/$vaultAddress"
+                  params={{
+                    chainId: vault.chainId.toString(),
+                    vaultAddress: vault.address,
+                  }}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex gap-2 items-center"
                   onClick={() => {
-                    navigate({
-                      to: `/vaults/${vault.chainId}/${vault.address}`,
-                    })
+                    setIsDropdownOpen(false)
+                    setSearchTerm('')
                   }}
                 >
                   <span>{vault.name}</span>
@@ -90,7 +90,7 @@ export default function Header() {
                     {vault.apiVersion}
                   </span>{' '}
                   {/* Added apiVersion */}
-                </div>
+                </Link>
               ))}
             </div>
           )}
