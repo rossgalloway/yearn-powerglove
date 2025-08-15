@@ -141,7 +141,6 @@ function SingleVaultPage() {
     (() => {
       throw new Error('Vault data is undefined')
     })() // Ensure vaultData?.vault is not undefined
-  console.dir(vaultDetails, { depth: null })
   const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails, tokenAssets)
   const apyDataClean = apyData.timeseries || {}
   const tvlDataClean = tvlData.timeseries || {}
