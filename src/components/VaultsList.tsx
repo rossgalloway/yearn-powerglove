@@ -1,16 +1,14 @@
-import { useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Vault } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
-import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME } from '@/constants/chains'
+import { CHAIN_ID_TO_NAME } from '@/constants/chains'
 import { YearnVaultsSummary } from './YearnVaultsSummary'
 import { VirtualScrollTable } from './ui/VirtualScrollTable'
 import { VaultRow, VaultListData } from './VaultRow'
 import { useViewportHeight } from '@/hooks/useResponsiveHeight'
-
-type SortColumn = keyof VaultListData
-type SortDirection = 'asc' | 'desc'
+import { useVaultListData } from '@/hooks/useVaultListData'
+import { useVaultFiltering } from '@/hooks/useVaultFiltering'
 
 const VaultsList: React.FC<{
   vaults: Vault[]
@@ -23,21 +21,20 @@ const VaultsList: React.FC<{
     extraOffset: 200, // Summary, table headers, search bar, margins
   })
 
-  const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [selectedType, setSelectedType] = useState<string>('') // Track the selected type
-  const [searchTerms, setSearchTerms] = useState<Record<string, string>>({
-    name: '',
-    chain: '',
-    token: '',
-    type: '',
-    APY: '',
-    tvl: '',
-  })
-  const [rangeFilters, setRangeFilters] = useState({
-    APY: { min: '', max: '' },
-    tvl: { min: '', max: '' },
-  })
+  // Use our custom hooks for data transformation and filtering
+  const vaultListData = useVaultListData(vaults, tokenAssets)
+  const {
+    sortColumn,
+    sortDirection,
+    searchTerms,
+    rangeFilters,
+    selectedType,
+    setSearchTerms,
+    setRangeFilters,
+    handleSort,
+    handleTypeFilterChange,
+    filteredAndSortedVaults,
+  } = useVaultFiltering(vaultListData)
 
   // Removed navigate since we're using Link components now
 
@@ -50,106 +47,7 @@ const VaultsList: React.FC<{
   }
   const chainOptions = Object.values(CHAIN_ID_TO_NAME)
 
-  // Map the Vault array to VaultListData format
-  const vaultListData: VaultListData[] = vaults.map(vault => ({
-    id: vault.address, // Use the vault's address as a unique ID
-    name: vault.name,
-    chain: `${CHAIN_ID_TO_NAME[Number(vault.chainId)]}`, // Convert chainId to a string
-    chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
-    token: vault.asset.symbol,
-    tokenUri:
-      tokenAssets.find(
-        token =>
-          token.address.toLowerCase() === vault.asset.address.toLowerCase()
-      )?.logoURI || '',
-    // Modified vault type logic per user request
-    type: vault.apiVersion?.startsWith('3')
-      ? `${vaultTypes[Number(vault.vaultType)]}`
-      : vault.apiVersion?.startsWith('0')
-        ? vault.name.includes('Factory')
-          ? `${vaultTypes[3]}` // V2 Factory Vault
-          : `${vaultTypes[4]}` // V2 Legacy Vault
-        : `${vaultTypes[5]}`,
-    APY: `${((vault.apy?.net ?? 0) * 100).toFixed(2)}%`, // Added nullish coalescing to handle undefined 'vault.apy'
-    tvl: `$${vault.tvl?.close?.toLocaleString(undefined, {
-      // Added optional chaining to handle undefined 'vault.tvl'
-      minimumFractionDigits: 2, // modified to display 2 decimals
-      maximumFractionDigits: 2,
-    })}`,
-  }))
-
-  const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortColumn(column)
-      setSortDirection('asc')
-    }
-  }
-
-  // Improved sorting logic to handle NaN values
-  const sortedVaults = [...vaultListData].sort((a, b) => {
-    const compare = (valA: string | number, valB: string | number) => {
-      if (sortColumn === 'tvl') {
-        const numA = parseFloat(String(valA).replace(/[$,]/g, ''))
-        const numB = parseFloat(String(valB).replace(/[$,]/g, ''))
-        // Handle NaN values so they sort to the end
-        if (isNaN(numA) && isNaN(numB)) return 0
-        if (isNaN(numA)) return 1
-        if (isNaN(numB)) return -1
-        return numA - numB
-      }
-      if (sortColumn === 'APY') {
-        const numA = parseFloat(String(valA).replace(/[%]/g, ''))
-        const numB = parseFloat(String(valB).replace(/[%]/g, ''))
-        // Handle NaN values so they sort to the end
-        if (isNaN(numA) && isNaN(numB)) return 0
-        if (isNaN(numA)) return 1
-        if (isNaN(numB)) return -1
-        return numA - numB
-      }
-      // Default string/number comparison for other columns
-      if (valA < valB) return -1
-      if (valA > valB) return 1
-      return 0
-    }
-
-    const valueA = a[sortColumn]
-    const valueB = b[sortColumn]
-
-    return sortDirection === 'asc'
-      ? compare(valueA, valueB)
-      : compare(valueB, valueA)
-  })
-
-  const filteredVaults = sortedVaults.filter(vault => {
-    // Filter based on search terms
-    const matchesSearchTerms = Object.entries(searchTerms).every(
-      ([key, term]) => {
-        if (!term) return true // Skip filtering if no search term
-        const value = vault[key as keyof VaultListData]
-          ?.toString()
-          .toLowerCase()
-        return value.includes(term.toLowerCase())
-      }
-    )
-
-    // Filter based on APY range
-    const apyValue = parseFloat(vault.APY.replace('%', '')) // Convert APY to a number
-    const apyMin = parseFloat(rangeFilters.APY.min) || -Infinity
-    const apyMax = parseFloat(rangeFilters.APY.max) || Infinity
-    const matchesAPY = apyValue >= apyMin && apyValue <= apyMax
-
-    // Filter based on TVL range
-    const tvlValue = parseFloat(vault.tvl.replace(/[$,]/g, '')) // Convert TVL to a number
-    const tvlMin = parseFloat(rangeFilters.tvl.min) || -Infinity
-    const tvlMax = parseFloat(rangeFilters.tvl.max) || Infinity
-    const matchesTVL = tvlValue >= tvlMin && tvlValue <= tvlMax
-
-    return matchesSearchTerms && matchesAPY && matchesTVL
-  })
-
-  const renderSortIcon = (column: SortColumn) => {
+  const renderSortIcon = (column: keyof VaultListData) => {
     if (sortColumn !== column) {
       return <ChevronDown className="w-4 h-4 inline-block" />
     }
@@ -168,12 +66,6 @@ const VaultsList: React.FC<{
     { label: 'Est. APY', key: 'APY' },
     { label: 'TVL', key: 'tvl' },
   ]
-
-  // Function to update the "Type" filter
-  const handleTypeFilterChange = (type: string) => {
-    setSelectedType(type) // Update the selected type
-    setSearchTerms(prev => ({ ...prev, type })) // Update the search terms
-  }
 
   return (
     <div>
@@ -312,10 +204,10 @@ const VaultsList: React.FC<{
 
         {/* Virtual Scrolled Rows */}
         <VirtualScrollTable
-          data={filteredVaults}
+          data={filteredAndSortedVaults}
           itemHeight={50} // Fixed height per row - matches VaultRow height
           containerHeight={availableHeight} // Use full available viewport height
-          renderItem={vault => (
+          renderItem={(vault: VaultListData) => (
             <VaultRow key={`${vault.chain}-${vault.id}`} vault={vault} />
           )}
           className="border-0"
