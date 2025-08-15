@@ -9,15 +9,6 @@ function PrivacyPage() {
         </h1>
 
         <div className="prose prose-gray max-w-none space-y-6 text-gray-700 text-sm">
-          <p className="text-base italic text-gray-600 mb-8">
-            Last updated:{' '}
-            {new Date().toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-
           <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
             Information We Collect
           </h2>
