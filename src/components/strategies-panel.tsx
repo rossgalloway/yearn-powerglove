@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   ChevronDown,
@@ -12,24 +12,13 @@ import {
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
 } from '@/constants/chains'
-import { useQuery } from '@apollo/client'
-import {
-  GET_STRATEGY_DETAILS,
-  StrategyDetailsQuery,
-} from '@/graphql/queries/strategies'
-import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
-import { Strategy } from '@/types/dataTypes'
-import { useQueryStrategies } from '@/contexts/useQueryStrategies'
-import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
+import { VaultExtended } from '@/types/vaultTypes'
 import StrategiesSkeleton from '@/components/StrategiesSkeleton'
-
-// Define sort column types
-type SortColumn =
-  | 'name'
-  | 'allocationPercent'
-  | 'allocationAmount'
-  | 'estimatedAPY'
-type SortDirection = 'asc' | 'desc'
+import { useStrategiesData } from '@/hooks/useStrategiesData'
+import {
+  useSortingAndFiltering,
+  StrategySortColumn,
+} from '@/hooks/useSortingAndFiltering'
 
 export default function StrategiesPanel({
   props,
@@ -40,286 +29,24 @@ export default function StrategiesPanel({
     vaultDetails: VaultExtended
   }
 }) {
-  const { assets: tokenAssets } = useTokenAssetsContext()
-  if (import.meta.env.MODE === 'development') {
-    console.log('props:', props)
-  }
-  const { vaultChainId } = props
-  const selectedVaultDetails = props.vaultDetails
-  const vaultStrategyAddresses = props.vaultDetails.strategies
-  const allStrategies = useQueryStrategies()
+  const { vaultChainId, vaultAddress, vaultDetails } = props
 
-  // Fetches data about the component strategies of the current vault
-  // if the strategies are vaults (v3) then this gets me chainId, address, name, erc4626, v3, yearn
-  // all strategies that the current vault uses.
-  // if not vaults then it returns undefined
-  const shouldFetch = vaultStrategyAddresses != null
-  const {
-    data: strategyData,
-    loading,
-    error,
-  } = useQuery<{ vaults: StrategyDetailsQuery[] }>(GET_STRATEGY_DETAILS, {
-    variables: { addresses: vaultStrategyAddresses },
-    skip: !shouldFetch,
-  })
-  const v3StrategyData = shouldFetch ? strategyData?.vaults : undefined
-  console.log('strategyData:', v3StrategyData)
-
-  // Get the array of strategy debts from the passed in vault data object (V2 and V3)
-  const selectedVaultDebts: VaultDebt[] = Array.isArray(
-    props.vaultDetails?.debts
+  // Extract data logic to custom hooks
+  const strategiesData = useStrategiesData(
+    vaultChainId,
+    vaultAddress,
+    vaultDetails
   )
-    ? (props.vaultDetails.debts as VaultDebt[])
-    : [] // Ensure debts is treated as an array
-  console.log('selectedVaultDebts:', selectedVaultDebts)
+  const sortingState = useSortingAndFiltering(strategiesData.strategies)
 
-  const vaultStrategyData = selectedVaultDebts.map(debt => {
-    // Map the debts object to the VaultDebt type structure
-    const mappedDebt: EnrichedVaultDebt = {
-      strategy: debt.strategy,
-      v3Debt: {
-        currentDebt: debt.currentDebt,
-        currentDebtUsd: debt.currentDebtUsd,
-        maxDebt: debt.maxDebt,
-        maxDebtUsd: debt.maxDebtUsd,
-        targetDebtRatio: debt.targetDebtRatio,
-        maxDebtRatio: debt.maxDebtRatio,
-      },
-      v2Debt: {
-        debtRatio: debt.debtRatio,
-        totalDebt: debt.totalDebt,
-        totalDebtUsd: debt.totalDebtUsd,
-        totalGain: debt.totalGain,
-        totalGainUsd: debt.totalGainUsd,
-        totalLoss: debt.totalLoss,
-        totalLossUsd: debt.totalLossUsd,
-      },
-      // Optional fields populated based on matching strategy data
-      address: debt.strategy, // Rename `strategy` to `address`
-      name: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.name || ''
-        : allStrategies.strategies.find(
-            strategy => strategy.address === debt.strategy
-          )?.name || '',
-      erc4626: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.erc4626 || false
-        : allStrategies.strategies.find(
-            strategy => strategy.address === debt.strategy
-          )?.erc4626 || false,
-      yearn: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.yearn || false
-        : allStrategies.strategies.find(
-            strategy => strategy.address === debt.strategy
-          )?.yearn || false,
-      v3: selectedVaultDetails.v3 || false,
-      managementFee: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.fees?.managementFee || 0
-        : 0, // Default to 0 for non-v3 strategies
-      performanceFee: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.fees?.performanceFee || 0
-        : allStrategies.strategies.find(
-            strategy => strategy.address === debt.strategy
-          )?.performanceFee || 0,
-      grossApr: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.apy?.grossApr
-        : allStrategies.strategies.find(
-            strategy => strategy.address === debt.strategy
-          )?.lastReportDetail?.apr.gross,
-      netApy: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.apy?.net
-        : allStrategies.strategies.find(
-            strategy => strategy.address === debt.strategy
-          )?.lastReportDetail?.apr.net,
-      inceptionNetApy: selectedVaultDetails.v3
-        ? (v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.apy?.inceptionNet ?? undefined) // Convert null to undefined
-        : undefined, // Default to undefined for non-v3 strategies
-      assetSymbol: selectedVaultDetails.v3
-        ? v3StrategyData?.find(strategy => strategy.address === debt.strategy)
-            ?.asset?.symbol
-        : selectedVaultDetails?.asset.symbol,
-    }
-
-    return mappedDebt // Return the mapped debt object
-  })
-
-  // Sort the enriched debts based on the vault type (V3 or V2)
-  const sortedVaultDebts = vaultStrategyData.sort((a, b) => {
-    if (selectedVaultDetails.v3) {
-      // Sort by v3Debt.currentDebt for V3 vaults
-      return Number(b.v3Debt.currentDebt) - Number(a.v3Debt.currentDebt)
-    } else {
-      // Sort by v2Debt.debtRatio for V2 vaults
-      return Number(b.v2Debt.debtRatio) - Number(a.v2Debt.debtRatio)
-    }
-  })
-  console.log('sortedDebts:', sortedVaultDebts)
-
-  // Calculate total vault debt based on the vault type (V3 or V2)
-  const totalVaultDebt = sortedVaultDebts.reduce(
-    (sum: number, debt: EnrichedVaultDebt) => {
-      if (selectedVaultDetails.v3) {
-        // Use v3Debt.currentDebtUsd for V3 vaults
-        return sum + Number(debt.v3Debt.currentDebtUsd)
-      } else {
-        // Use v2Debt.totalDebtUsd for V2 vaults
-        return sum + Number(debt.v2Debt.totalDebtUsd)
-      }
-    },
-    0
-  )
-  console.log('totalDebt:', totalVaultDebt)
-
-  // Map enrichedVaultDebts to Strategy objects
-  const strategies: Strategy[] = vaultStrategyData.map((debt, index) => ({
-    id: index, // Use the index as the ID (or replace with a unique identifier if available)
-    name: debt.name || 'Unknown Strategy', // Use the name from enrichedVaultDebts or a default value
-    allocationPercent: totalVaultDebt
-      ? selectedVaultDetails.v3
-        ? (Number(debt.v3Debt.currentDebtUsd) / totalVaultDebt) * 100 // Use v3Debt.currentDebtUsd for V3 vaults
-        : (Number(debt.v2Debt.totalDebtUsd) / totalVaultDebt) * 100 // Use v2Debt.totalDebtUsd for V2 vaults
-      : 0,
-    allocationAmount: selectedVaultDetails.v3
-      ? debt.v3Debt.currentDebtUsd
-        ? debt.v3Debt.currentDebtUsd.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-          })
-        : '$0.00' // Default for V3 vaults
-      : debt.v2Debt.totalDebtUsd
-        ? debt.v2Debt.totalDebtUsd.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-          })
-        : '$0.00', // Default for V2 vaults
-    estimatedAPY: debt.netApy
-      ? `${(Number(debt.netApy) * 100).toFixed(2)}%`
-      : '0.00%', // Format maxDebtRatio as a percentage string
-    tokenSymbol: debt.assetSymbol || '', // Use the asset symbol from enrichedVaultDebts or a default value
-    tokenIconUri:
-      tokenAssets.find(token => token.symbol === debt.assetSymbol)?.logoURI ||
-      '',
-    details: {
-      chainId: vaultChainId, // Use the chainId from props
-      vaultAddress: debt.address ? debt.address : '', // Use the vaultAddress from props
-      managementFee: debt.managementFee || 0, // Use managementFee or a default value
-      performanceFee: debt.performanceFee || 0, // Use performanceFee or a default value
-      isVault: debt.v3 || false, // Assume it's a vault (adjust if needed)
-      isEndorsed: debt.yearn || false, // Use the yearn field to determine endorsement
-    },
-  }))
-
-  console.log('strategies:', strategies)
-
+  // UI state
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<string>('Strategies')
-  const [sortColumn, setSortColumn] = useState<SortColumn>('allocationPercent')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [showUnallocated, setShowUnallocated] = useState<boolean>(false)
 
   const toggleRow = (index: number) => {
     setExpandedRow(expandedRow === index ? null : index)
   }
-
-  const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortColumn(column)
-      setSortDirection('asc')
-    }
-  }
-
-  // Sort strategies based on current sort column and direction
-  const sortedStrategies = [...strategies].sort((a, b) => {
-    if (sortColumn === 'name') {
-      return sortDirection === 'asc'
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name)
-    } else if (sortColumn === 'allocationPercent') {
-      return sortDirection === 'asc'
-        ? a.allocationPercent - b.allocationPercent
-        : b.allocationPercent - a.allocationPercent
-    } else if (sortColumn === 'allocationAmount') {
-      // Convert K and M to actual numbers for sorting
-      const parseAmount = (amount: string) => {
-        if (amount === '0') return 0
-        const num = Number.parseFloat(amount.replace(/[^0-9.]/g, ''))
-        if (amount.includes('K')) return num * 1000
-        if (amount.includes('M')) return num * 1000000
-        return num
-      }
-      return sortDirection === 'asc'
-        ? parseAmount(a.allocationAmount) - parseAmount(b.allocationAmount)
-        : parseAmount(b.allocationAmount) - parseAmount(a.allocationAmount)
-    } else if (sortColumn === 'estimatedAPY') {
-      // Remove % and APY for sorting
-      const parseAPY = (apy: string) =>
-        Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
-      return sortDirection === 'asc'
-        ? parseAPY(a.estimatedAPY) - parseAPY(b.estimatedAPY)
-        : parseAPY(b.estimatedAPY) - parseAPY(a.estimatedAPY)
-    }
-    return 0
-  })
-
-  // Filter out strategies with 0% allocation for the chart
-  const chartStrategies = strategies
-    .filter(s => s.allocationPercent > 0)
-    // Sort by allocation percent descending for the chart
-    .sort((a, b) => b.allocationPercent - a.allocationPercent)
-
-  // Helper function to parse APY value
-  const parseAPY = (apy: string) => {
-    return Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
-  }
-
-  // Calculate APY contribution for each strategy
-  const apyContributions = useMemo(() => {
-    return chartStrategies.map(strategy => {
-      const apyValue = parseAPY(strategy.estimatedAPY)
-      const contribution = (apyValue * strategy.allocationPercent) / 100
-      return {
-        id: strategy.id,
-        name: strategy.name,
-        apyValue,
-        allocationPercent: strategy.allocationPercent,
-        contribution,
-        // Format to 2 decimal places
-        formattedContribution: contribution.toFixed(2),
-      }
-    })
-  }, [chartStrategies])
-
-  // Calculate total APY contribution
-  const totalAPYContribution = useMemo(() => {
-    return apyContributions.reduce((sum, item) => sum + item.contribution, 0)
-  }, [apyContributions])
-
-  // Prepare data for the allocation pie chart
-  const allocationChartData = chartStrategies.map(strategy => ({
-    id: strategy.id,
-    name: strategy.name,
-    value: strategy.allocationPercent,
-    amount: strategy.allocationAmount,
-  }))
-
-  // Prepare data for the APY contribution pie chart
-  const apyContributionChartData = apyContributions.map(item => ({
-    id: item.id,
-    name: item.name,
-    value: item.contribution,
-    formattedValue: item.formattedContribution,
-    apyValue: item.apyValue,
-    allocationPercent: item.allocationPercent,
-  }))
 
   // Generate colors for chart segments
   const COLORS = [
@@ -367,11 +94,11 @@ export default function StrategiesPanel({
     return null
   }
 
-  const renderSortIcon = (column: SortColumn) => {
-    if (sortColumn !== column) {
+  const renderSortIcon = (column: StrategySortColumn) => {
+    if (sortingState.sortColumn !== column) {
       return <ChevronDown className="w-4 h-4 ml-1 inline-block" />
     }
-    return sortDirection === 'asc' ? (
+    return sortingState.sortDirection === 'asc' ? (
       <ChevronUp className="w-4 h-4 ml-1 inline-block text-[#0657f9]" />
     ) : (
       <ChevronDown className="w-4 h-4 ml-1 inline-block text-[#0657f9]" />
@@ -381,21 +108,24 @@ export default function StrategiesPanel({
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Strategies': {
-        if (loading) {
+        if (strategiesData.isLoading) {
           return <StrategiesSkeleton />
         }
 
         // Add error state handling
-        if (error) {
+        if (strategiesData.error) {
           return (
             <div className="flex justify-center items-center h-full">
-              <p className="text-red-500">{error?.message}</p>
+              <p className="text-red-500">{strategiesData.error?.message}</p>
             </div>
           )
         }
 
-        // Check if sortedStrategies is empty or null
-        if (!sortedStrategies || sortedStrategies.length === 0) {
+        // Check if strategies is empty or null
+        if (
+          !sortingState.sortedStrategies ||
+          sortingState.sortedStrategies.length === 0
+        ) {
           return (
             <div className="flex justify-center items-center h-full p-20">
               <p className="text-gray-500 text-center">
@@ -405,13 +135,6 @@ export default function StrategiesPanel({
             </div>
           )
         }
-
-        const allocatedStrategies = sortedStrategies.filter(
-          strategy => strategy.allocationPercent > 0
-        )
-        const unallocatedStrategies = sortedStrategies.filter(
-          strategy => strategy.allocationPercent === 0
-        )
 
         return (
           <div className="pb-4 lg:flex lg:flex-row flex-col">
@@ -425,21 +148,21 @@ export default function StrategiesPanel({
                   </div>
                   <div
                     className="w-1/6 text-right whitespace-nowrap cursor-pointer"
-                    onClick={() => handleSort('allocationPercent')}
+                    onClick={() => sortingState.handleSort('allocationPercent')}
                   >
                     <span>Allocation %</span>
                     {renderSortIcon('allocationPercent')}
                   </div>
                   <div
                     className="w-1/6 text-right whitespace-nowrap cursor-pointer"
-                    onClick={() => handleSort('allocationAmount')}
+                    onClick={() => sortingState.handleSort('allocationAmount')}
                   >
                     <span>Allocation $</span>
                     {renderSortIcon('allocationAmount')}
                   </div>
                   <div
                     className="w-1/6 text-right whitespace-nowrap cursor-pointer"
-                    onClick={() => handleSort('estimatedAPY')}
+                    onClick={() => sortingState.handleSort('estimatedAPY')}
                   >
                     <span>Est. APY</span>
                     {renderSortIcon('estimatedAPY')}
@@ -447,7 +170,7 @@ export default function StrategiesPanel({
                 </div>
 
                 {/* Allocated Strategies Table Rows */}
-                {allocatedStrategies.map(strategy => (
+                {sortingState.allocatedStrategies.map(strategy => (
                   <div
                     key={strategy.id}
                     className={cn(
@@ -559,7 +282,7 @@ export default function StrategiesPanel({
                 ))}
 
                 {/* Accordion for Unallocated Strategies */}
-                {unallocatedStrategies.length > 0 && (
+                {sortingState.unallocatedStrategies.length > 0 && (
                   <div className="border-t border-[#f5f5f5]">
                     <div
                       className="flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer"
@@ -577,7 +300,7 @@ export default function StrategiesPanel({
                       </div>
                     </div>
                     {showUnallocated &&
-                      unallocatedStrategies.map(strategy => (
+                      sortingState.unallocatedStrategies.map(strategy => (
                         <div
                           key={strategy.id}
                           className={cn(
@@ -706,7 +429,7 @@ export default function StrategiesPanel({
               <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
                 <PieChart width={160} height={160}>
                   <Pie
-                    data={allocationChartData}
+                    data={strategiesData.allocationChartData}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
@@ -716,7 +439,7 @@ export default function StrategiesPanel({
                     startAngle={90}
                     endAngle={-270}
                   >
-                    {allocationChartData.map((entry, index) => (
+                    {strategiesData.allocationChartData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
@@ -744,7 +467,7 @@ export default function StrategiesPanel({
               <div className="lg:w-full w-1/2 pl-2 lg:pl-0 lg:mt-6">
                 <PieChart width={160} height={160}>
                   <Pie
-                    data={apyContributionChartData}
+                    data={strategiesData.apyContributionChartData}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
@@ -754,12 +477,14 @@ export default function StrategiesPanel({
                     startAngle={90}
                     endAngle={-270}
                   >
-                    {apyContributionChartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
+                    {strategiesData.apyContributionChartData.map(
+                      (entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      )
+                    )}
                     <Label
                       content={() => (
                         <text
@@ -769,7 +494,7 @@ export default function StrategiesPanel({
                           dominantBaseline="middle"
                           className="fill-foreground text-sm font-medium"
                         >
-                          {totalAPYContribution.toFixed(2)}%
+                          {strategiesData.totalAPYContribution.toFixed(2)}%
                         </text>
                       )}
                     />
