@@ -3,15 +3,15 @@ import { createFileRoute } from '@tanstack/react-router'
 function AboutPage() {
   return (
     <div className="container mx-auto max-w-4xl">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="bg-white border p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">About Yearn</h1>
 
         <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
           <p className="leading-relaxed">
-            Yearn is a decentralized finance (DeFi) protocol that automates
-            yield generation strategies across various DeFi platforms. Founded
-            in 2020, Yearn is one of the most trusted and innovative protocols
-            in the DeFi ecosystem.
+            Yearn is a decentralized finance (DeFi) protocol operating on
+            Ethereum that automates yield generation strategies across various
+            DeFi platforms. Founded in 2020, Yearn is one of the most trusted
+            and innovative protocols in the DeFi ecosystem.
           </p>
 
           <h2 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">
@@ -40,15 +40,16 @@ function AboutPage() {
             About This Dashboard
           </h2>
           <p className="leading-relaxed">
-            This PowerGlove dashboard provides real-time metrics and insights
+            The PowerGlove dashboard provides real-time metrics and insights
             into Yearn's vault performance, including APY tracking, TVL
             analysis, and strategy breakdowns. It's designed to help users make
-            informed decisions about their DeFi investments.{' '}
+            informed decisions about their DeFi investments. For more
+            information, please review our{' '}
             <a
               href="/disclaimer"
               className="underline text-blue-600 hover:text-blue-800"
             >
-              Please review our disclaimers.
+              disclaimer.
             </a>
           </p>
 
