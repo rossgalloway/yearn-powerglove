@@ -22,17 +22,7 @@ export default function Footer() {
             </a>
             {/* TODO: add page or remove link */}
             <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Terms of Service
-            </a>
-            {/* TODO: add page or remove link */}
-            <a
               href="/about"
-              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
@@ -41,7 +31,6 @@ export default function Footer() {
             {/* TODO: add page or remove link */}
             <a
               href="/privacy"
-              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
@@ -49,7 +38,6 @@ export default function Footer() {
             </a>
             <a
               href="/disclaimer"
-              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
