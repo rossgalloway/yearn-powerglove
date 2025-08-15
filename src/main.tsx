@@ -11,12 +11,10 @@ import { ApolloProvider } from '@apollo/client'
 import { routeTree } from './routeTree.gen'
 import { apolloClient } from './lib/apollo-client'
 
-// Properly type the global Buffer assignment
-declare global {
-  // eslint-disable-next-line no-var
-  var Buffer: BufferConstructor
+// Polyfill Buffer for browser environment
+if (typeof globalThis.Buffer === 'undefined') {
+  globalThis.Buffer = Buffer
 }
-globalThis.Buffer = Buffer
 
 const queryClient = new QueryClient()
 const router = createRouter({ routeTree })
