@@ -17,12 +17,15 @@ Successfully decomposed the strategies-panel component into smaller, focused com
 
 **New Component Structure:**
 ```
-/src/components/strategies-panel/
-├── StrategiesPanel.tsx          # Main container (132 lines)
-├── StrategyAllocationChart.tsx  # Pie chart component (159 lines)
-├── StrategyTable.tsx           # Table display logic (111 lines)
-├── StrategyRow.tsx             # Individual strategy row (126 lines)
-└── index.ts                    # Barrel exports (4 lines)
+### 🔧 **New Component Structure**
+
+Created a clean component hierarchy in `/src/components/strategies-panel/`:
+
+1. **StrategiesPanel.tsx** (132 lines) - Main orchestrator
+2. **StrategyAllocationChart.tsx** (159 lines) - Chart visualization
+3. **StrategyTable.tsx** (111 lines) - Table structure and sorting
+4. **StrategyRow.tsx** (126 lines) - Individual strategy display
+5. **index.ts** (4 lines) - Barrel exports
 ```
 
 **Wrapper Component:**
@@ -100,14 +103,15 @@ Applied `React.memo()` to all major components to prevent unnecessary re-renders
 ## Files Modified
 
 ### New Components Created
-1. `/src/components/strategies/StrategiesPanel.tsx` - 132 lines
-2. `/src/components/strategies/StrategyAllocationChart.tsx` - 159 lines  
-3. `/src/components/strategies/StrategyTable.tsx` - 111 lines
-4. `/src/components/strategies/StrategyRow.tsx` - 126 lines
-5. `/src/components/strategies/index.ts` - 4 lines
+1. `/src/components/strategies-panel/StrategiesPanel.tsx` - 132 lines
+2. `/src/components/strategies-panel/StrategyAllocationChart.tsx` - 159 lines  
+3. `/src/components/strategies-panel/StrategyTable.tsx` - 111 lines
+4. `/src/components/strategies-panel/StrategyRow.tsx` - 126 lines
+5. `/src/components/strategies-panel/index.ts` - 4 lines
 
 ### Files Refactored
-1. `/src/components/strategies-panel.tsx` - Reduced from 560 → 18 lines (-97% reduction)
+1. `/src/routes/vaults/$chainId/$vaultAddress/index.tsx` - Updated imports to use direct component
+2. **Removed:** `/src/components/strategies-panel.tsx` - Wrapper component eliminated
 
 ## Technical Implementation Details
 
@@ -182,4 +186,4 @@ With Step 2.1 completed, we have successfully demonstrated the component decompo
 
 ---
 
-**Impact Summary:** Strategies panel decomposed from 560 lines into 4 focused components (532 total lines) with 97% reduction in main file size, improved maintainability, and better performance through proper memoization.
+**Impact Summary:** Strategies panel decomposed from 560 lines into 4 focused components (532 total lines) organized in `/src/components/strategies-panel/`. Wrapper component eliminated for cleaner architecture. Improved maintainability and performance through proper component decomposition and memoization.
