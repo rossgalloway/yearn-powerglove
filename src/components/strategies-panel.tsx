@@ -21,6 +21,7 @@ import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
 import { Strategy } from '@/types/dataTypes'
 import { useQueryStrategies } from '@/contexts/useQueryStrategies'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
+import StrategiesSkeleton from '@/components/StrategiesSkeleton'
 
 // Define sort column types
 type SortColumn =
@@ -381,11 +382,7 @@ export default function StrategiesPanel({
     switch (activeTab) {
       case 'Strategies': {
         if (loading) {
-          return (
-            <div className="flex justify-center items-center h-full">
-              <p>Loading...</p>
-            </div>
-          )
+          return <StrategiesSkeleton />
         }
 
         // Add error state handling
@@ -704,7 +701,7 @@ export default function StrategiesPanel({
             </div>
 
             {/* Charts Section */}
-            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3">
+            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3 pb-16">
               {/* Allocation Chart */}
               <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
                 <PieChart width={160} height={160}>

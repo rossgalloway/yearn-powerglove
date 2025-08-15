@@ -6,18 +6,26 @@ import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/chart-container'
 import { ChartErrorBoundary } from '@/components/ErrorBoundary'
 import { apyChartData, tvlChartData, ppsChartData } from '@/types/dataTypes'
+import ChartSkeleton from '@/components/ChartSkeleton'
+import ChartsLoader from '@/components/ChartsLoader'
 
 type ChartData = {
-  apyData: apyChartData
-  tvlData: tvlChartData
-  ppsData: ppsChartData
+  apyData: apyChartData | null
+  tvlData: tvlChartData | null
+  ppsData: ppsChartData | null
+  isLoading?: boolean
+  hasErrors?: boolean
 }
 
 export function ChartsPanel(data: ChartData) {
   const [activeTab, setActiveTab] = useState('historical-apy')
-  const apyChartData = data.apyData
-  const tvlChartData = data.tvlData
-  const ppsChartData = data.ppsData
+  const {
+    apyData,
+    tvlData,
+    ppsData,
+    isLoading = false,
+    hasErrors = false,
+  } = data
 
   // Define timeframe options with values that match the chart component expectations
   const timeframes = [
@@ -27,7 +35,30 @@ export function ChartsPanel(data: ChartData) {
     { label: 'All Time', value: 'all' },
   ]
 
-  const [timeframe, setTimeframe] = useState(timeframes[3]) // Default to 180 Days
+  const [timeframe, setTimeframe] = useState(timeframes[3]) // Default to All Time
+
+  // Show error state if there are errors
+  if (hasErrors) {
+    return (
+      <div className="border-x border-border bg-white">
+        <div className="h-96 flex items-center justify-center">
+          <div className="text-red-500">Error loading chart data</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show skeleton with loader overlay when loading or no data yet
+  if (isLoading || !apyData || !tvlData || !ppsData) {
+    return (
+      <div className="relative">
+        <ChartSkeleton />
+        <ChartsLoader
+          loadingState={isLoading ? 'loading charts' : 'preparing charts'}
+        />
+      </div>
+    )
+  }
 
   // Define chart titles and descriptions based on active tab
   const chartInfo = {
@@ -107,16 +138,13 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <APYChart
-                  chartData={apyChartData}
-                  timeframe={timeframe.value}
-                />
+                <APYChart chartData={apyData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
                 <ChartErrorBoundary>
                   <TVLChart
-                    chartData={tvlChartData}
+                    chartData={tvlData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
@@ -129,16 +157,13 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-pps" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <PPSChart
-                  chartData={ppsChartData}
-                  timeframe={timeframe.value}
-                />
+                <PPSChart chartData={ppsData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-20 pointer-events-none">
                 {/* Ghosted APY chart */}
                 <ChartErrorBoundary>
                   <APYChart
-                    chartData={apyChartData}
+                    chartData={apyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
@@ -149,7 +174,7 @@ export function ChartsPanel(data: ChartData) {
                 {/* Ghosted TVL chart */}
                 <ChartErrorBoundary>
                   <TVLChart
-                    chartData={tvlChartData}
+                    chartData={tvlData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
@@ -162,16 +187,13 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-tvl" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <TVLChart
-                  chartData={tvlChartData}
-                  timeframe={timeframe.value}
-                />
+                <TVLChart chartData={tvlData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-20 pointer-events-none">
                 {/* Ghosted APY chart */}
                 <ChartErrorBoundary>
                   <APYChart
-                    chartData={apyChartData}
+                    chartData={apyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}

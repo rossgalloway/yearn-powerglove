@@ -18,9 +18,9 @@ const VaultsList: React.FC<{
 }> = React.memo(({ vaults, tokenAssets }) => {
   // Calculate available height for virtual scrolling container
   const availableHeight = useViewportHeight({
-    headerHeight: 80, // Header height
-    footerHeight: 64, // Fixed footer height
-    extraOffset: 180, // Summary, table headers, search bar, margins
+    headerHeight: 53, // Header height
+    footerHeight: 53, // Fixed footer height
+    extraOffset: 200, // Summary, table headers, search bar, margins
   })
 
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
