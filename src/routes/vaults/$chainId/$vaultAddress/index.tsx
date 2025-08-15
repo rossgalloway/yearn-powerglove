@@ -6,7 +6,9 @@ import { MainInfoPanel } from '@/components/main-info-panel'
 import React, { Suspense, lazy } from 'react'
 // Lazy load ChartsPanel for code splitting (reduces initial bundle size)
 const ChartsPanel = lazy(() =>
-  import('@/components/charts-panel').then(m => ({ default: m.ChartsPanel }))
+  import('@/components/charts/charts-panel').then(m => ({
+    default: m.ChartsPanel,
+  }))
 )
 import { StrategiesPanel } from '@/components/strategies-panel/index'
 import { format } from 'date-fns'
@@ -29,7 +31,7 @@ import {
   formatUnixTimestamp,
   getEarliestAndLatestTimestamps,
 } from '@/lib/utils'
-import YearnLoader from '@/components/YearnLoader'
+import YearnLoader from '@/components/utils/YearnLoader'
 import {
   Breadcrumb,
   BreadcrumbList,

@@ -1,5 +1,5 @@
 import React from 'react'
-import { VaultListData } from '@/components/VaultRow'
+import { VaultListData } from '@/components/vaults-list/VaultRow'
 import { CHAIN_ID_TO_NAME } from '@/constants/chains'
 
 interface VaultsSearchBarProps {

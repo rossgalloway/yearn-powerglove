@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { VaultListData } from '@/components/VaultRow'
+import { VaultListData } from '@/components/vaults-list/VaultRow'
 import { SortDirection } from '@/utils/sortingUtils'
 
 interface VaultsTableHeaderProps {

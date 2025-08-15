@@ -1,6 +1,6 @@
 import React from 'react'
 import { VirtualScrollTable } from '@/components/ui/VirtualScrollTable'
-import { VaultRow, VaultListData } from '@/components/VaultRow'
+import { VaultRow, VaultListData } from '@/components/vaults-list/VaultRow'
 
 interface VaultsTableProps {
   vaults: VaultListData[]

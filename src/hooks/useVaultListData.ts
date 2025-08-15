@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Vault } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
 import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME } from '@/constants/chains'
-import { VaultListData } from '@/components/VaultRow'
+import { VaultListData } from '@/components/vaults-list/VaultRow'
 
 export function useVaultListData(
   vaults: Vault[],

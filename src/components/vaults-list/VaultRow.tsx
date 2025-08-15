@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { getChainIdByName } from '@/constants/chains'
-import { OptimizedImage } from './ui/OptimizedImage'
+import { OptimizedImage } from '../ui/OptimizedImage'
 
 export interface VaultListData {
   id: string

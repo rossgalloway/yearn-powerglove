@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { VaultsList } from '@/components/vaults-list'
 import { useVaults } from '@/contexts/useVaults'
 import { Vault } from '@/types/vaultTypes'
-import YearnLoader from '@/components/YearnLoader'
+import YearnLoader from '@/components/utils/YearnLoader'
 import { useTokenAssetsContext } from '../contexts/useTokenAssets'
 
 export default function AllVaultsPage() {

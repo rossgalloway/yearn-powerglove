@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { VaultListData } from '@/components/VaultRow'
+import { VaultListData } from '@/components/vaults-list/VaultRow'
 import { SortDirection } from '@/utils/sortingUtils'
 
 type VaultSortColumn = keyof VaultListData

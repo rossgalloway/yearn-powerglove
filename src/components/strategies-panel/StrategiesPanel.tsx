@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { VaultExtended } from '@/types/vaultTypes'
-import StrategiesSkeleton from '@/components/StrategiesSkeleton'
+import StrategiesSkeleton from '@/components/strategies-panel/StrategiesSkeleton'
 import { useStrategiesData } from '@/hooks/useStrategiesData'
 import { useSortingAndFiltering } from '@/hooks/useSortingAndFiltering'
 import { StrategyTable } from './StrategyTable'
