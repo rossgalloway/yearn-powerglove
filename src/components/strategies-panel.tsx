@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import {
   ChevronDown,
   ChevronRight,
@@ -39,7 +39,6 @@ export default function StrategiesPanel({
     vaultDetails: VaultExtended
   }
 }) {
-  const navigate = useNavigate()
   const { assets: tokenAssets } = useTokenAssetsContext()
   if (import.meta.env.MODE === 'development') {
     console.log('props:', props)
@@ -509,17 +508,17 @@ export default function StrategiesPanel({
                             {CHAIN_ID_TO_NAME[Number(strategy.details.chainId)]}
                           </div>
                           {strategy.details.isVault && (
-                            <button
-                              onClick={() =>
-                                navigate({
-                                  to: `/vaults/${strategy.details.chainId}/${strategy.details.vaultAddress}`,
-                                })
-                              }
+                            <Link
+                              to="/vaults/$chainId/$vaultAddress"
+                              params={{
+                                chainId: strategy.details.chainId.toString(),
+                                vaultAddress: strategy.details.vaultAddress,
+                              }}
                               className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                             >
                               Data
                               <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
-                            </button>
+                            </Link>
                           )}
                           {strategy.details.isEndorsed &&
                             strategy.details.isVault && (
@@ -645,17 +644,19 @@ export default function StrategiesPanel({
                                   }
                                 </div>
                                 {strategy.details.isVault && (
-                                  <button
-                                    onClick={() =>
-                                      navigate({
-                                        to: `/vaults/${strategy.details.chainId}/${strategy.details.vaultAddress}`,
-                                      })
-                                    }
+                                  <Link
+                                    to="/vaults/$chainId/$vaultAddress"
+                                    params={{
+                                      chainId:
+                                        strategy.details.chainId.toString(),
+                                      vaultAddress:
+                                        strategy.details.vaultAddress,
+                                    }}
                                     className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                                   >
                                     Data
                                     <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
-                                  </button>
+                                  </Link>
                                 )}
                                 {strategy.details.isEndorsed &&
                                   strategy.details.isVault && (

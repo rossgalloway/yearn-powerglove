@@ -1,9 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@apollo/client'
 import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
 import { queryAPY, queryPPS, queryTVL } from '@/graphql/queries/timeseries'
 import { MainInfoPanel } from '@/components/main-info-panel'
-import { ChartsPanel } from '@/components/charts-panel'
+import React, { Suspense, lazy } from 'react'
+// Lazy load ChartsPanel for code splitting (reduces initial bundle size)
+const ChartsPanel = lazy(() =>
+  import('@/components/charts-panel').then(m => ({ default: m.ChartsPanel }))
+)
 import StrategiesPanel from '@/components/strategies-panel'
 import { format } from 'date-fns'
 import {
@@ -150,7 +154,9 @@ function SingleVaultPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Vaults</BreadcrumbLink>
+              <BreadcrumbLink asChild>
+                <Link to="/">Vaults</Link>
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -161,11 +167,19 @@ function SingleVaultPage() {
       </div>
       <div className="space-y-0">
         <MainInfoPanel {...mainInfoPanelData} />
-        <ChartsPanel
-          apyData={transformedApyData}
-          tvlData={transformedTvlData}
-          ppsData={transformedPpsData}
-        />
+        <Suspense
+          fallback={
+            <div className="h-72 flex items-center justify-center border border-border bg-white">
+              <YearnLoader loadingState="loading charts" />
+            </div>
+          }
+        >
+          <ChartsPanel
+            apyData={transformedApyData}
+            tvlData={transformedTvlData}
+            ppsData={transformedPpsData}
+          />
+        </Suspense>
         <StrategiesPanel props={{ vaultAddress, vaultChainId, vaultDetails }} />
       </div>
     </main>
@@ -189,8 +203,19 @@ function hydrateMainInfoPanelData(
 
   const vaultToken = {
     icon:
-      tokenAssets.find(token => token.symbol === vaultData.asset.symbol)
-        ?.logoURI || '',
+      tokenAssets.find(token => {
+        const isMatch =
+          token.address.toLowerCase() === vaultData.asset.address.toLowerCase()
+        // Only log when there's a match
+        if (isMatch) {
+          console.log('✅ Token match found:', {
+            tokenSymbol: token.symbol,
+            vaultAssetSymbol: vaultData.asset.symbol,
+            logoURI: token.logoURI,
+          })
+        }
+        return isMatch
+      })?.logoURI || '',
     name: vaultData.asset.symbol,
   }
 

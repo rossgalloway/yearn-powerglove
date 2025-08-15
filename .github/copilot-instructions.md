@@ -2,6 +2,18 @@
 
 ## General instructions
 
+If it helps you, please feel free to ask me questions about my experiences with the software that we are building, or as a tester.
+
+I can usually run my own dev environments, so assume that I am running the latest version of the code.
+
+When writing code, please follow best practices for the relevant language and framework.
+
+When writing typescript, please ensure that types are used effectively to minimize the use of `any`.
+
+When writing react code, please use functional components and hooks. Please ensure that components are modular and reusable where possible.
+
+Don't fix markdown lint errors. I can do that myself.
+
 When writing javascript or typescript, always use modern syntax.
 
 When modifying existing code, leave inline comments where code has been modified.
@@ -11,43 +23,50 @@ When in chat mode, if editing existing code, do not output the full updated code
 ## Website Specifications
 
 ### Project Overview
+
 This project, **yearn-powerglove**, is a web application built with React and TypeScript. It uses Vite for development and build tasks, along with ESLint and Prettier for linting and formatting. It is a metrics dashboard that visualizes up to date performance data for Yearn Finance vaults. It displays key metrics including APY (Annual Percentage Yield), TVL (Total Value Locked), historical performance charts, and strategy insights for each vault.
 
 ### Technologies & Frameworks
-- **React**: Core library for building user interfaces.  
-- **TypeScript**: Strongly typed JavaScript.  
-- **Vite**: Fast build tool and development server.  
+
+- **React**: Core library for building user interfaces.
+- **TypeScript**: Strongly typed JavaScript.
+- **Vite**: Fast build tool and development server.
 - **ESLint** & **Prettier**: Ensures consistent code style and quality checks.
 
 ### Notable Dependencies
-- **@apollo/client**: GraphQL client for fetching data.  
-- **@tanstack/react-query**: Data fetching and caching.  
-- **router** packages (React Router, React Router DevTools): Managing application routes.  
-- **Radix UI**: Collection of accessible, unstyled components.  
-- **Tailwind CSS** & **PostCSS**: Utility-first CSS framework and tooling.  
+
+- **@apollo/client**: GraphQL client for fetching data.
+- **@tanstack/react-query**: Data fetching and caching.
+- **router** packages (React Router, React Router DevTools): Managing application routes.
+- **Radix UI**: Collection of accessible, unstyled components.
+- **Tailwind CSS** & **PostCSS**: Utility-first CSS framework and tooling.
 - **TypeScript**: Development dependency for type checking and transpilation.
 
 ### Scripts
-- `dev`: Starts the Vite dev server.  
-- `build`: Runs the TypeScript compiler and then builds using Vite.  
-- `lint`: Lints the codebase using ESLint.  
-- `format`: Formats files with Prettier.  
+
+- `dev`: Starts the Vite dev server.
+- `build`: Runs the TypeScript compiler and then builds using Vite.
+- `lint`: Lints the codebase using ESLint.
+- `format`: Formats files with Prettier.
 - `preview`: Previews the production build locally.
 
 ### Intended Use
-1. **UI**: Offers a robust and accessible component set provided by Radix UI.  
-2. **GraphQL Integration**: Uses Apollo Client for efficient data fetching and state management.  
-3. **Performance**: Vite ensures a speedy development workflow and optimized production builds.  
+
+1. **UI**: Offers a robust and accessible component set provided by Radix UI.
+2. **GraphQL Integration**: Uses Apollo Client for efficient data fetching and state management.
+3. **Performance**: Vite ensures a speedy development workflow and optimized production builds.
 4. **Styling**: Tailwind CSS is used for rapid UI development and consistent styling.
 
 ### Future Notes
-- Additional functionality may integrate with other React libraries or custom hooks.  
-- Testing should be performed regularly to maintain stability.  
+
+- Additional functionality may integrate with other React libraries or custom hooks.
+- Testing should be performed regularly to maintain stability.
 - Code quality is enforced with linting and formatting rules.
 
 ## File tree
 
 built by running `tree -I "node_modules"` project directory
+
 ```
 .
 ├── README.md

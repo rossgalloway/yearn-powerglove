@@ -11,7 +11,10 @@ import { ApolloProvider } from '@apollo/client'
 import { routeTree } from './routeTree.gen'
 import { apolloClient } from './lib/apollo-client'
 
-;(globalThis as any).Buffer = Buffer // type assertion added to fix TS7017 error
+// Polyfill Buffer for browser environment
+if (typeof globalThis.Buffer === 'undefined') {
+  globalThis.Buffer = Buffer
+}
 
 const queryClient = new QueryClient()
 const router = createRouter({ routeTree })

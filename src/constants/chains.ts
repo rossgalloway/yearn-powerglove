@@ -9,6 +9,7 @@ export const CHAIN_ID_TO_NAME: Record<number, string> = {
   8453: 'Base',
   42161: 'Arbitrum',
   747474: 'Katana',
+  80094: 'Berachain',
 }
 
 export function getChainIdByName(name: string): number | undefined {
@@ -19,14 +20,18 @@ export function getChainIdByName(name: string): number | undefined {
 }
 
 export const CHAIN_ID_TO_ICON: Record<number, string> = {
-  1: 'https://assets.smold.app/api/chains/1/logo-32.png',
-  10: 'https://assets.smold.app/api/chains/10/logo-32.png',
-  100: 'https://assets.smold.app/api/chains/100/logo-32.png',
-  137: 'https://assets.smold.app/api/chains/137/logo-32.png',
-  250: 'https://assets.smold.app/api/chains/250/logo-32.png',
-  8453: 'https://assets.smold.app/api/chains/8453/logo-32.png',
-  42161: 'https://assets.smold.app/api/chains/42161/logo-32.png',
-  747474: 'https://assets.smold.app/api/chains/747474/logo-32.png',
+  1: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/1/logo-32.png',
+  10: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/10/logo-32.png',
+  100: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/100/logo-32.png',
+  137: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/137/logo-32.png',
+  250: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/250/logo-32.png',
+  8453: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/8453/logo-32.png',
+  42161:
+    'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/42161/logo-32.png',
+  747474:
+    'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/747474/logo-32.png',
+  80094:
+    'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/80094/logo-32.png',
 }
 
 export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<number, string> = {
@@ -38,6 +43,7 @@ export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<number, string> = {
   8453: 'https://basescan.org/',
   42161: 'https://arbiscan.io',
   747474: 'https://explorer.katanarpc.com/',
+  80094: 'https://berascan.com',
 }
 
 export const VAULT_TYPE_TO_NAME: Record<string, string> = {

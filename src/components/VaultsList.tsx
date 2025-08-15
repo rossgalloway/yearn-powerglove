@@ -1,40 +1,30 @@
 import { useState } from 'react'
+import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
 import { Vault } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
-import {
-  CHAIN_ID_TO_ICON,
-  CHAIN_ID_TO_NAME,
-  getChainIdByName,
-} from '@/constants/chains'
+import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME } from '@/constants/chains'
 import { YearnVaultsSummary } from './YearnVaultsSummary'
-
-interface VaultListData {
-  id: string
-  name: string
-  chain: string
-  chainIconUri: string
-  token: string
-  tokenUri: string
-  type: string
-  APY: string
-  tvl: string
-}
+import { VirtualScrollTable } from './ui/VirtualScrollTable'
+import { VaultRow, VaultListData } from './VaultRow'
+import { useViewportHeight } from '@/hooks/useResponsiveHeight'
 
 type SortColumn = keyof VaultListData
 type SortDirection = 'asc' | 'desc'
 
-export default function VaultsList({
-  vaults,
-  tokenAssets,
-}: {
+const VaultsList: React.FC<{
   vaults: Vault[]
   tokenAssets: TokenAsset[]
-}) {
+}> = React.memo(({ vaults, tokenAssets }) => {
+  // Calculate available height for virtual scrolling container
+  const availableHeight = useViewportHeight({
+    headerHeight: 80, // Header height
+    footerHeight: 64, // Fixed footer height
+    extraOffset: 180, // Summary, table headers, search bar, margins
+  })
+
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [isImageLoaded, setIsImageLoaded] = useState(false) // Added state to track image load status
   const [selectedType, setSelectedType] = useState<string>('') // Track the selected type
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({
     name: '',
@@ -49,7 +39,7 @@ export default function VaultsList({
     tvl: { min: '', max: '' },
   })
 
-  const navigate = useNavigate()
+  // Removed navigate since we're using Link components now
 
   const vaultTypes: Record<string, string> = {
     1: 'V3 Allocator Vault',
@@ -68,8 +58,10 @@ export default function VaultsList({
     chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
     token: vault.asset.symbol,
     tokenUri:
-      tokenAssets.find(token => token.symbol === vault.asset.symbol)?.logoURI ||
-      '',
+      tokenAssets.find(
+        token =>
+          token.address.toLowerCase() === vault.asset.address.toLowerCase()
+      )?.logoURI || '',
     // Modified vault type logic per user request
     type: vault.apiVersion?.startsWith('3')
       ? `${vaultTypes[Number(vault.vaultType)]}`
@@ -318,72 +310,22 @@ export default function VaultsList({
           ))}
         </div>
 
-        {/* Rows */}
-        {filteredVaults.map(vault => (
-          <div
-            key={`${vault.chain}-${vault.id}`}
-            className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
-            onClick={() =>
-              navigate({
-                to: `/vaults/${getChainIdByName(vault.chain)}/${vault.id}`,
-              })
-            }
-          >
-            <div className="flex-[2] text-left">{vault.name}</div>
-            <div className="flex-1 flex justify-end items-center gap-2">
-              {vault.chain}
-              {vault.chainIconUri ? (
-                <div className="w-6 h-6 relative">
-                  {/* Pulsing circle placeholder */}
-                  <div
-                    className={`absolute inset-0 bg-gray-300 rounded-full animate-pulse ${
-                      isImageLoaded ? 'hidden' : 'block'
-                    }`}
-                  ></div>
-                  <img
-                    src={vault.chainIconUri}
-                    alt={vault.chain}
-                    className={`w-6 h-6 ${isImageLoaded ? 'block' : 'hidden'}`}
-                    onLoad={() => setIsImageLoaded(true)} // Set loading state to true when the image loads
-                    onError={() => setIsImageLoaded(false)} // Keep the pulsing circle visible if the image fails to load
-                  />
-                </div>
-              ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                  ?
-                </div> // Pulsing grey circle as fallback
-              )}
-            </div>
-            <div className="flex-1 flex justify-end items-center gap-2">
-              {vault.token}
-              {vault.tokenUri ? (
-                <div className="w-6 h-6 relative">
-                  {/* Pulsing circle placeholder */}
-                  <div
-                    className={`absolute inset-0 bg-gray-300 rounded-full animate-pulse ${
-                      isImageLoaded ? 'hidden' : 'block'
-                    }`}
-                  ></div>
-                  <img
-                    src={vault.tokenUri}
-                    alt={vault.token}
-                    className={`w-6 h-6 ${isImageLoaded ? 'block' : 'hidden'}`}
-                    onLoad={() => setIsImageLoaded(true)} // Set loading state to true when the image loads
-                    onError={() => setIsImageLoaded(false)} // Keep the pulsing circle visible if the image fails to load
-                  />
-                </div>
-              ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full ">
-                  ❓
-                </div> // Pulsing grey circle as fallback
-              )}
-            </div>
-            <div className="flex-1 text-right">{vault.type}</div>
-            <div className="flex-1 text-right">{vault.APY}</div>
-            <div className="flex-1 text-right">{vault.tvl}</div>
-          </div>
-        ))}
+        {/* Virtual Scrolled Rows */}
+        <VirtualScrollTable
+          data={filteredVaults}
+          itemHeight={50} // Fixed height per row - matches VaultRow height
+          containerHeight={availableHeight} // Use full available viewport height
+          renderItem={vault => (
+            <VaultRow key={`${vault.chain}-${vault.id}`} vault={vault} />
+          )}
+          className="border-0"
+          overscan={3} // Render 3 extra items outside viewport
+        />
       </div>
     </div>
   )
-}
+})
+
+VaultsList.displayName = 'VaultsList'
+
+export default VaultsList

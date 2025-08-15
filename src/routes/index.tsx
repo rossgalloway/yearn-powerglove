@@ -6,7 +6,7 @@ import YearnLoader from '@/components/YearnLoader'
 import { useTokenAssetsContext } from '../contexts/useTokenAssets'
 
 export default function AllVaultsPage() {
-  const { vaults, loading, error } = useVaults()
+  const { vaults, loading, error, loadingState } = useVaults()
   const {
     assets,
     loading: assetsLoading,
@@ -16,21 +16,13 @@ export default function AllVaultsPage() {
   // Ensure data is defined before accessing `data.vaults`
   const retrievedVaults: Vault[] = vaults || []
 
+  // Use enhanced loading state for better UX
   if (loading || assetsLoading) {
-    if (loading) {
-      return (
-        <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-          <YearnLoader loadingState="loading vaults" />
-        </main>
-      )
-    }
-    if (assetsLoading) {
-      return (
-        <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-          <YearnLoader loadingState="loading assets" />
-        </main>
-      )
-    }
+    return (
+      <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+        <YearnLoader enhancedLoadingState={loadingState} showProgress={true} />
+      </main>
+    )
   }
 
   if (error || assetsError) {
