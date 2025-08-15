@@ -48,7 +48,7 @@ export function YearnVaultsSummary({
                     {type === 'V3 Allocator Vault'
                       ? 'ERC-4626 multi-strategy vaults. They are typically single asset vaults that allocate to lending and yield farming strategies.'
                       : type === 'V3 Strategy Vault'
-                        ? 'ERC-4626 single-strategy vaults that serve as both stand-alone vaults and also be composed together in Allocator Vaults.'
+                        ? 'ERC-4626 single-strategy vaults that serve as both stand-alone vaults and can also be composed together in Allocator Vaults.'
                         : type === 'V2 Factory Vault'
                           ? 'The classic V2 Yearn vaults for curve style liquidity pools. They can be created permissionlessly via factory contracts.'
                           : 'Legacy V2 Yearn vaults are a collection of single and multi-asset vaults from before the release of V3 and the Factory vaults.'}
