@@ -8,8 +8,8 @@ function AboutPage() {
 
         <div className="prose prose-gray max-w-none space-y-6 text-gray-700">
           <p className="leading-relaxed">
-            Yearn is a decentralized finance (DeFi) protocol operating on
-            Ethereum that automates yield generation strategies across various
+            Yearn is a decentralized finance (DeFi) protocol, operating on
+            Ethereum, that automates yield generation strategies across various
             DeFi platforms. Founded in 2020, Yearn is one of the most trusted
             and innovative protocols in the DeFi ecosystem.
           </p>

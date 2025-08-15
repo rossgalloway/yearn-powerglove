@@ -704,7 +704,7 @@ export default function StrategiesPanel({
             </div>
 
             {/* Charts Section */}
-            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around">
+            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3">
               {/* Allocation Chart */}
               <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
                 <PieChart width={160} height={160}>
@@ -809,7 +809,7 @@ export default function StrategiesPanel({
 
   return (
     <div className="w-full">
-      <div className="w-full mx-auto bg-white border-x border-b-0 border-border">
+      <div className="w-full mx-auto bg-white border-x border-b border-border">
         {/* Tab Navigation */}
         <div className="flex items-center border-b border-border">
           {/*{['Strategies', 'Info', 'Risk'].map(tab => (*/}
