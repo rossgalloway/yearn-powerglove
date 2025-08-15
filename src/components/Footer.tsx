@@ -1,3 +1,5 @@
+import { ExternalLink } from 'lucide-react'
+
 export default function Footer() {
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-border bg-white py-3 mt-0">
@@ -16,23 +18,13 @@ export default function Footer() {
               href="https://docs.yearn.fi"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-gray-500 hover:text-gray-700 flex items-center" // Added flex and items-center
             >
-              Docs
-            </a>
-            {/* TODO: add page or remove link */}
-            <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Terms of Service
+              Docs <ExternalLink className="ml-1 h-3 w-3" />
             </a>
             {/* TODO: add page or remove link */}
             <a
               href="/about"
-              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
@@ -41,7 +33,6 @@ export default function Footer() {
             {/* TODO: add page or remove link */}
             <a
               href="/privacy"
-              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
@@ -49,7 +40,6 @@ export default function Footer() {
             </a>
             <a
               href="/disclaimer"
-              target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >

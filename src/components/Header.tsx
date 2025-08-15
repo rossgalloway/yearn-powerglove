@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useVaults } from '@/contexts/useVaults'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { ExternalLink } from 'lucide-react'
 
 export default function Header() {
   const { vaults } = useVaults()
@@ -94,13 +95,21 @@ export default function Header() {
               ))}
             </div>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-[#0657f9] border-[#0657f9] rounded-none"
+          {/* Added external link to Discord for partnership */}
+          <a
+            href="https://discord.gg/NankxHeU"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Partner with us
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-[#0657f9] border-[#0657f9] rounded-none flex items-center gap-2"
+            >
+              Partner with us
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          </a>
         </div>
       </div>
     </header>
