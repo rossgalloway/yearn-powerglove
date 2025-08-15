@@ -21,6 +21,7 @@ import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
 import { Strategy } from '@/types/dataTypes'
 import { useQueryStrategies } from '@/contexts/useQueryStrategies'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
+import StrategiesSkeleton from '@/components/StrategiesSkeleton'
 
 // Define sort column types
 type SortColumn =
@@ -381,11 +382,7 @@ export default function StrategiesPanel({
     switch (activeTab) {
       case 'Strategies': {
         if (loading) {
-          return (
-            <div className="flex justify-center items-center h-full">
-              <p>Loading...</p>
-            </div>
-          )
+          return <StrategiesSkeleton />
         }
 
         // Add error state handling
@@ -504,9 +501,6 @@ export default function StrategiesPanel({
                     {expandedRow === strategy.id && (
                       <div className="bg-[#f5f5f5]/30 px-12 py-4 border-t border-[#f5f5f5]">
                         <div className="flex gap-4 mb-4">
-                          <div className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center">
-                            {CHAIN_ID_TO_NAME[Number(strategy.details.chainId)]}
-                          </div>
                           {strategy.details.isVault && (
                             <Link
                               to="/vaults/$chainId/$vaultAddress"
@@ -517,7 +511,6 @@ export default function StrategiesPanel({
                               className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                             >
                               Data
-                              <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
                             </Link>
                           )}
                           {strategy.details.isEndorsed &&
@@ -543,6 +536,10 @@ export default function StrategiesPanel({
                           </a>
                         </div>
                         <div className="space-y-1 text-sm">
+                          <div>
+                            Chain:{' '}
+                            {CHAIN_ID_TO_NAME[Number(strategy.details.chainId)]}
+                          </div>
                           <div>
                             Management Fee:{' '}
                             {strategy.details.managementFee
@@ -636,13 +633,6 @@ export default function StrategiesPanel({
                           {expandedRow === strategy.id && (
                             <div className="bg-[#f5f5f5]/30 px-12 py-4 border-t border-[#f5f5f5]">
                               <div className="flex gap-4 mb-4">
-                                <div className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center">
-                                  {
-                                    CHAIN_ID_TO_NAME[
-                                      Number(strategy.details.chainId)
-                                    ]
-                                  }
-                                </div>
                                 {strategy.details.isVault && (
                                   <Link
                                     to="/vaults/$chainId/$vaultAddress"
@@ -655,7 +645,6 @@ export default function StrategiesPanel({
                                     className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                                   >
                                     Data
-                                    <ExternalLink className="w-3 h-3 text-[#4f4f4f]" />
                                   </Link>
                                 )}
                                 {strategy.details.isEndorsed &&
@@ -686,6 +675,14 @@ export default function StrategiesPanel({
                               </div>
                               <div className="space-y-1 text-sm">
                                 <div>
+                                  Chain:{' '}
+                                  {
+                                    CHAIN_ID_TO_NAME[
+                                      Number(strategy.details.chainId)
+                                    ]
+                                  }
+                                </div>
+                                <div>
                                   Management Fee:{' '}
                                   {strategy.details.managementFee}
                                 </div>
@@ -704,7 +701,7 @@ export default function StrategiesPanel({
             </div>
 
             {/* Charts Section */}
-            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3">
+            <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3 pb-16">
               {/* Allocation Chart */}
               <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
                 <PieChart width={160} height={160}>

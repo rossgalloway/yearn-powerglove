@@ -97,59 +97,52 @@ function SingleVaultPage() {
     },
   })
 
-  // Handle loading states
-  if (vaultLoading || apyLoading || tvlLoading || ppsLoading) {
-    // Inline loading states for each query
-    if (vaultLoading) {
-      return (
-        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-          <YearnLoader loadingState="loading selected vault" />
-        </div>
-      )
-    }
-    if (apyLoading) {
-      return (
-        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-          <YearnLoader loadingState="loading APY data" />
-        </div>
-      )
-    }
-    if (tvlLoading) {
-      return (
-        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-          <YearnLoader loadingState="loading TVL data" />
-        </div>
-      )
-    }
-    if (ppsLoading) {
-      return (
-        <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
-          <YearnLoader loadingState="loading PPS data" />
-        </div>
-      )
-    }
+  // Handle loading states - only wait for vault data
+  if (vaultLoading) {
+    return (
+      <div className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+        <YearnLoader loadingState="loading selected vault" />
+      </div>
+    )
   }
 
-  // Handle errors
-  if (vaultError || apyError || tvlError || ppsError) {
+  // Handle vault error
+  if (vaultError) {
     return <div>Error fetching vault data</div>
   }
 
-  // Extract data
+  // Extract vault data
   const vaultDetails: VaultExtended =
     vaultData?.vault ??
     (() => {
       throw new Error('Vault data is undefined')
     })() // Ensure vaultData?.vault is not undefined
   const mainInfoPanelData = hydrateMainInfoPanelData(vaultDetails, tokenAssets)
-  const apyDataClean = apyData.timeseries || {}
-  const tvlDataClean = tvlData.timeseries || {}
-  const ppsDataClean = ppsData.timeseries || {}
-  const { transformedApyData, transformedTvlData, transformedPpsData } =
-    processChartData(apyDataClean, tvlDataClean, ppsDataClean)
+
+  // Process chart data only if all chart data is loaded
+  let transformedApyData: apyChartData | null = null
+  let transformedTvlData: tvlChartData | null = null
+  let transformedPpsData: ppsChartData | null = null
+
+  if (
+    !apyLoading &&
+    !tvlLoading &&
+    !ppsLoading &&
+    !apyError &&
+    !tvlError &&
+    !ppsError
+  ) {
+    const apyDataClean = apyData.timeseries || {}
+    const tvlDataClean = tvlData.timeseries || {}
+    const ppsDataClean = ppsData.timeseries || {}
+    const chartData = processChartData(apyDataClean, tvlDataClean, ppsDataClean)
+    transformedApyData = chartData.transformedApyData
+    transformedTvlData = chartData.transformedTvlData
+    transformedPpsData = chartData.transformedPpsData
+  }
 
   return (
-    <main className="flex-1 container pt-0 pb-0">
+    <main className="flex-1 container pt-0 pb-0 h-full overflow-y-auto">
       <div className="px-6 pt-2 border border-border bg-white border-b-0 border-t-0">
         <Breadcrumb>
           <BreadcrumbList>
@@ -167,17 +160,13 @@ function SingleVaultPage() {
       </div>
       <div className="space-y-0">
         <MainInfoPanel {...mainInfoPanelData} />
-        <Suspense
-          fallback={
-            <div className="h-72 flex items-center justify-center border border-border bg-white">
-              <YearnLoader loadingState="loading charts" />
-            </div>
-          }
-        >
+        <Suspense fallback={null}>
           <ChartsPanel
             apyData={transformedApyData}
             tvlData={transformedTvlData}
             ppsData={transformedPpsData}
+            isLoading={apyLoading || tvlLoading || ppsLoading}
+            hasErrors={!!apyError || !!tvlError || !!ppsError}
           />
         </Suspense>
         <StrategiesPanel props={{ vaultAddress, vaultChainId, vaultDetails }} />
