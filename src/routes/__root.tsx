@@ -11,13 +11,13 @@ export const Route = createRootRoute({
       <>
         <VaultsProvider>
           <ScrollToTop />
-          <div className="flex min-h-screen flex-col bg-[#f5f5f5]">
+          <div className="flex min-h-screen flex-col bg-[#f5f5f5] pb-16">
             <Header />
-            <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
+            <main className="flex-1 px-0 py-0 max-w-[1400px] mx-auto w-full">
               <Outlet />
             </main>
-            <Footer />
           </div>
+          <Footer />
           <TanStackRouterDevtools />
         </VaultsProvider>
       </>

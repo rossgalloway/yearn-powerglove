@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-white py-6 mt-0">
-      <div className="container px-8">
+    <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-border bg-white py-3 mt-0">
+      <div className="container px-8 max-w-[1400px] mx-auto">
         <div className="flex flex-row items-center justify-between gap-6">
           <div className="flex items-center justify-center">
             <img
@@ -20,6 +20,7 @@ export default function Footer() {
             >
               Docs
             </a>
+            {/* TODO: add page or remove link */}
             <a
               href="/terms"
               target="_blank"
@@ -28,6 +29,7 @@ export default function Footer() {
             >
               Terms of Service
             </a>
+            {/* TODO: add page or remove link */}
             <a
               href="/about"
               target="_blank"
@@ -36,6 +38,7 @@ export default function Footer() {
             >
               About Yearn
             </a>
+            {/* TODO: add page or remove link */}
             <a
               href="/privacy"
               target="_blank"
@@ -50,6 +53,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
+              {/* TODO: add page or remove link */}
               Disclaimer
             </a>
           </div>

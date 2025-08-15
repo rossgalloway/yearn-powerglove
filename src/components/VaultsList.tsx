@@ -1,28 +1,13 @@
 import { useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
 import { Vault } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
-import {
-  CHAIN_ID_TO_ICON,
-  CHAIN_ID_TO_NAME,
-  getChainIdByName,
-} from '@/constants/chains'
+import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME } from '@/constants/chains'
 import { YearnVaultsSummary } from './YearnVaultsSummary'
-import { OptimizedImage } from './ui/OptimizedImage'
-
-interface VaultListData {
-  id: string
-  name: string
-  chain: string
-  chainIconUri: string
-  token: string
-  tokenUri: string
-  type: string
-  APY: string
-  tvl: string
-}
+import { VirtualScrollTable } from './ui/VirtualScrollTable'
+import { VaultRow, VaultListData } from './VaultRow'
+import { useViewportHeight } from '@/hooks/useResponsiveHeight'
 
 type SortColumn = keyof VaultListData
 type SortDirection = 'asc' | 'desc'
@@ -31,6 +16,13 @@ const VaultsList: React.FC<{
   vaults: Vault[]
   tokenAssets: TokenAsset[]
 }> = React.memo(({ vaults, tokenAssets }) => {
+  // Calculate available height for virtual scrolling container
+  const availableHeight = useViewportHeight({
+    headerHeight: 80, // Header height
+    footerHeight: 64, // Fixed footer height
+    extraOffset: 180, // Summary, table headers, search bar, margins
+  })
+
   const [sortColumn, setSortColumn] = useState<SortColumn>('tvl') // default sort column changed to TVL
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [selectedType, setSelectedType] = useState<string>('') // Track the selected type
@@ -318,53 +310,17 @@ const VaultsList: React.FC<{
           ))}
         </div>
 
-        {/* Rows */}
-        {filteredVaults.map(vault => (
-          <Link
-            key={`${vault.chain}-${vault.id}`}
-            to="/vaults/$chainId/$vaultAddress"
-            params={{
-              chainId: (getChainIdByName(vault.chain) || 1).toString(),
-              vaultAddress: vault.id,
-            }}
-            className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
-          >
-            <div className="flex-[2] text-left">{vault.name}</div>
-            <div className="flex-1 flex justify-end items-center gap-2">
-              {vault.chain}
-              {vault.chainIconUri ? (
-                <OptimizedImage
-                  src={vault.chainIconUri}
-                  alt={vault.chain}
-                  className="w-6 h-6"
-                  fallbackClassName="w-6 h-6"
-                />
-              ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                  ?
-                </div>
-              )}
-            </div>
-            <div className="flex-1 flex justify-end items-center gap-2">
-              {vault.token}
-              {vault.tokenUri ? (
-                <OptimizedImage
-                  src={vault.tokenUri}
-                  alt={vault.token}
-                  className="w-6 h-6"
-                  fallbackClassName="w-6 h-6"
-                />
-              ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full">
-                  ❓
-                </div>
-              )}
-            </div>
-            <div className="flex-1 text-right">{vault.type}</div>
-            <div className="flex-1 text-right">{vault.APY}</div>
-            <div className="flex-1 text-right">{vault.tvl}</div>
-          </Link>
-        ))}
+        {/* Virtual Scrolled Rows */}
+        <VirtualScrollTable
+          data={filteredVaults}
+          itemHeight={50} // Fixed height per row - matches VaultRow height
+          containerHeight={availableHeight} // Use full available viewport height
+          renderItem={vault => (
+            <VaultRow key={`${vault.chain}-${vault.id}`} vault={vault} />
+          )}
+          className="border-0"
+          overscan={3} // Render 3 extra items outside viewport
+        />
       </div>
     </div>
   )
