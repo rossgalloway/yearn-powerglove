@@ -8,7 +8,7 @@ import React, { Suspense, lazy } from 'react'
 const ChartsPanel = lazy(() =>
   import('@/components/charts-panel').then(m => ({ default: m.ChartsPanel }))
 )
-import StrategiesPanel from '@/components/strategies-panel'
+import { StrategiesPanel } from '@/components/strategies-panel/index'
 import { format } from 'date-fns'
 import {
   CHAIN_ID_TO_ICON,
@@ -169,7 +169,11 @@ function SingleVaultPage() {
             hasErrors={!!apyError || !!tvlError || !!ppsError}
           />
         </Suspense>
-        <StrategiesPanel props={{ vaultAddress, vaultChainId, vaultDetails }} />
+        <StrategiesPanel
+          vaultAddress={vaultAddress}
+          vaultChainId={vaultChainId}
+          vaultDetails={vaultDetails}
+        />
       </div>
     </main>
   )
