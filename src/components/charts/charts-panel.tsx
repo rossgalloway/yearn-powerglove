@@ -3,11 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import APYChart from '@/components/charts/APYChart'
 import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
-import { FixedHeightChartContainer } from '@/components/chart-container'
-import { ChartErrorBoundary } from '@/components/ErrorBoundary'
+import { FixedHeightChartContainer } from '@/components/charts/chart-container'
+import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
 import { apyChartData, tvlChartData, ppsChartData } from '@/types/dataTypes'
-import ChartSkeleton from '@/components/ChartSkeleton'
-import ChartsLoader from '@/components/ChartsLoader'
+import ChartSkeleton from '@/components/charts/ChartSkeleton'
+import ChartsLoader from '@/components/charts/ChartsLoader'
 
 type ChartData = {
   apyData: apyChartData | null

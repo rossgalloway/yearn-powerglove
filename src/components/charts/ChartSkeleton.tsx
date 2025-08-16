@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { FixedHeightChartContainer } from '@/components/chart-container'
+import { FixedHeightChartContainer } from '@/components/charts/chart-container'
 
 const ChartSkeleton: React.FC = () => {
   // Define timeframe options to match the real component

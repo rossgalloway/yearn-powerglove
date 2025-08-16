@@ -18,11 +18,11 @@ export default function Footer() {
               href="https://docs.yearn.fi"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700 flex items-center" // Added flex and items-center
+              className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
             >
               Docs <ExternalLink className="ml-1 h-3 w-3" />
             </a>
-            {/* TODO: add page or remove link */}
+
             <a
               href="/about"
               rel="noopener noreferrer"
@@ -30,7 +30,7 @@ export default function Footer() {
             >
               About Yearn
             </a>
-            {/* TODO: add page or remove link */}
+
             <a
               href="/privacy"
               rel="noopener noreferrer"
@@ -43,7 +43,6 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              {/* TODO: add page or remove link */}
               Disclaimer
             </a>
           </div>
