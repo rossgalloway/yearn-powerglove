@@ -90,12 +90,10 @@ export default function Header() {
                   <span className="text-gray-600 text-sm">
                     {vault.apiVersion}
                   </span>{' '}
-                  {/* Added apiVersion */}
                 </Link>
               ))}
             </div>
           )}
-          {/* Added external link to Discord for partnership */}
           <a
             href="https://discord.gg/NankxHeU"
             target="_blank"
