@@ -7,9 +7,9 @@ import { ExternalLink } from 'lucide-react'
 export default function Header() {
   const { vaults } = useVaults()
   const [searchTerm, setSearchTerm] = useState('')
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false) // State to control dropdown visibility
-  const dropdownRef = useRef<HTMLDivElement>(null) // Ref for the dropdown
-  const searchInputRef = useRef<HTMLInputElement>(null) // Ref for the search input
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Filter vaults based on the search term
   const filteredVaults = vaults.filter(
@@ -27,7 +27,7 @@ export default function Header() {
         searchInputRef.current &&
         !searchInputRef.current.contains(event.target as Node)
       ) {
-        setIsDropdownOpen(false) // Close dropdown if clicking outside
+        setIsDropdownOpen(false)
         setSearchTerm('')
       }
     }

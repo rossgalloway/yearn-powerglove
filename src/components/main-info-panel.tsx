@@ -8,7 +8,7 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
   const handleCopy = () => {
     navigator.clipboard.writeText(data.vaultAddress)
     setCopied(true)
-    setTimeout(() => setCopied(false), 1000) // Reset after 1 seconds
+    setTimeout(() => setCopied(false), 1000)
   }
 
   return (
