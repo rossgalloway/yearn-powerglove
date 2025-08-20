@@ -1,195 +1,89 @@
 <!-- markdownlint-disable-file -->
 
-## General instructions
+## Project Overview
 
-If it helps you, please feel free to ask me questions about my experiences with the software that we are building, or as a tester.
+**Yearn Powerglove** is a React/TypeScript dashboard for visualizing Yearn Finance vault metrics (APY, TVL, strategies). Built with TanStack Router, Apollo GraphQL, and Tailwind CSS.
 
-I can usually run my own dev environments, so assume that I am running the latest version of the code.
+## Development Workflow
 
-When writing code, please follow best practices for the relevant language and framework.
-
-When writing typescript, please ensure that types are used effectively to minimize the use of `any`.
-
-When writing react code, please use functional components and hooks. Please ensure that components are modular and reusable where possible.
-
-Don't fix markdown lint errors. I can do that myself.
-
-When writing javascript or typescript, always use modern syntax.
-
-When modifying existing code, leave inline comments where code has been modified.
-
-When in chat mode, if editing existing code, do not output the full updated code if it is more than 100 lines long, unless specifically asked to. Focus on the areas where the code has been changed.
-
-## Website Specifications
-
-### Project Overview
-
-This project, **yearn-powerglove**, is a web application built with React and TypeScript. It uses Vite for development and build tasks, along with ESLint and Prettier for linting and formatting. It is a metrics dashboard that visualizes up to date performance data for Yearn Finance vaults. It displays key metrics including APY (Annual Percentage Yield), TVL (Total Value Locked), historical performance charts, and strategy insights for each vault.
-
-### Technologies & Frameworks
-
-- **React**: Core library for building user interfaces.
-- **TypeScript**: Strongly typed JavaScript.
-- **Vite**: Fast build tool and development server.
-- **ESLint** & **Prettier**: Ensures consistent code style and quality checks.
-
-### Notable Dependencies
-
-- **@apollo/client**: GraphQL client for fetching data.
-- **@tanstack/react-query**: Data fetching and caching.
-- **router** packages (React Router, React Router DevTools): Managing application routes.
-- **Radix UI**: Collection of accessible, unstyled components.
-- **Tailwind CSS** & **PostCSS**: Utility-first CSS framework and tooling.
-- **TypeScript**: Development dependency for type checking and transpilation.
-
-### Scripts
-
-- `dev`: Starts the Vite dev server.
-- `build`: Runs the TypeScript compiler and then builds using Vite.
-- `lint`: Lints the codebase using ESLint.
-- `format`: Formats files with Prettier.
-- `preview`: Previews the production build locally.
-
-### Intended Use
-
-1. **UI**: Offers a robust and accessible component set provided by Radix UI.
-2. **GraphQL Integration**: Uses Apollo Client for efficient data fetching and state management.
-3. **Performance**: Vite ensures a speedy development workflow and optimized production builds.
-4. **Styling**: Tailwind CSS is used for rapid UI development and consistent styling.
-
-### Future Notes
-
-- Additional functionality may integrate with other React libraries or custom hooks.
-- Testing should be performed regularly to maintain stability.
-- Code quality is enforced with linting and formatting rules.
-
-## File tree
-
-built by running `tree -I "node_modules"` project directory
-
+```bash
+npm run dev          # Start dev server with HMR
+npm run build        # TypeScript compile + Vite build
+npm run test         # Run Vitest tests
+npm run test:watch   # Watch mode testing
+npm run lint         # ESLint check
+npm run format       # Prettier formatting
 ```
-.
-├── README.md
-├── components.json
-├── eslint.config.js
-├── index.html
-├── package-lock.json
-├── package.json
-├── postcss.config.js
-├── public
-│   ├── YFILogoGradient.jpg
-│   ├── favicon.ico
-│   ├── fonts
-│   │   ├── //fonts removed from tree diagram to save space
-│   │   └── fonts.css
-│   ├── github-icon.svg
-│   ├── logo.svg
-│   ├── twitter-x.svg
-│   └── yearn-link-icon.svg
-├── src
-│   ├── components
-│   │   ├── Footer.tsx
-│   │   ├── Header.tsx
-│   │   ├── ScrollToTop.tsx
-│   │   ├── VaultsList.tsx
-│   │   ├── YearnVaultsSummary.tsx
-│   │   ├── chart-container.tsx
-│   │   ├── charts
-│   │   │   ├── APYChart.tsx
-│   │   │   ├── PPSChart.tsx
-│   │   │   └── TVLChart.tsx
-│   │   ├── charts-panel.tsx
-│   │   ├── main-info-panel.tsx
-│   │   ├── strategies-panel.tsx
-│   │   └── ui
-│   │       ├── accordion.tsx
-│   │       ├── alert-dialog.tsx
-│   │       ├── alert.tsx
-│   │       ├── aspect-ratio.tsx
-│   │       ├── avatar.tsx
-│   │       ├── badge.tsx
-│   │       ├── breadcrumb.tsx
-│   │       ├── button.tsx
-│   │       ├── calendar.tsx
-│   │       ├── card.tsx
-│   │       ├── carousel.tsx
-│   │       ├── chart.tsx
-│   │       ├── checkbox.tsx
-│   │       ├── collapsible.tsx
-│   │       ├── command.tsx
-│   │       ├── context-menu.tsx
-│   │       ├── dialog.tsx
-│   │       ├── drawer.tsx
-│   │       ├── dropdown-menu.tsx
-│   │       ├── form.tsx
-│   │       ├── hover-card.tsx
-│   │       ├── input-otp.tsx
-│   │       ├── input.tsx
-│   │       ├── label.tsx
-│   │       ├── menubar.tsx
-│   │       ├── navigation-menu.tsx
-│   │       ├── pagination.tsx
-│   │       ├── popover.tsx
-│   │       ├── progress.tsx
-│   │       ├── radio-group.tsx
-│   │       ├── resizable.tsx
-│   │       ├── scroll-area.tsx
-│   │       ├── select.tsx
-│   │       ├── separator.tsx
-│   │       ├── sheet.tsx
-│   │       ├── sidebar.tsx
-│   │       ├── skeleton.tsx
-│   │       ├── slider.tsx
-│   │       ├── sonner.tsx
-│   │       ├── switch.tsx
-│   │       ├── table.tsx
-│   │       ├── tabs.tsx
-│   │       ├── textarea.tsx
-│   │       ├── toast.tsx
-│   │       ├── toaster.tsx
-│   │       ├── toggle-group.tsx
-│   │       ├── toggle.tsx
-│   │       ├── tooltip.tsx
-│   │       ├── use-mobile.tsx
-│   │       └── use-toast.ts
-│   ├── config
-│   ├── constants
-│   │   ├── chains.ts
-│   │   └── smolAssets.json
-│   ├── graphql
-│   │   ├── filters
-│   │   │   └── vaultFilters.ts
-│   │   ├── queries
-│   │   │   ├── strategies.ts
-│   │   │   ├── timeseries.ts
-│   │   │   └── vaults.ts
-│   │   └── schema.graphql
-│   ├── hooks
-│   ├── lib
-│   │   ├── apollo-client.ts
-│   │   ├── queries.ts
-│   │   └── utils.ts
-│   ├── main.tsx
-│   ├── routeTree.gen.ts
-│   ├── routes
-│   │   ├── __root.tsx
-│   │   ├── index.tsx
-│   │   └── vaults
-│   │       └── $chainId
-│   │           └── $vaultAddress
-│   │               └── index.tsx
-│   ├── styles
-│   │   └── globals.css
-│   ├── types
-│   │   ├── dataTypes.ts
-│   │   └── vaultTypes.ts
-│   ├── utils
-│   │   ├── filterChains.ts
-│   │   └── format-date.ts
-│   ├── vite-env.d.ts
-│   └── wagmi.ts
-├── tailwind.config.js
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
-```
+
+## Architecture Patterns
+
+### Data Flow
+
+1. **Context Providers**: `VaultsContext` wraps the app, manages global vault/strategy state via Apollo
+2. **GraphQL Queries**: Centralized in `/src/graphql/queries/` (vaults.ts, strategies.ts, timeseries.ts)
+3. **Type System**: Strong typing with `/src/types/vaultTypes.ts` and `/src/types/dataTypes.ts`
+4. **Filtering**: Vault filters in `/src/graphql/filters/vaultFilters.ts` (e.g., `filterYearnVaults()`)
+
+### Component Structure
+
+- **Route-based**: TanStack Router with file-based routing in `/src/routes/`
+- **Lazy Loading**: Charts use `React.lazy()` for code splitting (see vault detail page)
+- **Context Pattern**: Multiple contexts (`VaultsContext`, `StrategiesContext`, `TokenAssetsContext`)
+- **UI Components**: Radix UI primitives in `/src/components/ui/` with Tailwind styling
+
+### Critical Files to Understand
+
+- `/src/main.tsx`: App entry with Apollo/Query providers setup
+- `/src/routes/__root.tsx`: Root layout with `VaultsProvider` wrapper
+- `/src/contexts/VaultsContext.tsx`: Global state management with loading coordination
+- `/src/routes/vaults/$chainId/$vaultAddress/index.tsx`: Dynamic routing example
+
+### Development Conventions
+
+- **Path Alias**: `@/` maps to `/src/` (configured in vite.config.ts)
+- **Memo Usage**: Performance-critical components use `React.memo()` (see APYChart)
+- **Environment**: `VITE_PUBLIC_GRAPHQL_URL` for GraphQL endpoint
+- **Testing**: Vitest with jsdom, mock `getBoundingClientRect` for Recharts
+- **TypeScript**: Strict typing, avoid `any`, use proper interfaces from `/src/types/`
+
+## Coding Guidelines
+
+- **Functional Components**: Use functional components with hooks, avoid class components
+- **TypeScript**: Strict typing required, avoid `any`, use interfaces from `/src/types/`
+- **Modern Syntax**: ES6+ features, destructuring, async/await over promises
+- **Performance**: Use `React.memo()` for expensive components, lazy load charts/heavy components
+- **Comments**: Add inline comments when modifying existing code to explain changes
+- **File Organization**: Follow existing patterns - components in `/components/`, types in `/types/`, etc.
+
+## Common Tasks
+
+### Adding New Vault Metrics
+
+1. Define types in `/src/types/vaultTypes.ts` or `/src/types/dataTypes.ts`
+2. Add GraphQL query fragments in `/src/graphql/queries/`
+3. Update context providers if global state needed
+4. Create chart components following `/src/components/charts/APYChart.tsx` pattern
+
+### Testing Chart Components
+
+- Mock `getBoundingClientRect` for Recharts components
+- Use jsdom environment (configured in vitest.config.ts)
+- Test rendering without crashes, not complex interactions
+
+### Adding New Routes
+
+- Use TanStack Router file-based routing in `/src/routes/`
+- Dynamic routes use `$paramName` syntax (see vault detail route)
+- Wrap route components in appropriate context providers
+
+## General Tips and Guidelines
+
+- If it helps you, please feel free to ask me questions about my experiences with the software that we are building, or as a tester.
+- I can run my own dev environments, so assume that I am running the latest version of the code. Don't run a dev build yourself
+- When writing code, please follow best practices for the relevant language and framework.
+- When writing typescript, please ensure that types are used effectively to minimize the use of `any`.
+- When writing react code, please use functional components and hooks. Please ensure that components are modular and reusable where possible.
+- Don't fix markdown lint errors. I can do that myself.
+- When writing javascript or typescript, always use modern syntax.
+- When modifying existing code, leave inline comments where code has been modified.
+- When in chat mode, if editing existing code, do not output the full updated code if it is more than 100 lines long, unless specifically asked to. Focus on the areas where the code has been changed.

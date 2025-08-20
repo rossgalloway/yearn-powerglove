@@ -3,7 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { VaultsProvider } from '@/contexts/VaultsContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import ScrollToTop from '@/components/ScrollToTop'
+import ScrollToTop from '@/components/utils/ScrollToTop'
 
 export const Route = createRootRoute({
   component: function RootComponent() {

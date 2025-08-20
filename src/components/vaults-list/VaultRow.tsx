@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { getChainIdByName } from '@/constants/chains'
-import { OptimizedImage } from './ui/OptimizedImage'
+import { OptimizedImage } from '../ui/OptimizedImage'
 
 export interface VaultListData {
   id: string
@@ -28,7 +28,7 @@ export const VaultRow: React.FC<VaultRowProps> = ({ vault }) => {
         vaultAddress: vault.id,
       }}
       className="flex px-6 py-2 border-b hover:bg-muted/40 transition-colors cursor-pointer bg-white"
-      style={{ height: '50px' }} // Fixed height for virtual scrolling
+      style={{ height: '50px' }}
     >
       <div className="flex-[2] text-left flex items-center">{vault.name}</div>
       <div className="flex-1 flex justify-end items-center gap-2">
