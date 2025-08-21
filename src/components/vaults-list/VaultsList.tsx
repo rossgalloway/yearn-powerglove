@@ -6,7 +6,7 @@ import { useViewportHeight } from '@/hooks/useResponsiveHeight'
 import { useVaultListData } from '@/hooks/useVaultListData'
 import { useVaultFiltering } from '@/hooks/useVaultFiltering'
 import { VaultsTableHeader } from './VaultsTableHeader'
-import { VaultsSearchBar } from './VaultsSearchBar'
+import { VaultsFilterBar } from './VaultsFilterBar'
 import { VaultsTable } from './VaultsTable'
 
 interface VaultsListProps {
@@ -28,13 +28,15 @@ export const VaultsList: React.FC<VaultsListProps> = React.memo(
     const {
       sortColumn,
       sortDirection,
-      searchTerms,
-      rangeFilters,
-      selectedType,
-      setSearchTerms,
-      setRangeFilters,
+      searchTerm,
+      selectedChains,
+      selectedTypes,
+      setSearchTerm,
+      setSelectedChains,
+      setSelectedTypes,
       handleSort,
-      handleTypeFilterChange,
+      handleToggleChain,
+      handleToggleType,
       filteredAndSortedVaults,
     } = useVaultFiltering(vaultListData)
 
@@ -42,8 +44,18 @@ export const VaultsList: React.FC<VaultsListProps> = React.memo(
       <div>
         <YearnVaultsSummary
           vaults={vaults}
-          selectedType={selectedType}
-          onTypeFilterChange={handleTypeFilterChange}
+          selectedType={selectedTypes[0] || ''}
+          onTypeFilterChange={(type: string) => setSelectedTypes([type])}
+        />
+        {/* Filters Bar */}
+        <VaultsFilterBar
+          selectedChains={selectedChains}
+          selectedTypes={selectedTypes}
+          searchTerm={searchTerm}
+          onChainToggle={handleToggleChain}
+          onSetSelectedChains={setSelectedChains}
+          onTypeToggle={handleToggleType}
+          onSearchChange={setSearchTerm}
         />
 
         {/* Vaults List */}
@@ -53,15 +65,6 @@ export const VaultsList: React.FC<VaultsListProps> = React.memo(
             sortColumn={sortColumn}
             sortDirection={sortDirection}
             onSort={handleSort}
-          />
-
-          {/* Search Bar Row */}
-          <VaultsSearchBar
-            searchTerms={searchTerms}
-            rangeFilters={rangeFilters}
-            onSearchTermsChange={setSearchTerms}
-            onRangeFiltersChange={setRangeFilters}
-            onTypeFilterChange={handleTypeFilterChange}
           />
 
           {/* Virtual Scrolled Rows */}
