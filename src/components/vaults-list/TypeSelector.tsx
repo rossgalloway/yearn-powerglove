@@ -184,6 +184,11 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
   const handleClearSelection = () => {
     if (onSetSelectedTypes) {
       onSetSelectedTypes([])
+    } else {
+      // Fallback: if onSetSelectedTypes is not provided, clear by toggling all selected types
+      selectedTypes.forEach(type => {
+        onTypeToggle(type)
+      })
     }
   }
 
