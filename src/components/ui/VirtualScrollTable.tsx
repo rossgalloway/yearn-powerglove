@@ -58,7 +58,7 @@ export function VirtualScrollTable<T>({
   return (
     <div
       ref={scrollElementRef}
-      className={`overflow-auto ${className}`}
+      className={`overflow-auto ${className} pb-[70px]`}
       style={{ height: containerHeight }}
     >
       <div style={{ height: totalHeight, position: 'relative' }}>

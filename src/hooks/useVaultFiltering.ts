@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { getChainIdByName } from '@/constants/chains'
 import { VaultListData } from '@/components/vaults-list/VaultRow'
 import { SortDirection } from '@/utils/sortingUtils'
 
@@ -7,24 +8,17 @@ type VaultSortColumn = keyof VaultListData
 export interface VaultFilteringState {
   sortColumn: VaultSortColumn
   sortDirection: SortDirection
-  searchTerms: Record<string, string>
-  rangeFilters: {
-    APY: { min: string; max: string }
-    tvl: { min: string; max: string }
-  }
-  selectedType: string
+  searchTerm: string
+  selectedChains: number[]
+  selectedTypes: string[]
   setSortColumn: (column: VaultSortColumn) => void
   setSortDirection: (direction: SortDirection) => void
-  setSearchTerms: React.Dispatch<React.SetStateAction<Record<string, string>>>
-  setRangeFilters: React.Dispatch<
-    React.SetStateAction<{
-      APY: { min: string; max: string }
-      tvl: { min: string; max: string }
-    }>
-  >
-  setSelectedType: (type: string) => void
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>
+  setSelectedChains: React.Dispatch<React.SetStateAction<number[]>>
+  setSelectedTypes: React.Dispatch<React.SetStateAction<string[]>>
   handleSort: (column: VaultSortColumn) => void
-  handleTypeFilterChange: (type: string) => void
+  handleToggleChain: (chainId: number) => void
+  handleToggleType: (type: string) => void
   filteredAndSortedVaults: VaultListData[]
 }
 
@@ -70,58 +64,40 @@ function sortVaults(
 
 function filterVaults(
   vaultListData: VaultListData[],
-  searchTerms: Record<string, string>,
-  rangeFilters: {
-    APY: { min: string; max: string }
-    tvl: { min: string; max: string }
-  }
+  searchTerm: string,
+  selectedChains: number[],
+  selectedTypes: string[]
 ): VaultListData[] {
+  const term = searchTerm.trim().toLowerCase()
   return vaultListData.filter(vault => {
-    // Filter based on search terms
-    const matchesSearchTerms = Object.entries(searchTerms).every(
-      ([key, term]) => {
-        if (!term) return true // Skip filtering if no search term
-        const value = vault[key as keyof VaultListData]
-          ?.toString()
-          .toLowerCase()
-        return value.includes(term.toLowerCase())
-      }
-    )
+    // Search across name and token
+    const matchesSearch =
+      !term ||
+      vault.name.toLowerCase().includes(term) ||
+      vault.token.toLowerCase().includes(term)
 
-    // Filter based on APY range
-    const apyValue = parseFloat(vault.APY.replace('%', '')) // Convert APY to a number
-    const apyMin = parseFloat(rangeFilters.APY.min) || -Infinity
-    const apyMax = parseFloat(rangeFilters.APY.max) || Infinity
-    const matchesAPY = apyValue >= apyMin && apyValue <= apyMax
+    // Chain filter (if any selected chains, only include those)
+    const vaultChainId = getChainIdByName(vault.chain)
+    const matchesChain =
+      selectedChains.length === 0 ||
+      (vaultChainId !== undefined && selectedChains.includes(vaultChainId))
 
-    // Filter based on TVL range
-    const tvlValue = parseFloat(vault.tvl.replace(/[$,]/g, '')) // Convert TVL to a number
-    const tvlMin = parseFloat(rangeFilters.tvl.min) || -Infinity
-    const tvlMax = parseFloat(rangeFilters.tvl.max) || Infinity
-    const matchesTVL = tvlValue >= tvlMin && tvlValue <= tvlMax
+    // Type filter
+    const matchesType =
+      selectedTypes.length === 0 || selectedTypes.includes(vault.type)
 
-    return matchesSearchTerms && matchesAPY && matchesTVL
+    return matchesSearch && matchesChain && matchesType
   })
 }
 
 export function useVaultFiltering(
   vaultListData: VaultListData[]
 ): VaultFilteringState {
-  const [sortColumn, setSortColumn] = useState<VaultSortColumn>('tvl') // default sort column changed to TVL
+  const [sortColumn, setSortColumn] = useState<VaultSortColumn>('tvl')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [selectedType, setSelectedType] = useState<string>('') // Track the selected type
-  const [searchTerms, setSearchTerms] = useState<Record<string, string>>({
-    name: '',
-    chain: '',
-    token: '',
-    type: '',
-    APY: '',
-    tvl: '',
-  })
-  const [rangeFilters, setRangeFilters] = useState({
-    APY: { min: '', max: '' },
-    tvl: { min: '', max: '' },
-  })
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [selectedChains, setSelectedChains] = useState<number[]>([])
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 
   const handleSort = (column: VaultSortColumn) => {
     if (sortColumn === column) {
@@ -132,31 +108,52 @@ export function useVaultFiltering(
     }
   }
 
-  // Function to update the "Type" filter
-  const handleTypeFilterChange = (type: string) => {
-    setSelectedType(type) // Update the selected type
-    setSearchTerms(prev => ({ ...prev, type })) // Update the search terms
+  const handleToggleChain = (chainId: number) => {
+    setSelectedChains(prev =>
+      prev.includes(chainId)
+        ? prev.filter(id => id !== chainId)
+        : [...prev, chainId]
+    )
+  }
+
+  const handleToggleType = (type: string) => {
+    setSelectedTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    )
   }
 
   // Apply filtering and sorting
   const filteredAndSortedVaults = useMemo(() => {
-    const filtered = filterVaults(vaultListData, searchTerms, rangeFilters)
+    const filtered = filterVaults(
+      vaultListData,
+      searchTerm,
+      selectedChains,
+      selectedTypes
+    )
     return sortVaults(filtered, sortColumn, sortDirection)
-  }, [vaultListData, searchTerms, rangeFilters, sortColumn, sortDirection])
+  }, [
+    vaultListData,
+    searchTerm,
+    selectedChains,
+    selectedTypes,
+    sortColumn,
+    sortDirection,
+  ])
 
   return {
     sortColumn,
     sortDirection,
-    searchTerms,
-    rangeFilters,
-    selectedType,
+    searchTerm,
+    selectedChains,
+    selectedTypes,
     setSortColumn,
     setSortDirection,
-    setSearchTerms,
-    setRangeFilters,
-    setSelectedType,
+    setSearchTerm,
+    setSelectedChains,
+    setSelectedTypes,
     handleSort,
-    handleTypeFilterChange,
+    handleToggleChain,
+    handleToggleType,
     filteredAndSortedVaults,
   }
 }

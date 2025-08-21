@@ -10,10 +10,10 @@ export function useVaultListData(
 ): VaultListData[] {
   const vaultTypes = useMemo(
     (): Record<number, string> => ({
-      1: 'V3 Allocator Vault',
-      2: 'V3 Strategy Vault',
-      3: 'V2 Factory Vault',
-      4: 'V2 Legacy Vault',
+      1: 'Allocator Vault',
+      2: 'Strategy Vault',
+      3: 'Factory Vault',
+      4: 'Legacy Vault',
       5: 'External Vault',
     }),
     []

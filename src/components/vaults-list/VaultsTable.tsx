@@ -9,6 +9,23 @@ interface VaultsTableProps {
 
 export const VaultsTable: React.FC<VaultsTableProps> = React.memo(
   ({ vaults, availableHeight }) => {
+    // Show fallback message when no vaults match the filters
+    if (vaults.length === 0) {
+      return (
+        <div
+          className="flex items-center justify-center text-gray-500 text-center p-8"
+          style={{ height: availableHeight }}
+        >
+          <div>
+            <p className="text-lg font-medium mb-2">
+              No vaults found with those filters.
+            </p>
+            <p className="text-sm">Please adjust your filters.</p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <VirtualScrollTable
         data={vaults}
