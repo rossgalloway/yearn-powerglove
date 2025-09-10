@@ -40,7 +40,7 @@ function SingleVaultPage() {
   })
 
   // Process chart data
-  const { transformedApyData, transformedTvlData, transformedPpsData } =
+  const { transformedApyData, transformedTvlData, transformedAprData } =
     useChartData({
       apyData,
       tvlData,
@@ -67,7 +67,7 @@ function SingleVaultPage() {
           <ChartsPanel
             apyData={transformedApyData}
             tvlData={transformedTvlData}
-            ppsData={transformedPpsData}
+            aprData={transformedAprData}
             isLoading={chartsLoading}
             hasErrors={chartsError}
           />

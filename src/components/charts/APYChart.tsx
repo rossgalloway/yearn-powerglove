@@ -16,10 +16,21 @@ interface APYChartProps {
   timeframe: string
   hideAxes?: boolean
   hideTooltip?: boolean
+  showApyLine?: boolean
+  showSma15?: boolean
+  showSma30?: boolean
 }
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
-  ({ chartData, timeframe, hideAxes, hideTooltip }) => {
+  ({
+    chartData,
+    timeframe,
+    hideAxes,
+    hideTooltip,
+    showApyLine = true,
+    showSma15 = true,
+    showSma30 = true,
+  }) => {
     const [showApr, setShowApr] = useState(false)
 
     const filteredData = useMemo(
@@ -119,15 +130,17 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                 }}
               />
             )}
-            <Line
-              type="monotone"
-              dataKey="APY"
-              stroke="var(--color-apy)"
-              strokeWidth={hideAxes ? 1 : 1.5}
-              strokeDasharray="5 5"
-              dot={false}
-              isAnimationActive={false}
-            />
+            {showApyLine && (
+              <Line
+                type="monotone"
+                dataKey="APY"
+                stroke="var(--color-apy)"
+                strokeWidth={hideAxes ? 1 : 1.5}
+                strokeDasharray="5 5"
+                dot={false}
+                isAnimationActive={false}
+              />
+            )}
             {showApr && (
               <Line
                 type="monotone"
@@ -138,22 +151,26 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                 isAnimationActive={false}
               />
             )}
-            <Line
-              type="monotone"
-              dataKey="SMA15"
-              stroke="var(--color-sma15)"
-              strokeWidth={hideAxes ? 1 : 1.5}
-              dot={false}
-              isAnimationActive={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="SMA30"
-              stroke="var(--color-sma30)"
-              strokeWidth={hideAxes ? 1 : 1.5}
-              dot={false}
-              isAnimationActive={false}
-            />
+            {showSma15 && (
+              <Line
+                type="monotone"
+                dataKey="SMA15"
+                stroke="var(--color-sma15)"
+                strokeWidth={hideAxes ? 1 : 1.5}
+                dot={false}
+                isAnimationActive={false}
+              />
+            )}
+            {showSma30 && (
+              <Line
+                type="monotone"
+                dataKey="SMA30"
+                stroke="var(--color-sma30)"
+                strokeWidth={hideAxes ? 1 : 1.5}
+                dot={false}
+                isAnimationActive={false}
+              />
+            )}
           </LineChart>
           </ResponsiveContainer>
         </ChartContainer>

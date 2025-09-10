@@ -13,18 +13,12 @@ import { ChartDataPoint } from '@/types/dataTypes'
 interface PPSChartProps {
   chartData: ChartDataPoint[]
   timeframe: string
-  hideAxes?: boolean // Added prop for hiding axes
-  hideTooltip?: boolean // Added prop for hiding tooltip
+  hideAxes?: boolean
+  hideTooltip?: boolean
 }
 
 export const PPSChart: React.FC<PPSChartProps> = React.memo(
-  ({
-    // memoized component
-    chartData,
-    timeframe,
-    hideAxes,
-    hideTooltip,
-  }) => {
+  ({ chartData, timeframe, hideAxes, hideTooltip }) => {
     const filteredData = useMemo(
       () => chartData.slice(-getTimeframeLimit(timeframe)),
       [chartData, timeframe]
@@ -33,9 +27,9 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
     return (
       <ChartContainer
         config={{
-          pps: {
-            label: 'Price Per Share',
-            color: hideAxes ? 'black' : 'var(--chart-1)',
+          apr: {
+            label: 'APR %',
+            color: hideAxes ? 'black' : 'var(--chart-4)',
           },
         }}
         style={{ height: 'inherit' }}
@@ -69,21 +63,21 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
               }
             />
             <YAxis
-              domain={['auto', 'auto']}
-              tickFormatter={value => value.toFixed(3)} // Round to 3 decimals and remove %
+              domain={[0, 'auto']}
+              tickFormatter={value => `${value}%`}
               label={
                 hideAxes
                   ? undefined
                   : {
-                      value: 'Price Per Share',
+                      value: 'APR %',
                       angle: -90,
-                      position: 'insideLeft', // Changed from 'center' to 'insideLeft'
-                      offset: 10, // Negative offset moves label closer to axis
+                      position: 'insideLeft',
+                      offset: 10,
                       style: {
                         textAnchor: 'middle',
                         fill: hideAxes
                           ? 'transparent'
-                          : 'hsl(var(--muted-foreground))', // Make label transparent when hiding axes
+                          : 'hsl(var(--muted-foreground))',
                       },
                     }
               }
@@ -93,20 +87,24 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
                   : {
                       fill: 'hsl(var(--muted-foreground))',
                     }
-              } // Hide ticks when hideAxes is true
+              }
               axisLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide axis line
+              }
               tickLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide tick lines
+              }
             />
-            {!hideTooltip && <ChartTooltip />}
+            {!hideTooltip && (
+              <ChartTooltip
+                formatter={(value: number) => [`${value.toFixed(2)}%`, 'APR']}
+              />
+            )}
 
             <Line
               type="monotone"
-              dataKey="PPS"
-              stroke="var(--color-pps)"
+              dataKey="APR"
+              stroke="var(--color-apr)"
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
