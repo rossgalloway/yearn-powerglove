@@ -36,6 +36,44 @@ export const calculateSMA = (
   return sma
 }
 
+// Derive APR values from a PPS time series
+export function calculateAprFromPps(
+  pps: TimeseriesDataPoint[]
+): TimeseriesDataPoint[] {
+  if (pps.length === 0) return []
+
+  const aprSeries: TimeseriesDataPoint[] = []
+
+  for (let i = 0; i < pps.length; i++) {
+    const current = pps[i]
+    if (i === 0) {
+      aprSeries.push({ ...current, value: null })
+      continue
+    }
+
+    const prev = pps[i - 1]
+
+    if (current.value === null || prev.value === null) {
+      aprSeries.push({ ...current, value: null })
+      continue
+    }
+
+    const prevTime = Number(prev.time)
+    const currTime = Number(current.time)
+    const deltaDays = (currTime - prevTime) / 86400
+    if (deltaDays <= 0) {
+      aprSeries.push({ ...current, value: null })
+      continue
+    }
+
+    const dailyReturn = (current.value - prev.value) / prev.value
+    const apr = Math.pow(1 + dailyReturn, 365 / deltaDays) - 1
+    aprSeries.push({ ...current, value: apr })
+  }
+
+  return aprSeries
+}
+
 /**
  * Gets the earliest and latest timestamps from three arrays of timeseries data points.
  *

@@ -36,6 +36,7 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
             label: '30-day SMA',
             color: hideAxes ? 'black' : 'var(--chart-3)',
           },
+          apr: { label: 'APR %', color: hideAxes ? 'black' : 'var(--chart-4)' },
         }}
         style={{ height: 'inherit' }}
       >
@@ -105,9 +106,11 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   const label =
                     name === 'APY'
                       ? 'APY'
-                      : name === 'SMA15'
-                        ? '15-day SMA'
-                        : '30-day SMA'
+                      : name === 'APR'
+                        ? 'APR'
+                        : name === 'SMA15'
+                          ? '15-day SMA'
+                          : '30-day SMA'
                   return [`${value.toFixed(2)}%`, label]
                 }}
               />
@@ -118,6 +121,14 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
               stroke="var(--color-apy)"
               strokeWidth={hideAxes ? 1 : 1.5}
               strokeDasharray="5 5"
+              dot={false}
+              isAnimationActive={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="APR"
+              stroke="var(--color-apr)"
+              strokeWidth={hideAxes ? 1 : 1.5}
               dot={false}
               isAnimationActive={false}
             />

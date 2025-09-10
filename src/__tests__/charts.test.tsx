@@ -9,6 +9,7 @@ describe('APYChart', () => {
       APY: Math.random() * 10,
       SMA15: null,
       SMA30: null,
+      APR: null,
     }))
     
     // Mock getBoundingClientRect for Recharts ResponsiveContainer

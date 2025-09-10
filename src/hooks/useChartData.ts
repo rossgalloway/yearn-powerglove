@@ -4,12 +4,14 @@ import {
   apyChartData,
   tvlChartData,
   ppsChartData,
+  aprChartData,
 } from '@/types/dataTypes'
 import {
   calculateSMA,
   fillMissingDailyData,
   formatUnixTimestamp,
   getEarliestAndLatestTimestamps,
+  calculateAprFromPps,
 } from '@/lib/utils'
 
 interface TimeseriesQueryResult {
@@ -28,6 +30,7 @@ interface UseChartDataReturn {
   transformedApyData: apyChartData | null
   transformedTvlData: tvlChartData | null
   transformedPpsData: ppsChartData | null
+  transformedAprData: aprChartData | null
 }
 
 /**
@@ -48,6 +51,7 @@ export function useChartData({
         transformedApyData: null,
         transformedTvlData: null,
         transformedPpsData: null,
+        transformedAprData: null,
       }
     }
 
@@ -68,6 +72,9 @@ export function useChartData({
     const tvlFilled = fillMissingDailyData(tvlDataClean, earliest, latest)
     const ppsFilled = fillMissingDailyData(ppsDataClean, earliest, latest)
 
+    // Calculate APR from PPS data
+    const aprFilled = calculateAprFromPps(ppsFilled)
+
     // Calculate Simple Moving Averages for APY data
     const rawValues = apyFilled.map(p => p.value ?? 0)
     const sma15Values = calculateSMA(rawValues, 15)
@@ -79,6 +86,7 @@ export function useChartData({
       APY: dataPoint.value ? dataPoint.value * 100 : null,
       SMA15: sma15Values[i] !== null ? sma15Values[i]! * 100 : null,
       SMA30: sma30Values[i] !== null ? sma30Values[i]! * 100 : null,
+      APR: aprFilled[i]?.value !== null ? aprFilled[i]!.value! * 100 : null,
     }))
 
     // Transform TVL data
@@ -93,10 +101,16 @@ export function useChartData({
       PPS: dataPoint.value ?? null,
     }))
 
+    const transformedAprData: aprChartData = aprFilled.map(dataPoint => ({
+      date: formatUnixTimestamp(dataPoint.time),
+      APR: dataPoint.value !== null ? dataPoint.value * 100 : null,
+    }))
+
     return {
       transformedApyData,
       transformedTvlData,
       transformedPpsData,
+      transformedAprData,
     }
   }, [apyData, tvlData, ppsData, isLoading, hasErrors])
 }
