@@ -149,7 +149,7 @@ export function ChartsPanel(data: ChartData) {
                   chartData={apyData}
                   timeframe={timeframe.value}
                   show30DApyLine={true}
-                  showSma90={false}
+                  showSmoothedAPY={false}
                 />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -200,7 +200,7 @@ export function ChartsPanel(data: ChartData) {
                     hideAxes={true}
                     hideTooltip={true}
                     show30DApyLine={true}
-                    showSma90={false}
+                    showSmoothedAPY={false}
                   />
                 </ChartErrorBoundary>
               </div>

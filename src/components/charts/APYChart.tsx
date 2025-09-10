@@ -17,7 +17,7 @@ interface APYChartProps {
   hideAxes?: boolean
   hideTooltip?: boolean
   show30DApyLine?: boolean
-  showSma90?: boolean
+  showSmoothedAPY?: boolean
 }
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
@@ -27,7 +27,7 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
     hideAxes,
     hideTooltip,
     show30DApyLine = true,
-    showSma90 = true,
+    showSmoothedAPY = true,
   }) => {
     const [showApr, setShowApr] = useState(true)
 
@@ -44,8 +44,8 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
               label: '30-day APY %',
               color: hideAxes ? 'black' : 'var(--chart-2)',
             },
-            sma90: {
-              label: '90-day SMA',
+            smoothedAPY: {
+              label: 'smoothedAPY %',
               color: hideAxes ? 'black' : 'var(--chart-3)',
             },
             apr: {
@@ -123,7 +123,7 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                         ? '30-day APY'
                         : name === 'APR'
                           ? 'APR'
-                          : '90-day SMA'
+                          : 'Smoothed APY'
                     return [`${value.toFixed(2)}%`, label]
                   }}
                 />
@@ -148,11 +148,11 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   isAnimationActive={false}
                 />
               )}
-              {showSma90 && (
+              {showSmoothedAPY && (
                 <Line
                   type="monotone"
-                  dataKey="SMA90"
-                  stroke="var(--color-sma90)"
+                  dataKey="smoothedAPY"
+                  stroke="var(--color-smoothedAPY)"
                   strokeWidth={hideAxes ? 1 : 1.5}
                   dot={false}
                   isAnimationActive={false}

@@ -81,14 +81,15 @@ export function useChartData({
 
     // Calculate Simple Moving Averages for APR data
     const rawValues = apy30DayFilled.map(p => p.value ?? 0)
-    const sma90Values = calculateSMA(rawValues, 10)
+    const smoothedValues = calculateSMA(rawValues, 5)
 
     // Transform APY data with SMA calculations
     const transformedApyData: apyChartData = apy30DayFilled.map(
       (dataPoint, i) => ({
         date: formatUnixTimestamp(dataPoint.time),
         APY: dataPoint.value ? dataPoint.value * 100 : null,
-        SMA90: sma90Values[i] !== null ? sma90Values[i]! * 100 : null,
+        smoothedAPY:
+          smoothedValues[i] !== null ? smoothedValues[i]! * 100 : null,
         APR: aprFilled[i]?.value !== null ? aprFilled[i]!.value! * 100 : null,
       })
     )
