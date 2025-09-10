@@ -7,8 +7,9 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import { Checkbox } from '@/components/ui/checkbox'
 import { ChartDataPoint } from '@/types/dataTypes'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 
 interface APYChartProps {
   chartData: ChartDataPoint[]
@@ -19,33 +20,36 @@ interface APYChartProps {
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
   ({ chartData, timeframe, hideAxes, hideTooltip }) => {
+    const [showApr, setShowApr] = useState(false)
+
     const filteredData = useMemo(
       () => chartData.slice(-getTimeframeLimit(timeframe)),
       [chartData, timeframe]
     )
 
     return (
-      <ChartContainer
-        config={{
-          apy: { label: 'APY %', color: hideAxes ? 'black' : 'var(--chart-2)' },
-          sma15: {
-            label: '15-day SMA',
-            color: hideAxes ? 'black' : 'var(--chart-1)',
-          },
-          sma30: {
-            label: '30-day SMA',
-            color: hideAxes ? 'black' : 'var(--chart-3)',
-          },
-          apr: { label: 'APR %', color: hideAxes ? 'black' : 'var(--chart-4)' },
-        }}
-        style={{ height: 'inherit' }}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={filteredData}
-            margin={{
-              top: 20,
-              right: 30,
+      <div className="relative h-full">
+        <ChartContainer
+          config={{
+            apy: { label: 'APY %', color: hideAxes ? 'black' : 'var(--chart-2)' },
+            sma15: {
+              label: '15-day SMA',
+              color: hideAxes ? 'black' : 'var(--chart-1)',
+            },
+            sma30: {
+              label: '30-day SMA',
+              color: hideAxes ? 'black' : 'var(--chart-3)',
+            },
+            apr: { label: 'APR %', color: hideAxes ? 'black' : 'var(--chart-4)' },
+          }}
+          style={{ height: 'inherit' }}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={filteredData}
+              margin={{
+                top: 20,
+                right: 30,
               left: 10,
               bottom: 20,
             }}
@@ -124,14 +128,16 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
               dot={false}
               isAnimationActive={false}
             />
-            <Line
-              type="monotone"
-              dataKey="APR"
-              stroke="var(--color-apr)"
-              strokeWidth={hideAxes ? 1 : 1.5}
-              dot={false}
-              isAnimationActive={false}
-            />
+            {showApr && (
+              <Line
+                type="monotone"
+                dataKey="APR"
+                stroke="var(--color-apr)"
+                strokeWidth={hideAxes ? 1 : 1.5}
+                dot={false}
+                isAnimationActive={false}
+              />
+            )}
             <Line
               type="monotone"
               dataKey="SMA15"
@@ -149,8 +155,19 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
               isAnimationActive={false}
             />
           </LineChart>
-        </ResponsiveContainer>
-      </ChartContainer>
+          </ResponsiveContainer>
+        </ChartContainer>
+        {!hideAxes && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-2 text-xs">
+            <Checkbox
+              id="toggle-apr"
+              checked={showApr}
+              onCheckedChange={checked => setShowApr(!!checked)}
+            />
+            <label htmlFor="toggle-apr">show raw APR values</label>
+          </div>
+        )}
+      </div>
     )
   }
 )

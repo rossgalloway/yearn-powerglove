@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { APYChart } from '@/components/charts/APYChart'
 
 describe('APYChart', () => {
@@ -9,7 +9,7 @@ describe('APYChart', () => {
       APY: Math.random() * 10,
       SMA15: null,
       SMA30: null,
-      APR: null,
+      APR: Math.random() * 10,
     }))
     
     // Mock getBoundingClientRect for Recharts ResponsiveContainer
@@ -25,13 +25,20 @@ describe('APYChart', () => {
       toJSON: () => {},
     }))
     
-    const { container } = render(
+    const { container, getByLabelText } = render(
       <div style={{ width: '400px', height: '300px' }}>
         <APYChart chartData={data} timeframe="30d" />
       </div>
     )
-    
-    // Just check that the component renders without throwing
-    expect(container.firstChild).toBeTruthy()
+    // APR line should be hidden by default
+    expect(
+      container.querySelector('path[stroke="var(--color-apr)"]')
+    ).toBeNull()
+
+    const checkbox = getByLabelText(/show raw apr values/i)
+    fireEvent.click(checkbox)
+    expect(
+      container.querySelector('path[stroke="var(--color-apr)"]')
+    ).toBeTruthy()
   })
 })
