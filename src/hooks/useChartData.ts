@@ -56,38 +56,42 @@ export function useChartData({
     }
 
     // Extract clean data arrays
-    const apyDataClean = apyData.timeseries || []
+    const apy30DayDataClean = apyData.timeseries || []
     const tvlDataClean = tvlData.timeseries || []
     const ppsDataClean = ppsData.timeseries || []
 
     // Get timestamp range for data alignment
     const { earliest, latest } = getEarliestAndLatestTimestamps(
-      apyDataClean,
+      apy30DayDataClean,
       tvlDataClean,
       ppsDataClean
     )
 
     // Fill missing data points
-    const apyFilled = fillMissingDailyData(apyDataClean, earliest, latest)
+    const apy30DayFilled = fillMissingDailyData(
+      apy30DayDataClean,
+      earliest,
+      latest
+    )
     const tvlFilled = fillMissingDailyData(tvlDataClean, earliest, latest)
     const ppsFilled = fillMissingDailyData(ppsDataClean, earliest, latest)
 
     // Calculate APR from PPS data
     const aprFilled = calculateAprFromPps(ppsFilled)
 
-    // Calculate Simple Moving Averages for APY data
-    const rawValues = apyFilled.map(p => p.value ?? 0)
-    const sma15Values = calculateSMA(rawValues, 15)
-    const sma30Values = calculateSMA(rawValues, 30)
+    // Calculate Simple Moving Averages for APR data
+    const rawValues = apy30DayFilled.map(p => p.value ?? 0)
+    const sma90Values = calculateSMA(rawValues, 10)
 
     // Transform APY data with SMA calculations
-    const transformedApyData: apyChartData = apyFilled.map((dataPoint, i) => ({
-      date: formatUnixTimestamp(dataPoint.time),
-      APY: dataPoint.value ? dataPoint.value * 100 : null,
-      SMA15: sma15Values[i] !== null ? sma15Values[i]! * 100 : null,
-      SMA30: sma30Values[i] !== null ? sma30Values[i]! * 100 : null,
-      APR: aprFilled[i]?.value !== null ? aprFilled[i]!.value! * 100 : null,
-    }))
+    const transformedApyData: apyChartData = apy30DayFilled.map(
+      (dataPoint, i) => ({
+        date: formatUnixTimestamp(dataPoint.time),
+        APY: dataPoint.value ? dataPoint.value * 100 : null,
+        SMA90: sma90Values[i] !== null ? sma90Values[i]! * 100 : null,
+        APR: aprFilled[i]?.value !== null ? aprFilled[i]!.value! * 100 : null,
+      })
+    )
 
     // Transform TVL data
     const transformedTvlData: tvlChartData = tvlFilled.map(dataPoint => ({

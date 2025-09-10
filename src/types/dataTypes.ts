@@ -49,8 +49,7 @@ export interface ChartDataPoint {
 export type apyChartData = {
   date: string
   APY: number | null
-  SMA15: number | null
-  SMA30: number | null
+  SMA90: number | null
   APR: number | null
 }[]
 export type tvlChartData = {

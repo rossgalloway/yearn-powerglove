@@ -74,7 +74,7 @@ export function ChartsPanel(data: ChartData) {
       description: `Raw APY, 15-day, and 30-day moving averages over ${timeframe.label}.`,
     },
     'historical-pps': {
-      title: 'Price Per Share (APR shown ghosted)',
+      title: 'Price Per Share (Raw APR shown ghosted)',
       description: `PPS with derived APR overlay over ${timeframe.label}.`,
     },
     'historical-tvl': {
@@ -145,7 +145,12 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <APYChart chartData={apyData} timeframe={timeframe.value} />
+                <APYChart
+                  chartData={apyData}
+                  timeframe={timeframe.value}
+                  show30DApyLine={true}
+                  showSma90={false}
+                />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
@@ -166,7 +171,7 @@ export function ChartsPanel(data: ChartData) {
               <ChartErrorBoundary>
                 <PPSChart chartData={ppsData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted APR chart */}
                 <ChartErrorBoundary>
                   <PPSChart
@@ -194,9 +199,8 @@ export function ChartsPanel(data: ChartData) {
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
-                    showApyLine={false}
-                    showSma15={false}
-                    showSma30={true}
+                    show30DApyLine={true}
+                    showSma90={false}
                   />
                 </ChartErrorBoundary>
               </div>

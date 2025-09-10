@@ -1,10 +1,12 @@
 # APR from PPS Implementation Plan
 
 ## Goals
+
 - Estimate vault APR by differentiating Price Per Share data.
 - Surface the derived APR alongside existing APY, PPS, and TVL metrics.
 
 ## Step-by-Step Plan
+
 1. **Utility Function**
    - File: `src/lib/utils.ts`
    - Add `calculateAprFromPps(pps: TimeseriesDataPoint[]): TimeseriesDataPoint[]`.
@@ -31,6 +33,7 @@
    - Update `README.md` or docs to describe the APR derivation method and any limitations.
 
 ## Future Enhancements
+
 - Apply smoothing (e.g., SMA of PPS or APR) to reduce volatility.
 - Investigate continuous compounding using log returns.
 - Surface confidence metrics when data gaps are large.

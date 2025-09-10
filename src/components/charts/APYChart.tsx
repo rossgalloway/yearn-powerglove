@@ -16,9 +16,8 @@ interface APYChartProps {
   timeframe: string
   hideAxes?: boolean
   hideTooltip?: boolean
-  showApyLine?: boolean
-  showSma15?: boolean
-  showSma30?: boolean
+  show30DApyLine?: boolean
+  showSma90?: boolean
 }
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
@@ -27,11 +26,10 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
     timeframe,
     hideAxes,
     hideTooltip,
-    showApyLine = true,
-    showSma15 = true,
-    showSma30 = true,
+    show30DApyLine = true,
+    showSma90 = true,
   }) => {
-    const [showApr, setShowApr] = useState(false)
+    const [showApr, setShowApr] = useState(true)
 
     const filteredData = useMemo(
       () => chartData.slice(-getTimeframeLimit(timeframe)),
@@ -42,16 +40,18 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
       <div className="relative h-full">
         <ChartContainer
           config={{
-            apy: { label: 'APY %', color: hideAxes ? 'black' : 'var(--chart-2)' },
-            sma15: {
-              label: '15-day SMA',
-              color: hideAxes ? 'black' : 'var(--chart-1)',
+            apy: {
+              label: '30-day APY %',
+              color: hideAxes ? 'black' : 'var(--chart-2)',
             },
-            sma30: {
-              label: '30-day SMA',
+            sma90: {
+              label: '90-day SMA',
               color: hideAxes ? 'black' : 'var(--chart-3)',
             },
-            apr: { label: 'APR %', color: hideAxes ? 'black' : 'var(--chart-4)' },
+            apr: {
+              label: 'APR %',
+              color: hideAxes ? 'black' : 'var(--chart-4)',
+            },
           }}
           style={{ height: 'inherit' }}
         >
@@ -61,117 +61,104 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
               margin={{
                 top: 20,
                 right: 30,
-              left: 10,
-              bottom: 20,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tick={
-                hideAxes
-                  ? false
-                  : {
-                      fill: 'hsl(var(--muted-foreground))',
-                    }
-              }
-              axisLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
-              tickLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
-            />
-            <YAxis
-              domain={[0, 'auto']}
-              tickFormatter={value => `${value}%`}
-              label={
-                hideAxes
-                  ? undefined
-                  : {
-                      value: 'APY %',
-                      angle: -90,
-                      position: 'insideLeft',
-                      offset: 10,
-                      style: {
-                        textAnchor: 'middle',
-                        fill: hideAxes
-                          ? 'transparent'
-                          : 'hsl(var(--muted-foreground))',
-                      },
-                    }
-              }
-              tick={
-                hideAxes
-                  ? false
-                  : {
-                      fill: 'hsl(var(--muted-foreground))',
-                    }
-              }
-              axisLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
-              tickLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
-            />
-            {!hideTooltip && (
-              <ChartTooltip
-                formatter={(value: number, name: string) => {
-                  const label =
-                    name === 'APY'
-                      ? 'APY'
-                      : name === 'APR'
-                        ? 'APR'
-                        : name === 'SMA15'
-                          ? '15-day SMA'
-                          : '30-day SMA'
-                  return [`${value.toFixed(2)}%`, label]
-                }}
+                left: 10,
+                bottom: 20,
+              }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={
+                  hideAxes
+                    ? false
+                    : {
+                        fill: 'hsl(var(--muted-foreground))',
+                      }
+                }
+                axisLine={
+                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+                }
+                tickLine={
+                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+                }
               />
-            )}
-            {showApyLine && (
-              <Line
-                type="monotone"
-                dataKey="APY"
-                stroke="var(--color-apy)"
-                strokeWidth={hideAxes ? 1 : 1.5}
-                strokeDasharray="5 5"
-                dot={false}
-                isAnimationActive={false}
+              <YAxis
+                domain={[0, 'auto']}
+                tickFormatter={value => `${value}%`}
+                label={
+                  hideAxes
+                    ? undefined
+                    : {
+                        value: 'APY %',
+                        angle: -90,
+                        position: 'insideLeft',
+                        offset: 10,
+                        style: {
+                          textAnchor: 'middle',
+                          fill: hideAxes
+                            ? 'transparent'
+                            : 'hsl(var(--muted-foreground))',
+                        },
+                      }
+                }
+                tick={
+                  hideAxes
+                    ? false
+                    : {
+                        fill: 'hsl(var(--muted-foreground))',
+                      }
+                }
+                axisLine={
+                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+                }
+                tickLine={
+                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
+                }
               />
-            )}
-            {showApr && (
-              <Line
-                type="monotone"
-                dataKey="APR"
-                stroke="var(--color-apr)"
-                strokeWidth={hideAxes ? 1 : 1.5}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
-            {showSma15 && (
-              <Line
-                type="monotone"
-                dataKey="SMA15"
-                stroke="var(--color-sma15)"
-                strokeWidth={hideAxes ? 1 : 1.5}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
-            {showSma30 && (
-              <Line
-                type="monotone"
-                dataKey="SMA30"
-                stroke="var(--color-sma30)"
-                strokeWidth={hideAxes ? 1 : 1.5}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
-          </LineChart>
+              {!hideTooltip && (
+                <ChartTooltip
+                  formatter={(value: number, name: string) => {
+                    const label =
+                      name === 'APY'
+                        ? '30-day APY'
+                        : name === 'APR'
+                          ? 'APR'
+                          : '90-day SMA'
+                    return [`${value.toFixed(2)}%`, label]
+                  }}
+                />
+              )}
+              {show30DApyLine && (
+                <Line
+                  type="monotone"
+                  dataKey="APY"
+                  stroke="var(--color-apy)"
+                  strokeWidth={hideAxes ? 1 : 1.5}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
+              {showApr && (
+                <Line
+                  type="monotone"
+                  dataKey="APR"
+                  stroke="var(--color-apr)"
+                  strokeWidth={hideAxes ? 1 : 1}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
+              {showSma90 && (
+                <Line
+                  type="monotone"
+                  dataKey="SMA90"
+                  stroke="var(--color-sma90)"
+                  strokeWidth={hideAxes ? 1 : 1.5}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
+            </LineChart>
           </ResponsiveContainer>
         </ChartContainer>
         {!hideAxes && (
