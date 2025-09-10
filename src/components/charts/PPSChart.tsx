@@ -15,23 +15,35 @@ interface PPSChartProps {
   timeframe: string
   hideAxes?: boolean
   hideTooltip?: boolean
+  dataKey?: 'PPS' | 'APR'
 }
 
 export const PPSChart: React.FC<PPSChartProps> = React.memo(
-  ({ chartData, timeframe, hideAxes, hideTooltip }) => {
+  ({ chartData, timeframe, hideAxes, hideTooltip, dataKey = 'PPS' }) => {
     const filteredData = useMemo(
       () => chartData.slice(-getTimeframeLimit(timeframe)),
       [chartData, timeframe]
     )
 
+    const isApr = dataKey === 'APR'
+
     return (
       <ChartContainer
-        config={{
-          apr: {
-            label: 'APR %',
-            color: hideAxes ? 'black' : 'var(--chart-4)',
-          },
-        }}
+        config={
+          isApr
+            ? {
+                apr: {
+                  label: 'APR %',
+                  color: hideAxes ? 'black' : 'var(--chart-4)',
+                },
+              }
+            : {
+                pps: {
+                  label: 'Price Per Share',
+                  color: hideAxes ? 'black' : 'var(--chart-1)',
+                },
+              }
+        }
         style={{ height: 'inherit' }}
       >
         <ResponsiveContainer width="100%" height="100%">
@@ -40,14 +52,13 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             margin={{
               top: 20,
               right: 30,
-              left: 10, // Increased left margin for Y-axis label
+              left: 10,
               bottom: 20,
             }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="date"
-              // tickFormatter={(date: string) => date.replace(/, \d{4}$/, '')} // Remove year from "MMM d, yyyy"
               tick={
                 hideAxes
                   ? false
@@ -57,19 +68,21 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
               }
               axisLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide axis line
+              }
               tickLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
               }
             />
             <YAxis
-              domain={[0, 'auto']}
-              tickFormatter={value => `${value}%`}
+              domain={isApr ? [0, 'auto'] : ['auto', 'auto']}
+              tickFormatter={value =>
+                isApr ? `${value}%` : Number(value).toFixed(3)
+              }
               label={
                 hideAxes
                   ? undefined
                   : {
-                      value: 'APR %',
+                      value: isApr ? 'APR %' : 'Price Per Share',
                       angle: -90,
                       position: 'insideLeft',
                       offset: 10,
@@ -97,14 +110,18 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             />
             {!hideTooltip && (
               <ChartTooltip
-                formatter={(value: number) => [`${value.toFixed(2)}%`, 'APR']}
+                formatter={(value: number) =>
+                  isApr
+                    ? [`${value.toFixed(2)}%`, 'APR']
+                    : [value.toFixed(3), 'PPS']
+                }
               />
             )}
 
             <Line
               type="monotone"
-              dataKey="APR"
-              stroke="var(--color-apr)"
+              dataKey={dataKey}
+              stroke={isApr ? 'var(--color-apr)' : 'var(--color-pps)'}
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
@@ -135,3 +152,4 @@ function getTimeframeLimit(timeframe: string): number {
 }
 
 export default PPSChart
+

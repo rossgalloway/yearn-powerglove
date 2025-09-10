@@ -5,13 +5,19 @@ import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/charts/chart-container'
 import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
-import { apyChartData, tvlChartData, aprChartData } from '@/types/dataTypes'
+import {
+  apyChartData,
+  tvlChartData,
+  ppsChartData,
+  aprChartData,
+} from '@/types/dataTypes'
 import ChartSkeleton from '@/components/charts/ChartSkeleton'
 import ChartsLoader from '@/components/charts/ChartsLoader'
 
 type ChartData = {
   apyData: apyChartData | null
   tvlData: tvlChartData | null
+  ppsData: ppsChartData | null
   aprData: aprChartData | null
   isLoading?: boolean
   hasErrors?: boolean
@@ -22,6 +28,7 @@ export function ChartsPanel(data: ChartData) {
   const {
     apyData,
     tvlData,
+    ppsData,
     aprData,
     isLoading = false,
     hasErrors = false,
@@ -49,7 +56,7 @@ export function ChartsPanel(data: ChartData) {
   }
 
   // Show skeleton with loader overlay when loading or no data yet
-  if (isLoading || !apyData || !tvlData || !aprData) {
+  if (isLoading || !apyData || !tvlData || !ppsData || !aprData) {
     return (
       <div className="relative">
         <ChartSkeleton />
@@ -67,8 +74,8 @@ export function ChartsPanel(data: ChartData) {
       description: `Raw APY, 15-day, and 30-day moving averages over ${timeframe.label}.`,
     },
     'historical-pps': {
-      title: 'APR from PPS (APY and TVL shown ghosted)',
-      description: `APR derived from price per share over ${timeframe.label}.`,
+      title: 'Price Per Share (APR shown ghosted)',
+      description: `PPS with derived APR overlay over ${timeframe.label}.`,
     },
     'historical-tvl': {
       title: 'TVL (APY shown ghosted)',
@@ -157,27 +164,17 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-pps" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <PPSChart chartData={aprData} timeframe={timeframe.value} />
+                <PPSChart chartData={ppsData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-20 pointer-events-none">
-                {/* Ghosted APY chart */}
+                {/* Ghosted APR chart */}
                 <ChartErrorBoundary>
-                  <APYChart
-                    chartData={apyData}
+                  <PPSChart
+                    chartData={aprData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
-                  />
-                </ChartErrorBoundary>
-              </div>
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                {/* Ghosted TVL chart */}
-                <ChartErrorBoundary>
-                  <TVLChart
-                    chartData={tvlData}
-                    timeframe={timeframe.value}
-                    hideAxes={true}
-                    hideTooltip={true}
+                    dataKey="APR"
                   />
                 </ChartErrorBoundary>
               </div>
