@@ -31,10 +31,10 @@ describe('APYChart', () => {
         <APYChart chartData={data} timeframe="30d" />
       </div>
     )
-    // APR line should be hidden by default
+    // APR line should be visible by default
     expect(
       container.querySelector('path[stroke="var(--color-apr)"]')
-    ).toBeNull()
+    ).toBeTruthy()
 
     const checkbox = getByLabelText(/show raw apr values/i)
     fireEvent.click(checkbox)
