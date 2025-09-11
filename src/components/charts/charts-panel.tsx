@@ -71,11 +71,11 @@ export function ChartsPanel(data: ChartData) {
   const chartInfo = {
     'historical-apy': {
       title: 'APY Performance (TVL shown ghosted)',
-      description: `Raw APY, 15-day, and 30-day moving averages over ${timeframe.label}.`,
+      description: `Raw APY and 30-day moving averages over ${timeframe.label}.`,
     },
     'historical-pps': {
       title: 'Price Per Share (Raw APR shown ghosted)',
-      description: `PPS with derived APR overlay over ${timeframe.label}.`,
+      description: `PPS with raw APR overlay over ${timeframe.label}.`,
     },
     'historical-tvl': {
       title: 'TVL (APY shown ghosted)',
