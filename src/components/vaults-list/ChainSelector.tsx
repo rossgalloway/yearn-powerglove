@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Filter, X } from 'lucide-react'
-import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME } from '@/constants/chains'
+import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME, ChainId } from '@/constants/chains'
 
 // --- I've added a constants object for better maintainability ---
 const CONSTANTS = {
@@ -150,14 +150,17 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   const [buttonText, setButtonText] = useState('Filter Chains')
   const isExpanded = isHovered
 
-  // --- Derived data and constants ---
   const chains = useMemo(
     () =>
-      Object.entries(CHAIN_ID_TO_NAME).map(([id, name]) => ({
-        id: Number(id),
-        name,
-        icon: CHAIN_ID_TO_ICON[Number(id)],
-      })),
+      Object.entries(CHAIN_ID_TO_NAME).map(([id, name]) => {
+        // Convert entry key (string) to number and cast once to ChainId
+        const chainId = Number(id) as ChainId
+        return {
+          id: chainId,
+          name,
+          icon: CHAIN_ID_TO_ICON[chainId],
+        }
+      }),
     []
   )
   const allSelected =

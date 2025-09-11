@@ -90,7 +90,7 @@ export const StrategyRow: React.FC<StrategyRowProps> = React.memo(
                 </a>
               )}
               <a
-                href={`${CHAIN_ID_TO_BLOCK_EXPLORER[Number(strategy.details.chainId)]}/address/${strategy.details.vaultAddress}`}
+                href={`${CHAIN_ID_TO_BLOCK_EXPLORER[strategy.details.chainId]}/address/${strategy.details.vaultAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
@@ -100,9 +100,7 @@ export const StrategyRow: React.FC<StrategyRowProps> = React.memo(
               </a>
             </div>
             <div className="space-y-1 text-sm">
-              <div>
-                Chain: {CHAIN_ID_TO_NAME[Number(strategy.details.chainId)]}
-              </div>
+              <div>Chain: {CHAIN_ID_TO_NAME[strategy.details.chainId]}</div>
               <div>
                 Management Fee:{' '}
                 {strategy.details.managementFee

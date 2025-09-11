@@ -1,3 +1,5 @@
+import { ChainId } from '../constants/chains'
+
 export type MainInfoPanelProps = {
   vaultId: string
   deploymentDate: string
@@ -24,7 +26,7 @@ export type MainInfoPanelProps = {
 
 export interface TimeseriesDataPoint {
   address?: string
-  chainId?: number
+  chainId?: ChainId
   label: string
   component?: string // Optional, as it's not present in TVL data points
   period: string
@@ -34,7 +36,7 @@ export interface TimeseriesDataPoint {
 
 export interface Timeseries {
   address: string
-  chainId: number
+  chainId: ChainId
   apy: TimeseriesDataPoint[]
   tvl: TimeseriesDataPoint[]
   pps: TimeseriesDataPoint[]
@@ -67,7 +69,7 @@ export type aprChartData = {
 }[]
 
 type StrategyDetails = {
-  chainId: number
+  chainId: ChainId
   vaultAddress: string
   managementFee: number
   performanceFee: number
@@ -91,7 +93,7 @@ export type VaultDebtData = {
   address: string
   currentDebt: string
   currentDebtUsd: number
-  chainId?: number
+  chainId?: ChainId
   name?: string
   erc4626?: boolean
   v3?: boolean

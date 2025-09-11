@@ -8,6 +8,7 @@ import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
 import { Strategy } from '@/types/dataTypes'
 import { useQueryStrategies } from '@/contexts/useQueryStrategies'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
+import { ChainId } from '../constants/chains'
 
 export interface StrategiesData {
   strategies: Strategy[]
@@ -40,7 +41,7 @@ export interface StrategiesData {
 }
 
 export function useStrategiesData(
-  vaultChainId: number,
+  vaultChainId: ChainId,
   vaultAddress: string,
   vaultDetails: VaultExtended
 ): StrategiesData {

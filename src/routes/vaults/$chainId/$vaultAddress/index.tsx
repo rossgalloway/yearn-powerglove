@@ -15,10 +15,11 @@ import { useVaultPageData } from '@/hooks/useVaultPageData'
 import { useMainInfoPanelData } from '@/hooks/useMainInfoPanelData'
 import { useChartData } from '@/hooks/useChartData'
 import { VaultPageLayout, VaultPageBreadcrumb } from '@/components/vault-page'
+import { ChainId } from '@/constants/chains'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
-  const vaultChainId = Number(chainId)
+  const vaultChainId = Number(chainId) as ChainId
   const { assets: tokenAssets } = useTokenAssetsContext()
 
   // Use our new data hooks
