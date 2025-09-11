@@ -40,14 +40,18 @@ function SingleVaultPage() {
   })
 
   // Process chart data
-  const { transformedApyData, transformedTvlData, transformedPpsData } =
-    useChartData({
-      apyData,
-      tvlData,
-      ppsData,
-      isLoading: chartsLoading,
-      hasErrors: chartsError,
-    })
+  const {
+    transformedApyData,
+    transformedTvlData,
+    transformedPpsData,
+    transformedAprData,
+  } = useChartData({
+    apyData,
+    tvlData,
+    ppsData,
+    isLoading: chartsLoading,
+    hasErrors: chartsError,
+  })
 
   // Ensure we have vault details and main info panel data
   if (!vaultDetails || !mainInfoPanelData) {
@@ -68,6 +72,7 @@ function SingleVaultPage() {
             apyData={transformedApyData}
             tvlData={transformedTvlData}
             ppsData={transformedPpsData}
+            aprData={transformedAprData}
             isLoading={chartsLoading}
             hasErrors={chartsError}
           />
