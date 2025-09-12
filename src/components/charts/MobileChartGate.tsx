@@ -6,10 +6,11 @@ function useIsMobile() {
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mq = window.matchMedia('(max-width: 768px)')
-    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsMobile('matches' in e ? e.matches : e.matches)
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches)
     }
-    handleChange(mq)
+    // Initialize from current media query state
+    setIsMobile(mq.matches)
     mq.addEventListener('change', handleChange)
     return () => mq.removeEventListener('change', handleChange)
   }, [])

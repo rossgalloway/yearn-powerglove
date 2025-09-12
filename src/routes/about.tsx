@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 function AboutPage() {
   return (
     <div className="h-full overflow-y-auto">
-      <div className="flex flex-1 container mx-auto max-w-4xl px-4 min-h-full">
+      <div className="flex flex-1 w-full mx-auto max-w-4xl px-0 sm:px-6 min-h-full">
         <div className="bg-white border p-8 pb-16">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">About Yearn</h1>
 

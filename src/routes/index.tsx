@@ -37,7 +37,7 @@ export default function AllVaultsPage() {
   }
 
   return (
-    <main className="flex-1 container pt-0 pb-0">
+    <main className="flex-1 w-full max-w-[1400px] mx-auto px-0 sm:px-6 pt-0 pb-0">
       <div className="space-y-0">
         <VaultsList vaults={retrievedVaults} tokenAssets={assets} />
       </div>

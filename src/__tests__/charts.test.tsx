@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, fireEvent } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { APYChart } from '@/components/charts/APYChart'
 import { PPSChart } from '@/components/charts/PPSChart'
 
@@ -26,7 +26,7 @@ describe('APYChart', () => {
       toJSON: () => {},
     }))
     
-    const { container, getByLabelText } = render(
+    const { container } = render(
       <div style={{ width: '400px', height: '300px' }}>
         <APYChart chartData={data} timeframe="30d" />
       </div>

@@ -42,7 +42,8 @@ export const StrategyTable: React.FC<StrategyTableProps> = React.memo(
 
     return (
       <div className="lg:flex-1">
-        <div className="border border-[#f5f5f5]">
+        <div className="mx-0 sm:overflow-x-auto">
+          <div className="sm:min-w-[640px] border border-[#f5f5f5]">
           {/* Table Header */}
           <div className="flex items-center p-3 text-sm text-[#4f4f4f]">
             <div className="w-1/2 flex items-center">
@@ -111,6 +112,7 @@ export const StrategyTable: React.FC<StrategyTableProps> = React.memo(
                 ))}
             </div>
           )}
+          </div>
         </div>
       </div>
     )

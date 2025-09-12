@@ -10,7 +10,7 @@ export function FixedHeightChartContainer({
   className = '',
 }: ChartContainerProps) {
   return (
-    <div className={`${className} relative h-[400px]`}>
+    <div className={`${className} relative h-60 sm:h-72 md:h-[400px]`}>
       <div
         className="absolute inset-0"
         style={

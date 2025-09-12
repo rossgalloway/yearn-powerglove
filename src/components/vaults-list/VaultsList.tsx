@@ -56,22 +56,27 @@ export const VaultsList: React.FC<VaultsListProps> = React.memo(
           onSetSelectedChains={setSelectedChains}
           onTypeToggle={handleToggleType}
           onSearchChange={setSearchTerm}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
 
         {/* Vaults List */}
-        <div className="border rounded text-sm overflow-hidden bg-white">
-          {/* Headers Row */}
+        <div className="mx-0 sm:overflow-x-auto">
+          <div className="sm:min-w-[720px] border rounded text-sm overflow-hidden bg-white">
+          {/* Headers Row (desktop only) */}
           <VaultsTableHeader
             sortColumn={sortColumn}
             sortDirection={sortDirection}
             onSort={handleSort}
           />
 
-          {/* Virtual Scrolled Rows */}
-          <VaultsTable
-            vaults={filteredAndSortedVaults}
-            availableHeight={availableHeight}
-          />
+            {/* Virtual Scrolled Rows */}
+            <VaultsTable
+              vaults={filteredAndSortedVaults}
+              availableHeight={availableHeight}
+            />
+          </div>
         </div>
       </div>
     )

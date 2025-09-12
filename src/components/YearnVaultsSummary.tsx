@@ -31,9 +31,9 @@ export function YearnVaultsSummary({
       <div
         className={`transition-all duration-300 ${isOpen ? 'max-h-screen' : 'max-h-0 overflow-hidden'}`}
       >
-        <div className="grid grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           {/* Vault Types Information (60% width) */}
-          <div className="col-span-3 space-y-6">
+          <div className="md:col-span-3 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(vaultTypes).map(([title, type]) => (
                 <button
@@ -59,7 +59,7 @@ export function YearnVaultsSummary({
           </div>
 
           {/* TVL Chart (40% width) */}
-          <div className="col-span-2 p-4 border border-dashed border-gray-300 rounded">
+          <div className="md:col-span-2 p-4 border border-dashed border-gray-300 rounded">
             <h2 className="font-semibold mb-2">Total Value Locked (TVL)</h2>
             <div className="h-48 flex items-center justify-center text-gray-500">
               TVL Chart Placeholder
