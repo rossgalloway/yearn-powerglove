@@ -52,3 +52,7 @@ export default tseslint.config({
   },
 })
 ```
+
+## Mobile usage
+
+On small screens, charts are hidden behind a **View chart** button. Tap the button and rotate your device to landscape for the best viewing experience.

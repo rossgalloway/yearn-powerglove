@@ -5,6 +5,7 @@ import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/charts/chart-container'
 import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
+import MobileChartGate from '@/components/charts/MobileChartGate'
 import {
   apyChartData,
   tvlChartData,
@@ -143,68 +144,74 @@ export function ChartsPanel(data: ChartData) {
           </div>
 
           <TabsContent value="historical-apy" className="mt-0">
-            <FixedHeightChartContainer>
-              <ChartErrorBoundary>
-                <APYChart
-                  chartData={apyData}
-                  timeframe={timeframe.value}
-                  show30DApyLine={true}
-                  showSmoothedAPY={false}
-                />
-              </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                {/* Ghosted TVL chart */}
-                <ChartErrorBoundary>
-                  <TVLChart
-                    chartData={tvlData}
-                    timeframe={timeframe.value}
-                    hideAxes={true}
-                    hideTooltip={true}
-                  />
-                </ChartErrorBoundary>
-              </div>
-            </FixedHeightChartContainer>
-          </TabsContent>
-
-          <TabsContent value="historical-pps" className="mt-0">
-            <FixedHeightChartContainer>
-              <ChartErrorBoundary>
-                <PPSChart chartData={ppsData} timeframe={timeframe.value} />
-              </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                {/* Ghosted APR chart */}
-                <ChartErrorBoundary>
-                  <PPSChart
-                    chartData={aprData}
-                    timeframe={timeframe.value}
-                    hideAxes={true}
-                    hideTooltip={true}
-                    dataKey="APR"
-                  />
-                </ChartErrorBoundary>
-              </div>
-            </FixedHeightChartContainer>
-          </TabsContent>
-
-          <TabsContent value="historical-tvl" className="mt-0">
-            <FixedHeightChartContainer>
-              <ChartErrorBoundary>
-                <TVLChart chartData={tvlData} timeframe={timeframe.value} />
-              </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-20 pointer-events-none">
-                {/* Ghosted APY chart */}
+            <MobileChartGate>
+              <FixedHeightChartContainer>
                 <ChartErrorBoundary>
                   <APYChart
                     chartData={apyData}
                     timeframe={timeframe.value}
-                    hideAxes={true}
-                    hideTooltip={true}
                     show30DApyLine={true}
                     showSmoothedAPY={false}
                   />
                 </ChartErrorBoundary>
-              </div>
-            </FixedHeightChartContainer>
+                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                  {/* Ghosted TVL chart */}
+                  <ChartErrorBoundary>
+                    <TVLChart
+                      chartData={tvlData}
+                      timeframe={timeframe.value}
+                      hideAxes={true}
+                      hideTooltip={true}
+                    />
+                  </ChartErrorBoundary>
+                </div>
+              </FixedHeightChartContainer>
+            </MobileChartGate>
+          </TabsContent>
+
+          <TabsContent value="historical-pps" className="mt-0">
+            <MobileChartGate>
+              <FixedHeightChartContainer>
+                <ChartErrorBoundary>
+                  <PPSChart chartData={ppsData} timeframe={timeframe.value} />
+                </ChartErrorBoundary>
+                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                  {/* Ghosted APR chart */}
+                  <ChartErrorBoundary>
+                    <PPSChart
+                      chartData={aprData}
+                      timeframe={timeframe.value}
+                      hideAxes={true}
+                      hideTooltip={true}
+                      dataKey="APR"
+                    />
+                  </ChartErrorBoundary>
+                </div>
+              </FixedHeightChartContainer>
+            </MobileChartGate>
+          </TabsContent>
+
+          <TabsContent value="historical-tvl" className="mt-0">
+            <MobileChartGate>
+              <FixedHeightChartContainer>
+                <ChartErrorBoundary>
+                  <TVLChart chartData={tvlData} timeframe={timeframe.value} />
+                </ChartErrorBoundary>
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
+                  {/* Ghosted APY chart */}
+                  <ChartErrorBoundary>
+                    <APYChart
+                      chartData={apyData}
+                      timeframe={timeframe.value}
+                      hideAxes={true}
+                      hideTooltip={true}
+                      show30DApyLine={true}
+                      showSmoothedAPY={false}
+                    />
+                  </ChartErrorBoundary>
+                </div>
+              </FixedHeightChartContainer>
+            </MobileChartGate>
           </TabsContent>
         </div>
       </Tabs>
