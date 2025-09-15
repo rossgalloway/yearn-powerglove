@@ -83,7 +83,7 @@ const ChartSkeleton: React.FC = () => {
 // Individual skeleton chart component
 const SkeletonChart: React.FC = () => {
   return (
-    <div className="w-full h-full flex flex-col min-h-[400px]">
+    <div className="w-full h-full flex flex-col min-h-60 sm:min-h-72 md:min-h-[400px]">
       {/* Y-axis labels skeleton */}
       <div className="flex flex-1">
         <div className="w-12 flex flex-col justify-between py-4 pl-4">

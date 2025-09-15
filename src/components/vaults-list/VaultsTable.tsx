@@ -1,6 +1,7 @@
 import React from 'react'
 import { VirtualScrollTable } from '@/components/ui/VirtualScrollTable'
 import { VaultRow, VaultListData } from '@/components/vaults-list/VaultRow'
+import useIsMobile from '@/hooks/useIsMobile'
 
 interface VaultsTableProps {
   vaults: VaultListData[]
@@ -9,6 +10,7 @@ interface VaultsTableProps {
 
 export const VaultsTable: React.FC<VaultsTableProps> = React.memo(
   ({ vaults, availableHeight }) => {
+    const isMobile = useIsMobile()
     // Show fallback message when no vaults match the filters
     if (vaults.length === 0) {
       return (
@@ -29,7 +31,7 @@ export const VaultsTable: React.FC<VaultsTableProps> = React.memo(
     return (
       <VirtualScrollTable
         data={vaults}
-        itemHeight={50} // Fixed height per row - matches VaultRow height
+        itemHeight={isMobile ? 65 : 50} // Taller on mobile to accommodate two-row layout
         containerHeight={availableHeight} // Use full available viewport height
         renderItem={(vault: VaultListData) => (
           <VaultRow key={`${vault.chain}-${vault.id}`} vault={vault} />

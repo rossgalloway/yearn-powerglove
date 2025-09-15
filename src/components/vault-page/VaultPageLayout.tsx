@@ -39,7 +39,7 @@ export const VaultPageLayout = React.memo<VaultPageLayoutProps>(
 
     // Render content
     return (
-      <main className="flex-1 container pt-0 pb-0 h-full overflow-y-auto">
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-0 sm:px-6 pt-0 pb-0 h-full overflow-y-auto">
         {children}
       </main>
     )

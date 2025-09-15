@@ -32,7 +32,7 @@ export const VaultsTableHeader: React.FC<VaultsTableHeaderProps> = React.memo(
     }
 
     return (
-      <div className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b">
+      <div className="hidden sm:flex px-6 py-2 bg-white text-gray-900 font-medium border-b sm:min-w-[720px]">
         {headers.map(({ label, key }) => (
           <div
             key={key}

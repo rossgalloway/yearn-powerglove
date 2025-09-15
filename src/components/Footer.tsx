@@ -3,7 +3,7 @@ import { ExternalLink } from 'lucide-react'
 export default function Footer() {
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-border bg-white py-3 mt-0">
-      <div className="container px-8 max-w-[1400px] mx-auto">
+      <div className="w-full max-w-[1400px] mx-auto px-0 sm:px-8 hidden sm:block">
         <div className="flex flex-row items-center justify-between gap-6">
           <div className="flex items-center justify-center">
             <img
