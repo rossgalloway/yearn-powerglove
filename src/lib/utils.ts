@@ -92,8 +92,8 @@ export function calculateAprFromPps(
       continue
     }
 
-    const dailyReturn = (currentSmoothed - prevSmoothed) / prevSmoothed
-    const apr = Math.pow(1 + dailyReturn, 365 / deltaDays) - 1
+    const periodReturn = (currentSmoothed - prevSmoothed) / prevSmoothed
+    const apr = periodReturn * (365 / deltaDays)
     aprSeries.push({ ...current, value: apr })
   }
 

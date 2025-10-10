@@ -9,7 +9,7 @@ describe('calculateAprFromPps', () => {
       { time: '86400', value: 101, label: '', period: '1 day' },
     ]
     const result = calculateAprFromPps(series)
-    const expected = Math.pow(1 + (101 - 100) / 100, 365) - 1
+    const expected = ((101 - 100) / 100) * 365
     expect(result[1].value).toBeCloseTo(expected)
   })
 
@@ -32,7 +32,7 @@ describe('calculateAprFromPps', () => {
       { time: String(86400 * 2), value: 102, label: '', period: '1 day' }, // 2 days later
     ]
     const result = calculateAprFromPps(series)
-    const expected = Math.pow(1 + (102 - 100) / 100, 365 / 2) - 1
+    const expected = ((102 - 100) / 100) * (365 / 2)
     expect(result[1].value).toBeCloseTo(expected)
   })
 
@@ -46,10 +46,8 @@ describe('calculateAprFromPps', () => {
     const result = calculateAprFromPps(series, 2)
     const prevSmoothed = (100 + 110) / 2
     const currentSmoothed = (110 + 120) / 2
-    const expected = Math.pow(
-      1 + (currentSmoothed - prevSmoothed) / prevSmoothed,
-      365
-    ) - 1
+    const expected =
+      ((currentSmoothed - prevSmoothed) / prevSmoothed) * 365
 
     expect(result[2].value).toBeCloseTo(expected)
   })
