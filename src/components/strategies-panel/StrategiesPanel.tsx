@@ -6,9 +6,10 @@ import { useStrategiesData } from '@/hooks/useStrategiesData'
 import { useSortingAndFiltering } from '@/hooks/useSortingAndFiltering'
 import { StrategyTable } from './StrategyTable'
 import { StrategyAllocationChart } from './StrategyAllocationChart'
+import { ChainId } from '../../constants/chains'
 
 interface StrategiesPanelProps {
-  vaultChainId: number
+  vaultChainId: ChainId
   vaultAddress: string
   vaultDetails: VaultExtended
 }

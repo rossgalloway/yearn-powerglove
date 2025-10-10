@@ -24,7 +24,7 @@ export function useVaultListData(
     return vaults.map(vault => ({
       id: vault.address, // Use the vault's address as a unique ID
       name: vault.name,
-      chain: `${CHAIN_ID_TO_NAME[Number(vault.chainId)]}`, // Convert chainId to a string
+      chain: `${CHAIN_ID_TO_NAME[vault.chainId]}`,
       chainIconUri: CHAIN_ID_TO_ICON[vault.chainId],
       token: vault.asset.symbol,
       tokenUri:

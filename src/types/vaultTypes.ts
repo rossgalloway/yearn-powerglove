@@ -1,8 +1,10 @@
+import { ChainId } from '../constants/chains'
+
 export type VaultSimple = {
   address: string
   symbol: string
   name: string
-  chainId: number
+  chainId: ChainId
   inceptTime: string
   asset: {
     name: string

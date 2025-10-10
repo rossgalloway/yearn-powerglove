@@ -5,6 +5,7 @@ import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
+  ChainId,
 } from '@/constants/chains'
 
 /**
@@ -98,7 +99,7 @@ export function formatVaultTVL(tvlValue?: number): string {
 /**
  * Gets network information for vault
  */
-export function getVaultNetworkInfo(chainId: number) {
+export function getVaultNetworkInfo(chainId: ChainId) {
   return {
     icon: CHAIN_ID_TO_ICON[chainId],
     name: CHAIN_ID_TO_NAME[chainId],

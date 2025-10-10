@@ -38,6 +38,7 @@ export function useMainInfoPanelData({
 
     const vaultName = vaultDetails.name
     const description = vaultDetails.meta?.description || ''
+    const chainId = vaultDetails.chainId
 
     // Token icon resolution
     const vaultToken = {
@@ -60,8 +61,8 @@ export function useMainInfoPanelData({
 
     // Network information
     const network = {
-      icon: CHAIN_ID_TO_ICON[vaultDetails.chainId],
-      name: CHAIN_ID_TO_NAME[vaultDetails.chainId],
+      icon: CHAIN_ID_TO_ICON[chainId],
+      name: CHAIN_ID_TO_NAME[chainId],
     }
 
     // APY formatting
@@ -86,13 +87,14 @@ export function useMainInfoPanelData({
 
     const blockExplorerLink =
       vaultDetails?.chainId && vaultDetails?.address
-        ? `${CHAIN_ID_TO_BLOCK_EXPLORER[vaultDetails.chainId]}/address/${vaultDetails.address}`
+        ? // Cast chainId to ChainId type to fix index signature error
+          `${CHAIN_ID_TO_BLOCK_EXPLORER[chainId]}/address/${vaultDetails.address}`
         : '#'
 
     const yearnVaultLink = vaultDetails?.apiVersion?.startsWith('3')
-      ? `https://yearn.fi/v3/${vaultDetails.chainId}/${vaultDetails.address}`
+      ? `https://yearn.fi/v3/${chainId}/${vaultDetails.address}`
       : vaultDetails?.chainId && vaultDetails?.address
-        ? `https://yearn.fi/vaults/${vaultDetails.chainId}/${vaultDetails.address}`
+        ? `https://yearn.fi/vaults/${chainId}/${vaultDetails.address}`
         : '#'
 
     return {
