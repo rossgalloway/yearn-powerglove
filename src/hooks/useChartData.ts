@@ -1,17 +1,16 @@
 import { useMemo } from 'react'
 import {
   TimeseriesDataPoint,
-  apyChartData,
   tvlChartData,
   ppsChartData,
-  aprChartData,
+  aprApyChartData,
 } from '@/types/dataTypes'
 import {
-  calculateSMA,
   fillMissingDailyData,
   formatUnixTimestamp,
   getEarliestAndLatestTimestamps,
   calculateAprFromPps,
+  calculateApyFromApr,
 } from '@/lib/utils'
 
 interface TimeseriesQueryResult {
@@ -27,10 +26,9 @@ interface UseChartDataProps {
 }
 
 interface UseChartDataReturn {
-  transformedApyData: apyChartData | null
+  transformedAprApyData: aprApyChartData | null
   transformedTvlData: tvlChartData | null
   transformedPpsData: ppsChartData | null
-  transformedAprData: aprChartData | null
 }
 
 /**
@@ -48,10 +46,9 @@ export function useChartData({
     // Only process data if all queries are complete and successful
     if (isLoading || hasErrors || !apyData || !tvlData || !ppsData) {
       return {
-        transformedApyData: null,
+        transformedAprApyData: null,
         transformedTvlData: null,
         transformedPpsData: null,
-        transformedAprData: null,
       }
     }
 
@@ -78,21 +75,7 @@ export function useChartData({
 
     // Calculate APR from PPS data
     const aprFilled = calculateAprFromPps(ppsFilled)
-
-    // Calculate Simple Moving Averages for APR data
-    const rawValues = apy30DayFilled.map(p => p.value ?? 0)
-    const smoothedValues = calculateSMA(rawValues, 5)
-
-    // Transform APY data with SMA calculations
-    const transformedApyData: apyChartData = apy30DayFilled.map(
-      (dataPoint, i) => ({
-        date: formatUnixTimestamp(dataPoint.time),
-        APY: dataPoint.value ? dataPoint.value * 100 : null,
-        smoothedAPY:
-          smoothedValues[i] !== null ? smoothedValues[i]! * 100 : null,
-        APR: aprFilled[i]?.value !== null ? aprFilled[i]!.value! * 100 : null,
-      })
-    )
+    const aprAsApyFilled = calculateApyFromApr(aprFilled)
 
     // Transform TVL data
     const transformedTvlData: tvlChartData = tvlFilled.map(dataPoint => ({
@@ -106,16 +89,26 @@ export function useChartData({
       PPS: dataPoint.value ?? null,
     }))
 
-    const transformedAprData: aprChartData = aprFilled.map(dataPoint => ({
-      date: formatUnixTimestamp(dataPoint.time),
-      APR: dataPoint.value !== null ? dataPoint.value * 100 : null,
-    }))
+    const transformedAprApyData: aprApyChartData = aprFilled.map(
+      (aprDataPoint, index) => ({
+        date: formatUnixTimestamp(aprDataPoint.time),
+        thirtyDayApy:
+          apy30DayFilled[index]?.value !== null
+            ? apy30DayFilled[index]!.value! * 100
+            : null,
+        derivedApr:
+          aprDataPoint.value !== null ? aprDataPoint.value * 100 : null,
+        derivedApy:
+          aprAsApyFilled[index]?.value !== null
+            ? aprAsApyFilled[index]!.value! * 100
+            : null,
+      })
+    )
 
     return {
-      transformedApyData,
+      transformedAprApyData,
       transformedTvlData,
       transformedPpsData,
-      transformedAprData,
     }
   }, [apyData, tvlData, ppsData, isLoading, hasErrors])
 }

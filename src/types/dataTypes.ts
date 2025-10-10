@@ -46,12 +46,6 @@ export interface ChartDataPoint {
   [key: string]: number | string | null
 }
 
-export type apyChartData = {
-  date: string
-  APY: number | null
-  smoothedAPY: number | null
-  APR: number | null
-}[]
 export type tvlChartData = {
   date: string
   TVL: number | null
@@ -61,9 +55,11 @@ export type ppsChartData = {
   PPS: number | null
 }[]
 
-export type aprChartData = {
+export type aprApyChartData = {
   date: string
-  APR: number | null
+  thirtyDayApy: number | null
+  derivedApr: number | null
+  derivedApy: number | null
 }[]
 
 type StrategyDetails = {

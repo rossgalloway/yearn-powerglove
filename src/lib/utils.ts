@@ -36,24 +36,50 @@ export const calculateSMA = (
   return sma
 }
 
-// Derive APR values from a PPS time series
+// Derive APR values from a PPS time series using optional smoothing
 export function calculateAprFromPps(
-  pps: TimeseriesDataPoint[]
+  pps: TimeseriesDataPoint[],
+  smoothingWindowDays: number = 1
 ): TimeseriesDataPoint[] {
   if (pps.length === 0) return []
 
   const aprSeries: TimeseriesDataPoint[] = []
+  const window = Math.max(1, Math.floor(smoothingWindowDays))
+
+  const smoothedValues: (number | null)[] = pps.map((point, index) => {
+    const windowStart = Math.max(0, index - window + 1)
+    let sum = 0
+    let count = 0
+
+    for (let i = windowStart; i <= index; i++) {
+      const value = pps[i].value
+      if (value !== null) {
+        sum += value
+        count++
+      }
+    }
+
+    return count > 0 ? sum / count : null
+  })
 
   for (let i = 0; i < pps.length; i++) {
     const current = pps[i]
+    const currentSmoothed = smoothedValues[i]
+
     if (i === 0) {
       aprSeries.push({ ...current, value: null })
       continue
     }
 
     const prev = pps[i - 1]
+    const prevSmoothed = smoothedValues[i - 1]
 
-    if (current.value === null || prev.value === null) {
+    if (
+      current.value === null ||
+      prev.value === null ||
+      currentSmoothed === null ||
+      prevSmoothed === null
+    ) {
       aprSeries.push({ ...current, value: null })
       continue
     }
@@ -66,12 +92,34 @@ export function calculateAprFromPps(
       continue
     }
 
-    const dailyReturn = (current.value - prev.value) / prev.value
+    const dailyReturn = (currentSmoothed - prevSmoothed) / prevSmoothed
     const apr = Math.pow(1 + dailyReturn, 365 / deltaDays) - 1
     aprSeries.push({ ...current, value: apr })
   }
 
   return aprSeries
+}
+
+// Convert APR timeseries values to APY with configurable compounding
+export function calculateApyFromApr(
+  aprSeries: TimeseriesDataPoint[],
+  compoundingPeriodDays: number = 7
+): TimeseriesDataPoint[] {
+  if (aprSeries.length === 0) return []
+
+  const periodDays = Math.max(1, compoundingPeriodDays)
+  const periodsPerYear = 365 / periodDays
+
+  return aprSeries.map(point => {
+    if (point.value === null) {
+      return { ...point, value: null }
+    }
+
+    const apr = point.value
+    const apy = Math.pow(1 + apr / periodsPerYear, periodsPerYear) - 1
+
+    return { ...point, value: apy }
+  })
 }
 
 /**

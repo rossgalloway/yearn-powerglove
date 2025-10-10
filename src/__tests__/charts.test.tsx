@@ -7,10 +7,9 @@ describe('APYChart', () => {
   it('renders without crashing', () => {
     const data = Array.from({ length: 10 }).map((_, i) => ({
       date: `2025-01-${String(i + 1).padStart(2, '0')}`,
-      APY: Math.random() * 10,
-      SMA15: null,
-      SMA30: null,
-      APR: Math.random() * 10,
+      thirtyDayApy: Math.random() * 10,
+      derivedApr: Math.random() * 10,
+      derivedApy: Math.random() * 10,
     }))
     
     // Mock getBoundingClientRect for Recharts ResponsiveContainer
@@ -28,18 +27,22 @@ describe('APYChart', () => {
     
     const { container, getByLabelText } = render(
       <div style={{ width: '400px', height: '300px' }}>
-        <APYChart chartData={data} timeframe="30d" />
+        <APYChart chartData={data} timeframe="30d" hideTooltip />
       </div>
     )
-    // APR line should be hidden by default
+    const derivedApyCheckbox = getByLabelText(/show derived apy lines/i)
     expect(
-      container.querySelector('path[stroke="var(--color-apr)"]')
+      container.querySelector('path[stroke="var(--color-derivedApy)"]')
+    ).toBeTruthy()
+
+    fireEvent.click(derivedApyCheckbox)
+    expect(
+      container.querySelector('path[stroke="var(--color-derivedApy)"]')
     ).toBeNull()
 
-    const checkbox = getByLabelText(/show raw apr values/i)
-    fireEvent.click(checkbox)
+    fireEvent.click(derivedApyCheckbox)
     expect(
-      container.querySelector('path[stroke="var(--color-apr)"]')
+      container.querySelector('path[stroke="var(--color-derivedApy)"]')
     ).toBeTruthy()
   })
 })
@@ -53,7 +56,7 @@ describe('PPSChart', () => {
 
     const aprData = Array.from({ length: 10 }).map((_, i) => ({
       date: `2025-01-${String(i + 1).padStart(2, '0')}`,
-      APR: Math.random() * 10,
+      derivedApr: Math.random() * 10,
     }))
 
     Element.prototype.getBoundingClientRect = vi.fn(() => ({
@@ -83,7 +86,7 @@ describe('PPSChart', () => {
         <PPSChart
           chartData={aprData}
           timeframe="30d"
-          dataKey="APR"
+          dataKey="derivedApr"
           hideAxes
           hideTooltip
         />
@@ -91,7 +94,7 @@ describe('PPSChart', () => {
     )
 
     expect(
-      aprContainer.querySelector('path[stroke="var(--color-apr)"]')
+      aprContainer.querySelector('path[stroke="var(--color-derivedApr)"]')
     ).toBeTruthy()
   })
 })
