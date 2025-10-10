@@ -63,12 +63,12 @@ export function ChartsPanel(data: ChartData) {
   // Define chart titles and descriptions based on active tab
   const chartInfo = {
     'historical-apy': {
-      title: 'APY & APR Performance (TVL shown ghosted)',
-      description: `Vault APY with derived APR/APY overlays over ${timeframe.label}.`,
+      title: 'APY Performance (TVL shown ghosted)',
+      description: `Raw APY and 30-day moving averages over ${timeframe.label}.`,
     },
     'historical-pps': {
-      title: 'Price Per Share (Derived APR shown ghosted)',
-      description: `PPS with the derived APR overlay over ${timeframe.label}.`,
+      title: 'Price Per Share (Raw APR shown ghosted)',
+      description: `PPS with raw APR overlay over ${timeframe.label}.`,
     },
     'historical-tvl': {
       title: 'TVL (APY shown ghosted)',

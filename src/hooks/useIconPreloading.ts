@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { CHAIN_ID_TO_ICON } from '@/constants/chains'
+import { CHAIN_ID_TO_ICON, ChainId } from '@/constants/chains'
 
 // Preload critical chain icons immediately
 export const useIconPreloading = () => {
@@ -25,7 +25,7 @@ export const useIconPreloading = () => {
 export const useIconPriority = (
   iconUrl?: string,
   tokenSymbol?: string,
-  chainId?: number
+  chainId?: ChainId
 ): 'high' | 'normal' | 'low' => {
   // Chain icons are always high priority (small set, frequently used)
   if (chainId && CHAIN_ID_TO_ICON[chainId] === iconUrl) {
