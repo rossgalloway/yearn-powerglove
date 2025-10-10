@@ -20,6 +20,8 @@ export const GET_VAULTS_SIMPLE = gql`
       apy {
         grossApr
         net
+        weeklyNet
+        monthlyNet
         inceptionNet
       }
       tvl {
@@ -56,6 +58,8 @@ export const GET_VAULTS = gql`
       apy {
         grossApr
         net
+        weeklyNet
+        monthlyNet
         inceptionNet
       }
       tvl {
@@ -97,6 +101,8 @@ export const GET_VAULT_DETAILS = gql`
       apy {
         grossApr
         net
+        weeklyNet
+        monthlyNet
         inceptionNet
       }
       tvl {

@@ -10,12 +10,14 @@ import {
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
 import { ChartDataPoint } from '@/types/dataTypes'
 
+type PercentSeriesKey = 'derivedApr'
+
 interface PPSChartProps {
   chartData: ChartDataPoint[]
   timeframe: string
   hideAxes?: boolean
   hideTooltip?: boolean
-  dataKey?: 'PPS' | 'APR'
+  dataKey?: 'PPS' | PercentSeriesKey
 }
 
 export const PPSChart: React.FC<PPSChartProps> = React.memo(
@@ -25,16 +27,26 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
       [chartData, timeframe]
     )
 
-    const isApr = dataKey === 'APR'
+    const isPercentSeries = dataKey !== 'PPS'
+    const percentSeriesMeta: Record<PercentSeriesKey, { label: string; color: string }> = {
+      derivedApr: {
+        label: 'Derived APR %',
+        color: 'var(--chart-4)',
+      },
+    }
+    const activePercentMeta =
+      dataKey !== 'PPS'
+        ? percentSeriesMeta[dataKey as PercentSeriesKey]
+        : undefined
 
     return (
       <ChartContainer
         config={
-          isApr
+          isPercentSeries && activePercentMeta
             ? {
-                apr: {
-                  label: 'APR %',
-                  color: hideAxes ? 'black' : 'var(--chart-4)',
+                [dataKey]: {
+                  label: activePercentMeta.label,
+                  color: hideAxes ? 'black' : activePercentMeta.color,
                 },
               }
             : {
@@ -74,15 +86,18 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
               }
             />
             <YAxis
-              domain={isApr ? [0, 'auto'] : ['auto', 'auto']}
+              domain={isPercentSeries ? [0, 'auto'] : ['auto', 'auto']}
               tickFormatter={value =>
-                isApr ? `${value}%` : Number(value).toFixed(3)
+                isPercentSeries ? `${value}%` : Number(value).toFixed(3)
               }
               label={
                 hideAxes
                   ? undefined
                   : {
-                      value: isApr ? 'APR %' : 'Price Per Share',
+                      value:
+                        isPercentSeries && activePercentMeta
+                          ? activePercentMeta.label
+                          : 'Price Per Share',
                       angle: -90,
                       position: 'insideLeft',
                       offset: 10,
@@ -111,8 +126,8 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             {!hideTooltip && (
               <ChartTooltip
                 formatter={(value: number) =>
-                  isApr
-                    ? [`${value.toFixed(2)}%`, 'APR']
+                  isPercentSeries && activePercentMeta
+                    ? [`${value.toFixed(2)}%`, activePercentMeta.label]
                     : [value.toFixed(3), 'PPS']
                 }
               />
@@ -121,7 +136,9 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             <Line
               type="monotone"
               dataKey={dataKey}
-              stroke={isApr ? 'var(--color-apr)' : 'var(--color-pps)'}
+              stroke={
+                isPercentSeries ? `var(--color-${dataKey})` : 'var(--color-pps)'
+              }
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
@@ -152,4 +169,3 @@ function getTimeframeLimit(timeframe: string): number {
 }
 
 export default PPSChart
-

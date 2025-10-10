@@ -5,20 +5,14 @@ import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/charts/chart-container'
 import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
-import {
-  apyChartData,
-  tvlChartData,
-  ppsChartData,
-  aprChartData,
-} from '@/types/dataTypes'
+import { tvlChartData, ppsChartData, aprApyChartData } from '@/types/dataTypes'
 import ChartSkeleton from '@/components/charts/ChartSkeleton'
 import ChartsLoader from '@/components/charts/ChartsLoader'
 
 type ChartData = {
-  apyData: apyChartData | null
+  aprApyData: aprApyChartData | null
   tvlData: tvlChartData | null
   ppsData: ppsChartData | null
-  aprData: aprChartData | null
   isLoading?: boolean
   hasErrors?: boolean
 }
@@ -26,10 +20,9 @@ type ChartData = {
 export function ChartsPanel(data: ChartData) {
   const [activeTab, setActiveTab] = useState('historical-apy')
   const {
-    apyData,
+    aprApyData,
     tvlData,
     ppsData,
-    aprData,
     isLoading = false,
     hasErrors = false,
   } = data
@@ -56,7 +49,7 @@ export function ChartsPanel(data: ChartData) {
   }
 
   // Show skeleton with loader overlay when loading or no data yet
-  if (isLoading || !apyData || !tvlData || !ppsData || !aprData) {
+  if (isLoading || !aprApyData || !tvlData || !ppsData) {
     return (
       <div className="relative">
         <ChartSkeleton />
@@ -146,10 +139,8 @@ export function ChartsPanel(data: ChartData) {
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
                 <APYChart
-                  chartData={apyData}
+                  chartData={aprApyData}
                   timeframe={timeframe.value}
-                  show30DApyLine={true}
-                  showSmoothedAPY={false}
                 />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -175,11 +166,11 @@ export function ChartsPanel(data: ChartData) {
                 {/* Ghosted APR chart */}
                 <ChartErrorBoundary>
                   <PPSChart
-                    chartData={aprData}
+                    chartData={aprApyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
-                    dataKey="APR"
+                    dataKey="derivedApr"
                   />
                 </ChartErrorBoundary>
               </div>
@@ -195,12 +186,10 @@ export function ChartsPanel(data: ChartData) {
                 {/* Ghosted APY chart */}
                 <ChartErrorBoundary>
                   <APYChart
-                    chartData={apyData}
+                    chartData={aprApyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
-                    show30DApyLine={true}
-                    showSmoothedAPY={false}
                   />
                 </ChartErrorBoundary>
               </div>

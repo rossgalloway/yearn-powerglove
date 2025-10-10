@@ -25,6 +25,11 @@ export function useMainInfoPanelData({
   return useMemo(() => {
     if (!vaultDetails) return null
 
+    const formatPercent = (value?: number | null) =>
+      value !== undefined && value !== null
+        ? `${(value * 100).toFixed(2)}%`
+        : ' - '
+
     // Date formatting
     const deploymentDate = format(
       new Date(parseInt(vaultDetails.inceptTime) * 1000),
@@ -61,13 +66,10 @@ export function useMainInfoPanelData({
     }
 
     // APY formatting
-    const estimatedAPY = vaultDetails?.apy?.net
-      ? `${(vaultDetails.apy.net * 100).toFixed(2)}%`
-      : '0%'
-
-    const historicalAPY = vaultDetails?.apy?.inceptionNet
-      ? `${(vaultDetails.apy.inceptionNet * 100).toFixed(2)}%`
-      : '0%'
+    const oneDayAPY = formatPercent(vaultDetails?.apy?.net)
+    const thirtyDayAPY = formatPercent(
+      vaultDetails?.apy?.monthlyNet ?? vaultDetails?.apy?.inceptionNet
+    )
 
     // Fee formatting
     const managementFee = vaultDetails?.fees?.managementFee
@@ -103,8 +105,8 @@ export function useMainInfoPanelData({
       vaultToken,
       totalSupply,
       network,
-      estimatedAPY,
-      historicalAPY,
+      oneDayAPY,
+      thirtyDayAPY,
       managementFee,
       performanceFee,
       apiVersion,

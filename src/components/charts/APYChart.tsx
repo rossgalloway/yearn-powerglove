@@ -16,40 +16,32 @@ interface APYChartProps {
   timeframe: string
   hideAxes?: boolean
   hideTooltip?: boolean
-  show30DApyLine?: boolean
-  showSmoothedAPY?: boolean
 }
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
-  ({
-    chartData,
-    timeframe,
-    hideAxes,
-    hideTooltip,
-    show30DApyLine = true,
-    showSmoothedAPY = true,
-  }) => {
-    const [showApr, setShowApr] = useState(true)
+  ({ chartData, timeframe, hideAxes, hideTooltip }) => {
+    const [showDerivedApy, setShowDerivedApy] = useState(true)
 
     const filteredData = useMemo(
       () => chartData.slice(-getTimeframeLimit(timeframe)),
       [chartData, timeframe]
     )
 
+    const seriesLabels: Record<string, string> = {
+      thirtyDayApy: '30-day APY',
+      derivedApy: '1-day APY',
+    }
+
     return (
       <div className="relative h-full">
         <ChartContainer
           config={{
-            apy: {
+            thirtyDayApy: {
               label: '30-day APY %',
               color: hideAxes ? 'black' : 'var(--chart-2)',
             },
-            smoothedAPY: {
-              label: 'smoothedAPY %',
-              color: hideAxes ? 'black' : 'var(--chart-3)',
-            },
-            apr: {
-              label: 'APR %',
+            derivedApy: {
+              label: 'Derived APY %',
               color: hideAxes ? 'black' : 'var(--chart-4)',
             },
           }}
@@ -89,7 +81,7 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   hideAxes
                     ? undefined
                     : {
-                        value: 'APY %',
+                        value: 'Annualized %',
                         angle: -90,
                         position: 'insideLeft',
                         offset: 10,
@@ -119,41 +111,27 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                 <ChartTooltip
                   formatter={(value: number, name: string) => {
                     const label =
-                      name === 'APY'
-                        ? '30-day APY'
-                        : name === 'APR'
-                          ? 'APR'
-                          : 'Smoothed APY'
+                      seriesLabels[name] ||
+                      seriesLabels[name.toLowerCase()] ||
+                      name
                     return [`${value.toFixed(2)}%`, label]
                   }}
                 />
               )}
-              {show30DApyLine && (
+              <Line
+                type="monotone"
+                dataKey="thirtyDayApy"
+                stroke="var(--color-thirtyDayApy)"
+                strokeWidth={hideAxes ? 1 : 1.5}
+                dot={false}
+                isAnimationActive={false}
+              />
+              {showDerivedApy && (
                 <Line
                   type="monotone"
-                  dataKey="APY"
-                  stroke="var(--color-apy)"
-                  strokeWidth={hideAxes ? 1 : 1.5}
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              )}
-              {showApr && (
-                <Line
-                  type="monotone"
-                  dataKey="APR"
-                  stroke="var(--color-apr)"
+                  dataKey="derivedApy"
+                  stroke="var(--color-derivedApy)"
                   strokeWidth={hideAxes ? 1 : 1}
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              )}
-              {showSmoothedAPY && (
-                <Line
-                  type="monotone"
-                  dataKey="smoothedAPY"
-                  stroke="var(--color-smoothedAPY)"
-                  strokeWidth={hideAxes ? 1 : 1.5}
                   dot={false}
                   isAnimationActive={false}
                 />
@@ -164,11 +142,11 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
         {!hideAxes && (
           <div className="absolute bottom-2 right-2 flex items-center gap-2 text-xs">
             <Checkbox
-              id="toggle-apr"
-              checked={showApr}
-              onCheckedChange={checked => setShowApr(!!checked)}
+              id="toggle-derived-apy"
+              checked={showDerivedApy}
+              onCheckedChange={checked => setShowDerivedApy(!!checked)}
             />
-            <label htmlFor="toggle-apr">show raw APR values</label>
+            <label htmlFor="toggle-derived-apy">show derived APY lines</label>
           </div>
         )}
       </div>
