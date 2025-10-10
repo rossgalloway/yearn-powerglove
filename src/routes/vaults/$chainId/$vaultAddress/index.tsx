@@ -76,15 +76,14 @@ function SingleVaultPage() {
 
   const formatPercent = React.useCallback((value: number | null) => {
     if (value === null || value === undefined) {
-      return null
+      return ' - '
     }
     return `${value.toFixed(2)}%`
   }, [])
 
   const mainInfoPanelProps = React.useMemo(() => {
     if (!mainInfoPanelData) return null
-    const derivedApyFormatted =
-      formatPercent(latestDerivedApy) ?? mainInfoPanelData.oneDayAPY
+    const derivedApyFormatted = formatPercent(latestDerivedApy)
     const thirtyDayFormatted =
       formatPercent(latestThirtyDayApy) ?? mainInfoPanelData.thirtyDayAPY
 

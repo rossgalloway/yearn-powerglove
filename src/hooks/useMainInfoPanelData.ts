@@ -28,7 +28,7 @@ export function useMainInfoPanelData({
     const formatPercent = (value?: number | null) =>
       value !== undefined && value !== null
         ? `${(value * 100).toFixed(2)}%`
-        : '—'
+        : ' - '
 
     // Date formatting
     const deploymentDate = format(
