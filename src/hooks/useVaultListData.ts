@@ -40,7 +40,9 @@ export function useVaultListData(
             ? `${vaultTypes[3]}` // V2 Factory Vault
             : `${vaultTypes[4]}` // V2 Legacy Vault
           : `${vaultTypes[5]}`,
-      APY: `${((vault.apy?.net ?? 0) * 100).toFixed(2)}%`, // Added nullish coalescing to handle undefined 'vault.apy'
+      APY: `${(
+        (vault.apy?.monthlyNet ?? vault.apy?.net ?? 0) * 100
+      ).toFixed(2)}%`, // Prefer 30-day APY when available
       tvl: `$${vault.tvl?.close?.toLocaleString(undefined, {
         // Added optional chaining to handle undefined 'vault.tvl'
         minimumFractionDigits: 2, // modified to display 2 decimals

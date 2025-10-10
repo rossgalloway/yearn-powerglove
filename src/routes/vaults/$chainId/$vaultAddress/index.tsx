@@ -52,8 +52,56 @@ function SingleVaultPage() {
     hasErrors: chartsError,
   })
 
+  const latestDerivedApy = React.useMemo(() => {
+    if (!transformedAprApyData) return null
+    for (let i = transformedAprApyData.length - 1; i >= 0; i--) {
+      const point = transformedAprApyData[i]
+      if (point?.derivedApy !== null && point?.derivedApy !== undefined) {
+        return point.derivedApy
+      }
+    }
+    return null
+  }, [transformedAprApyData])
+
+  const latestThirtyDayApy = React.useMemo(() => {
+    if (!transformedAprApyData) return null
+    for (let i = transformedAprApyData.length - 1; i >= 0; i--) {
+      const point = transformedAprApyData[i]
+      if (point?.thirtyDayApy !== null && point?.thirtyDayApy !== undefined) {
+        return point.thirtyDayApy
+      }
+    }
+    return null
+  }, [transformedAprApyData])
+
+  const formatPercent = React.useCallback((value: number | null) => {
+    if (value === null || value === undefined) {
+      return null
+    }
+    return `${value.toFixed(2)}%`
+  }, [])
+
+  const mainInfoPanelProps = React.useMemo(() => {
+    if (!mainInfoPanelData) return null
+    const derivedApyFormatted =
+      formatPercent(latestDerivedApy) ?? mainInfoPanelData.oneDayAPY
+    const thirtyDayFormatted =
+      formatPercent(latestThirtyDayApy) ?? mainInfoPanelData.thirtyDayAPY
+
+    return {
+      ...mainInfoPanelData,
+      oneDayAPY: derivedApyFormatted,
+      thirtyDayAPY: thirtyDayFormatted,
+    }
+  }, [
+    mainInfoPanelData,
+    formatPercent,
+    latestDerivedApy,
+    latestThirtyDayApy,
+  ])
+
   // Ensure we have vault details and main info panel data
-  if (!vaultDetails || !mainInfoPanelData) {
+  if (!vaultDetails || !mainInfoPanelProps) {
     return (
       <VaultPageLayout isLoading={true} hasErrors={false}>
         {null}
@@ -65,7 +113,7 @@ function SingleVaultPage() {
     <VaultPageLayout isLoading={isInitialLoading} hasErrors={hasErrors}>
       <VaultPageBreadcrumb vaultName={vaultDetails.name} />
       <div className="space-y-0">
-        <MainInfoPanel {...mainInfoPanelData} />
+        <MainInfoPanel {...mainInfoPanelProps} />
         <Suspense fallback={null}>
           <ChartsPanel
             aprApyData={transformedAprApyData}

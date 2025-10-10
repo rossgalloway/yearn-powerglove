@@ -16,6 +16,8 @@ export type VaultSimple = {
     grossApr: number
     net: number
     inceptionNet: number
+    weeklyNet?: number
+    monthlyNet?: number
   }
   tvl?: {
     close: number

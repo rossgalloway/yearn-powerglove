@@ -25,7 +25,7 @@ const headers: { label: string; key: keyof VaultListData }[] = [
   { label: 'Chain', key: 'chain' },
   { label: 'Token', key: 'token' },
   { label: 'Type', key: 'type' },
-  { label: 'Est. APY', key: 'APY' },
+  { label: '30D APY', key: 'APY' },
   { label: 'TVL', key: 'tvl' },
 ]
 

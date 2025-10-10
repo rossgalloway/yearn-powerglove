@@ -13,8 +13,8 @@ export type MainInfoPanelProps = {
     icon: string
     name: string
   }
-  estimatedAPY: string
-  historicalAPY: string
+  oneDayAPY: string
+  thirtyDayAPY: string
   managementFee: string
   performanceFee: string
   apiVersion: string
