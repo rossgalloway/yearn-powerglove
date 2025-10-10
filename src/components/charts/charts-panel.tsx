@@ -63,16 +63,16 @@ export function ChartsPanel(data: ChartData) {
   // Define chart titles and descriptions based on active tab
   const chartInfo = {
     'historical-apy': {
-      title: 'APY Performance (TVL shown ghosted)',
-      description: `Raw APY and 30-day moving averages over ${timeframe.label}.`,
+      title: 'Vault Performance (TVL shown ghosted)',
+      description: `1-Day and 30-Day APYs over ${timeframe.label}.`,
     },
     'historical-pps': {
-      title: 'Price Per Share (Raw APR shown ghosted)',
-      description: `PPS with raw APR overlay over ${timeframe.label}.`,
+      title: 'Vault Share Growth (1-Day APY shown ghosted)',
+      description: `Price Per Share values over ${timeframe.label}.`,
     },
     'historical-tvl': {
-      title: 'TVL (APY shown ghosted)',
-      description: `Total Value Deposited in Vault over ${timeframe.label}.`,
+      title: 'Total Value Deposited (APY shown ghosted)',
+      description: `Value Deposited in Vault over ${timeframe.label}.`,
     },
   }
 
@@ -90,13 +90,13 @@ export function ChartsPanel(data: ChartData) {
                 value="historical-apy"
                 className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-[#0657f9] data-[state=active]:bg-transparent data-[state=active]:shadow-none"
               >
-                Historical APY
+                Historical Performance
               </TabsTrigger>
               <TabsTrigger
                 value="historical-pps"
                 className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-[#0657f9] data-[state=active]:bg-transparent data-[state=active]:shadow-none"
               >
-                Historical PPS
+                Historical Share Growth
               </TabsTrigger>
               <TabsTrigger
                 value="historical-tvl"
@@ -138,10 +138,7 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <APYChart
-                  chartData={aprApyData}
-                  timeframe={timeframe.value}
-                />
+                <APYChart chartData={aprApyData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
