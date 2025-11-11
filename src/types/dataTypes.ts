@@ -80,6 +80,7 @@ export type Strategy = {
   allocationPercent: number
   allocationAmount: string
   estimatedAPY: string
+  estimatedApySource?: 'oracle' | 'graph'
   tokenSymbol: string
   tokenIconUri: string
   details: StrategyDetails

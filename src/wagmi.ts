@@ -1,18 +1,49 @@
 import { http, createConfig } from 'wagmi'
-import { mainnet, sepolia } from 'wagmi/chains'
-import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
+import {
+  arbitrum,
+  base,
+  fantom,
+  gnosis,
+  mainnet,
+  optimism,
+  polygon,
+  sepolia,
+  katana,
+  berachain,
+} from 'wagmi/chains'
+
+const chains = [
+  mainnet,
+  optimism,
+  gnosis,
+  polygon,
+  fantom,
+  base,
+  arbitrum,
+  sepolia,
+  katana,
+  berachain,
+] as const
+
+const getRpcUrl = (chainId: number): string | undefined => {
+  const env = import.meta.env as Record<string, string | undefined>
+  const value = env[`VITE_RPC_URI_FOR_${chainId}`]
+  return value && value.trim().length > 0 ? value : undefined
+}
+
+const transports = chains.reduce(
+  (acc, chain) => {
+    const rpcUrl = getRpcUrl(chain.id)
+    acc[chain.id] = rpcUrl ? http(rpcUrl) : http()
+    return acc
+  },
+  {} as Record<(typeof chains)[number]['id'], ReturnType<typeof http>>
+)
 
 export const config = createConfig({
-  chains: [mainnet, sepolia],
-  connectors: [
-    injected(),
-    coinbaseWallet(),
-    walletConnect({ projectId: import.meta.env.VITE_WC_PROJECT_ID }),
-  ],
-  transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-  },
+  chains,
+  connectors: [],
+  transports,
 })
 
 declare module 'wagmi' {

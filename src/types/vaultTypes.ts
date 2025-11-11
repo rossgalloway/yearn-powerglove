@@ -107,6 +107,7 @@ export type VaultDebt = {
 
 export type EnrichedVaultDebt = {
   strategy: string
+  chainId?: ChainId
   v3Debt: {
     currentDebt: string
     currentDebtUsd: number

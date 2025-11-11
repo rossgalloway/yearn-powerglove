@@ -14,8 +14,10 @@ import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 import { useVaultPageData } from '@/hooks/useVaultPageData'
 import { useMainInfoPanelData } from '@/hooks/useMainInfoPanelData'
 import { useChartData } from '@/hooks/useChartData'
+import { useAprOracle } from '@/hooks/useAprOracle'
 import { VaultPageLayout, VaultPageBreadcrumb } from '@/components/vault-page'
 import { ChainId } from '@/constants/chains'
+import { Address } from 'viem'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
@@ -53,6 +55,15 @@ function SingleVaultPage() {
     hasErrors: chartsError,
   })
 
+  const { data: vaultAprOracle } = useAprOracle({
+    address: vaultDetails?.address
+      ? (vaultDetails.address as Address)
+      : undefined,
+    chainId: vaultDetails?.v3 ? vaultChainId : undefined,
+    delta: 0n,
+    enabled: Boolean(vaultDetails?.v3),
+  })
+
   const latestDerivedApy = React.useMemo(() => {
     if (!transformedAprApyData) return null
     for (let i = transformedAprApyData.length - 1; i >= 0; i--) {
@@ -75,6 +86,8 @@ function SingleVaultPage() {
     return null
   }, [transformedAprApyData])
 
+  const oracleOneDayApy = vaultAprOracle?.current.formatted ?? null
+
   const formatPercent = React.useCallback((value: number | null) => {
     if (value === null || value === undefined) {
       return ' - '
@@ -90,7 +103,7 @@ function SingleVaultPage() {
 
     return {
       ...mainInfoPanelData,
-      oneDayAPY: derivedApyFormatted,
+      oneDayAPY: oracleOneDayApy ?? derivedApyFormatted,
       thirtyDayAPY: thirtyDayFormatted,
     }
   }, [
@@ -98,6 +111,7 @@ function SingleVaultPage() {
     formatPercent,
     latestDerivedApy,
     latestThirtyDayApy,
+    oracleOneDayApy,
   ])
 
   // Ensure we have vault details and main info panel data

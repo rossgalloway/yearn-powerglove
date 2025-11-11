@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
-import { useQuery, ApolloError } from '@apollo/client'
+import { useQuery as useApolloQuery, ApolloError } from '@apollo/client'
+import { useQuery as useReactQuery } from '@tanstack/react-query'
+import { Address } from 'viem'
 import {
   GET_STRATEGY_DETAILS,
   StrategyDetailsQuery,
@@ -9,6 +11,11 @@ import { Strategy } from '@/types/dataTypes'
 import { useQueryStrategies } from '@/contexts/useQueryStrategies'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 import { ChainId } from '../constants/chains'
+import {
+  fetchStrategyAprs,
+  StrategyAprRequest,
+  StrategyAprMap,
+} from '@/lib/apr-oracle'
 
 export interface StrategiesData {
   strategies: Strategy[]
@@ -56,7 +63,7 @@ export function useStrategiesData(
     data: strategyData,
     loading,
     error,
-  } = useQuery<{ vaults: StrategyDetailsQuery[] }>(GET_STRATEGY_DETAILS, {
+  } = useApolloQuery<{ vaults: StrategyDetailsQuery[] }>(GET_STRATEGY_DETAILS, {
     variables: { addresses: vaultStrategyAddresses },
     skip: !shouldFetch,
   })
@@ -79,6 +86,7 @@ export function useStrategiesData(
 
       return {
         strategy: debt.strategy,
+        chainId: vaultChainId,
         v3Debt: {
           currentDebt: debt.currentDebt,
           currentDebtUsd: debt.currentDebtUsd,
@@ -125,7 +133,36 @@ export function useStrategiesData(
           : vaultDetails?.asset.symbol,
       }
     })
-  }, [vaultDetails, v3StrategyData, allStrategies.strategies])
+  }, [vaultDetails, v3StrategyData, allStrategies.strategies, vaultChainId])
+
+  const strategyAprRequests = useMemo<StrategyAprRequest[]>(() => {
+    if (!vaultDetails?.v3) {
+      return []
+    }
+    return enrichedVaultDebts
+      .filter(debt => !!debt.address)
+      .map(debt => ({
+        address: debt.address as Address,
+        chainId: (debt.chainId ?? vaultChainId) as ChainId,
+      }))
+  }, [enrichedVaultDebts, vaultDetails?.v3, vaultChainId])
+
+  const strategyAprKey = useMemo(() => {
+    if (!strategyAprRequests.length) {
+      return ''
+    }
+    return strategyAprRequests
+      .map(request => `${request.chainId}:${request.address.toLowerCase()}`)
+      .sort()
+      .join('|')
+  }, [strategyAprRequests])
+
+  const { data: strategyAprMap } = useReactQuery<StrategyAprMap>({
+    queryKey: ['strategy-apr-oracle', strategyAprKey],
+    queryFn: () => fetchStrategyAprs(strategyAprRequests),
+    staleTime: 60_000,
+    enabled: Boolean(vaultDetails?.v3 && strategyAprRequests.length > 0),
+  })
 
   // Sort enriched debts by allocation
   const sortedVaultDebts = useMemo(() => {
@@ -179,6 +216,7 @@ export function useStrategiesData(
       tokenIconUri:
         tokenAssets.find(token => token.symbol === debt.assetSymbol)?.logoURI ||
         '',
+      estimatedApySource: 'graph' as const,
       details: {
         chainId: vaultChainId,
         vaultAddress: debt.address || '',
@@ -196,12 +234,33 @@ export function useStrategiesData(
     tokenAssets,
   ])
 
+  const oracleAwareStrategies = useMemo((): Strategy[] => {
+    if (!vaultDetails?.v3 || !strategyAprMap) {
+      return strategies
+    }
+    return strategies.map(strategy => {
+      const key = strategy.details.vaultAddress?.toLowerCase()
+      if (!key) {
+        return strategy
+      }
+      const oracleEntry = strategyAprMap[key]
+      if (!oracleEntry?.formatted) {
+        return strategy
+      }
+      return {
+        ...strategy,
+        estimatedAPY: oracleEntry.formatted,
+        estimatedApySource: 'oracle' as const,
+      }
+    })
+  }, [strategies, strategyAprMap, vaultDetails?.v3])
+
   // Filter strategies with positive allocation for charts
   const chartStrategies = useMemo(() => {
-    return strategies
+    return oracleAwareStrategies
       .filter(s => s.allocationPercent > 0)
       .sort((a, b) => b.allocationPercent - a.allocationPercent)
-  }, [strategies])
+  }, [oracleAwareStrategies])
 
   // Calculate APY contributions
   const apyContributions = useMemo(() => {
@@ -249,7 +308,7 @@ export function useStrategiesData(
   }, [apyContributions])
 
   return {
-    strategies,
+    strategies: oracleAwareStrategies,
     chartStrategies,
     apyContributions,
     totalAPYContribution,
