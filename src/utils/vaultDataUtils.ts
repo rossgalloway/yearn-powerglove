@@ -118,18 +118,18 @@ export function isLegacyVaultType(vault: {
 export function getVaultDisplayType(
   vault: Pick<Vault, 'apiVersion' | 'name' | 'vaultType'>
 ): string {
-  const apiVersion = vault.apiVersion ?? ''
-  if (apiVersion.startsWith('3')) {
-    const typeId = Number(vault.vaultType)
-    if (typeId === 1) return 'V3 Allocator Vault'
-    if (typeId === 2) return 'V3 Strategy Vault'
-    return 'V3 Vault'
+  const typeId = Number(vault.vaultType)
+  if (typeId === 1) return 'Allocator Vault'
+  if (typeId === 2) return 'Strategy Vault'
+
+  const name = vault.name?.toLowerCase() ?? ''
+  if (name.includes('factory')) {
+    return 'Factory Vault'
   }
-  if (apiVersion.startsWith('0')) {
-    const name = vault.name?.toLowerCase() ?? ''
-    return name.includes('factory')
-      ? 'V2 Factory Vault'
-      : 'V2 Legacy Vault'
+
+  if (vault.apiVersion?.startsWith('0')) {
+    return 'Legacy Vault'
   }
+
   return 'External Vault'
 }

@@ -13,10 +13,10 @@ export function YearnVaultsSummary({
   const [isOpen, setIsOpen] = useState(false) // State to control tray visibility
 
   const vaultTypes = {
-    'V3 Allocator Vaults': 'V3 Allocator Vault',
-    'V3 Strategy Vaults': 'V3 Strategy Vault',
-    'V2 Factory Vaults': 'V2 Factory Vault',
-    'V2 Legacy Vaults': 'V2 Legacy Vault',
+    'Allocator Vaults': 'Allocator Vault',
+    'Strategy Vaults': 'Strategy Vault',
+    'Factory Vaults': 'Factory Vault',
+    'Legacy Vaults': 'Legacy Vault',
   }
 
   return (
@@ -45,13 +45,13 @@ export function YearnVaultsSummary({
                 >
                   <h3 className="font-semibold mb-2">{title}</h3>
                   <p className="text-gray-600">
-                    {type === 'V3 Allocator Vault'
+                    {type === 'Allocator Vault'
                       ? 'ERC-4626 multi-strategy vaults. They are typically single asset vaults that allocate to lending and yield farming strategies.'
-                      : type === 'V3 Strategy Vault'
+                      : type === 'Strategy Vault'
                         ? 'ERC-4626 single-strategy vaults that serve as both stand-alone vaults and can also be composed together in Allocator Vaults.'
-                        : type === 'V2 Factory Vault'
-                          ? 'The classic V2 Yearn vaults for curve style liquidity pools. They can be created permissionlessly via factory contracts.'
-                          : 'Legacy V2 Yearn vaults are a collection of single and multi-asset vaults from before the release of V3 and the Factory vaults.'}
+                        : type === 'Factory Vault'
+                          ? 'Factory-created Yearn vaults for curve-style liquidity pools that anyone can deploy permissionlessly.'
+                          : 'Legacy Yearn vaults are a collection of single and multi-asset vaults from before the release of modern Allocator and Factory vaults.'}
                   </p>
                 </button>
               ))}

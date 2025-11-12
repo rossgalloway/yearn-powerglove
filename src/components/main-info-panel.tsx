@@ -11,8 +11,6 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
     setTimeout(() => setCopied(false), 1000)
   }
 
-  console.log('MainInfoPanel data:', data)
-
   return (
     <div className="border border-border bg-white border-b-0 border-t-0">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
