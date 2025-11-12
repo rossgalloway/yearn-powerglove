@@ -64,7 +64,7 @@ export function ChartsPanel(data: ChartData) {
   const chartInfo = {
     'historical-apy': {
       title: 'Vault Performance (TVL shown ghosted)',
-      description: `1-Day and 30-Day APYs over ${timeframe.label}.`,
+      description: `1-Day, 7-Day, and 30-Day APYs over ${timeframe.label}.`,
     },
     'historical-pps': {
       title: 'Vault Share Growth (1-Day APY shown ghosted)',

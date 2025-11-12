@@ -18,7 +18,8 @@ interface TimeseriesQueryResult {
 }
 
 interface UseChartDataProps {
-  apyData: TimeseriesQueryResult | undefined
+  apyWeeklyData: TimeseriesQueryResult | undefined
+  apyMonthlyData: TimeseriesQueryResult | undefined
   tvlData: TimeseriesQueryResult | undefined
   ppsData: TimeseriesQueryResult | undefined
   isLoading: boolean
@@ -36,7 +37,8 @@ interface UseChartDataReturn {
  * Extracted from the original processChartData function
  */
 export function useChartData({
-  apyData,
+  apyWeeklyData,
+  apyMonthlyData,
   tvlData,
   ppsData,
   isLoading,
@@ -44,7 +46,14 @@ export function useChartData({
 }: UseChartDataProps): UseChartDataReturn {
   return useMemo(() => {
     // Only process data if all queries are complete and successful
-    if (isLoading || hasErrors || !apyData || !tvlData || !ppsData) {
+    if (
+      isLoading ||
+      hasErrors ||
+      !apyWeeklyData ||
+      !apyMonthlyData ||
+      !tvlData ||
+      !ppsData
+    ) {
       return {
         transformedAprApyData: null,
         transformedTvlData: null,
@@ -53,18 +62,25 @@ export function useChartData({
     }
 
     // Extract clean data arrays
-    const apy30DayDataClean = apyData.timeseries || []
+    const apy7DayDataClean = apyWeeklyData.timeseries || []
+    const apy30DayDataClean = apyMonthlyData.timeseries || []
     const tvlDataClean = tvlData.timeseries || []
     const ppsDataClean = ppsData.timeseries || []
 
     // Get timestamp range for data alignment
     const { earliest, latest } = getEarliestAndLatestTimestamps(
+      apy7DayDataClean,
       apy30DayDataClean,
       tvlDataClean,
       ppsDataClean
     )
 
     // Fill missing data points
+    const apy7DayFilled = fillMissingDailyData(
+      apy7DayDataClean,
+      earliest,
+      latest
+    )
     const apy30DayFilled = fillMissingDailyData(
       apy30DayDataClean,
       earliest,
@@ -92,6 +108,10 @@ export function useChartData({
     const transformedAprApyData: aprApyChartData = aprFilled.map(
       (aprDataPoint, index) => ({
         date: formatUnixTimestamp(aprDataPoint.time),
+        sevenDayApy:
+          apy7DayFilled[index]?.value !== null
+            ? apy7DayFilled[index]!.value! * 100
+            : null,
         thirtyDayApy:
           apy30DayFilled[index]?.value !== null
             ? apy30DayFilled[index]!.value! * 100
@@ -110,5 +130,5 @@ export function useChartData({
       transformedTvlData,
       transformedPpsData,
     }
-  }, [apyData, tvlData, ppsData, isLoading, hasErrors])
+  }, [apyWeeklyData, apyMonthlyData, tvlData, ppsData, isLoading, hasErrors])
 }

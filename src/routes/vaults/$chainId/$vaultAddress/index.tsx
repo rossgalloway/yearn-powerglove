@@ -75,17 +75,6 @@ function SingleVaultPage() {
     return null
   }, [transformedAprApyData])
 
-  // const latestThirtyDayApy = React.useMemo(() => {
-  //   if (!transformedAprApyData) return null
-  //   for (let i = transformedAprApyData.length - 1; i >= 0; i--) {
-  //     const point = transformedAprApyData[i]
-  //     if (point?.thirtyDayApy !== null && point?.thirtyDayApy !== undefined) {
-  //       return point.thirtyDayApy
-  //     }
-  //   }
-  //   return null
-  // }, [transformedAprApyData])
-
   const legacyVault = vaultDetails ? isLegacyVaultType(vaultDetails) : false
   const yDaemonForwardApy = legacyVault
     ? null

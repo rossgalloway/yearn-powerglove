@@ -4,10 +4,12 @@ import { queryAPY, queryPPS, queryTVL } from '@/graphql/queries/timeseries'
 import { VaultExtended } from '@/types/vaultTypes'
 import { TimeseriesDataPoint } from '@/types/dataTypes'
 import { useMemo } from 'react'
+import { ChainId } from '@/constants/chains'
+import { useYDaemonVault } from '@/hooks/useYDaemonVaults'
 
 interface UseVaultPageDataProps {
   vaultAddress: string
-  vaultChainId: number
+  vaultChainId: ChainId
 }
 
 interface TimeseriesQueryResult {
@@ -21,7 +23,8 @@ interface UseVaultPageDataReturn {
   vaultError: ApolloError | undefined
 
   // Chart data (raw)
-  apyData: TimeseriesQueryResult | undefined
+  apyWeeklyData: TimeseriesQueryResult | undefined
+  apyMonthlyData: TimeseriesQueryResult | undefined
   tvlData: TimeseriesQueryResult | undefined
   ppsData: TimeseriesQueryResult | undefined
 
@@ -49,18 +52,37 @@ export function useVaultPageData({
   } = useQuery<{ vault: VaultExtended }>(GET_VAULT_DETAILS, {
     variables: { address: vaultAddress, chainId: vaultChainId },
   })
+  const { data: yDaemonVault, isLoading: yDaemonLoading } = useYDaemonVault(
+    vaultChainId as any,
+    vaultAddress
+  )
 
-  // Fetch APY data
+  // Fetch weekly APY data
   const {
-    data: apyData,
-    loading: apyLoading,
-    error: apyError,
+    data: apyWeeklyData,
+    loading: apyWeeklyLoading,
+    error: apyWeeklyError,
   } = useQuery(queryAPY, {
     variables: {
       chainId: vaultChainId,
       address: vaultAddress,
       label: 'apy-bwd-delta-pps',
-      component: 'net',
+      component: 'weeklyNet',
+      limit: 1000,
+    },
+  })
+
+  // Fetch weekly Monthly data
+  const {
+    data: apyMonthlyData,
+    loading: apyMonthlyLoading,
+    error: apyMonthlyError,
+  } = useQuery(queryAPY, {
+    variables: {
+      chainId: vaultChainId,
+      address: vaultAddress,
+      label: 'apy-bwd-delta-pps',
+      component: 'monthlyNet',
       limit: 1000,
     },
   })
@@ -95,21 +117,41 @@ export function useVaultPageData({
 
   // Extract vault details with null safety
   const vaultDetails = useMemo(() => {
-    return vaultData?.vault || null
-  }, [vaultData])
+    if (!vaultData?.vault) return null
+    const base = vaultData.vault
+    if (!yDaemonVault) {
+      return {
+        ...base,
+        forwardApyNet: base.forwardApyNet ?? null,
+        strategyForwardAprs: base.strategyForwardAprs ?? {},
+      }
+    }
+    const strategyAprs: Record<string, number | null> = {}
+    yDaemonVault.strategies?.forEach(strategy => {
+      if (!strategy?.address) return
+      strategyAprs[strategy.address.toLowerCase()] = strategy.netAPR ?? null
+    })
+    return {
+      ...base,
+      forwardApyNet:
+        yDaemonVault.apr?.forwardAPR?.netAPR ?? base.forwardApyNet ?? null,
+      strategyForwardAprs: strategyAprs,
+      kind: base.kind,
+    }
+  }, [vaultData, yDaemonVault])
 
   // Calculate combined loading states
   const chartsLoading = useMemo(() => {
-    return apyLoading || tvlLoading || ppsLoading
-  }, [apyLoading, tvlLoading, ppsLoading])
+    return apyWeeklyLoading || apyMonthlyLoading || tvlLoading || ppsLoading
+  }, [apyWeeklyLoading, apyMonthlyLoading, tvlLoading, ppsLoading])
 
   // Calculate combined error states
   const chartsError = useMemo(() => {
-    return !!apyError || !!tvlError || !!ppsError
-  }, [apyError, tvlError, ppsError])
+    return !!apyWeeklyError || !!apyMonthlyError || !!tvlError || !!ppsError
+  }, [apyWeeklyError, apyMonthlyError, tvlError, ppsError])
 
   // Initial loading only waits for vault data (charts can load separately)
-  const isInitialLoading = vaultLoading
+  const isInitialLoading = vaultLoading || yDaemonLoading
 
   // Has errors if vault fails to load
   const hasErrors = !!vaultError
@@ -120,8 +162,9 @@ export function useVaultPageData({
     vaultLoading,
     vaultError,
 
-    // Chart data (raw)
-    apyData,
+    // Chart data
+    apyWeeklyData: apyWeeklyData,
+    apyMonthlyData: apyMonthlyData,
     tvlData,
     ppsData,
 
