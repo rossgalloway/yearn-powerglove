@@ -53,7 +53,7 @@ export function useVaultPageData({
     variables: { address: vaultAddress, chainId: vaultChainId },
   })
   const { data: yDaemonVault, isLoading: yDaemonLoading } = useYDaemonVault(
-    vaultChainId as any,
+    vaultChainId,
     vaultAddress
   )
 

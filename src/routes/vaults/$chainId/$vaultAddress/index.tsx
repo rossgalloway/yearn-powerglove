@@ -19,6 +19,7 @@ import { VaultPageLayout, VaultPageBreadcrumb } from '@/components/vault-page'
 import { ChainId } from '@/constants/chains'
 import { isLegacyVaultType } from '@/utils/vaultDataUtils'
 import { Address } from 'viem'
+import { formatPercent } from '@/lib/formatters'
 
 function SingleVaultPage() {
   const { chainId, vaultAddress } = Route.useParams()
@@ -81,13 +82,6 @@ function SingleVaultPage() {
     : (vaultDetails?.forwardApyNet ?? null)
   const oracleOneDayApy = vaultAprOracle?.current.formatted ?? null
 
-  const formatPercent = React.useCallback((value: number | null) => {
-    if (value === null || value === undefined) {
-      return ' - '
-    }
-    return `${value.toFixed(2)}%`
-  }, [])
-
   const yDaemonForwardApyPercent = React.useMemo(() => {
     if (yDaemonForwardApy === null || yDaemonForwardApy === undefined) {
       return null
@@ -103,7 +97,7 @@ function SingleVaultPage() {
       return null
     }
     return formatPercent(yDaemonForwardApyPercent)
-  }, [yDaemonForwardApyPercent, formatPercent])
+  }, [yDaemonForwardApyPercent])
 
   const mainInfoPanelProps = React.useMemo(() => {
     if (!mainInfoPanelData) return null
@@ -121,7 +115,6 @@ function SingleVaultPage() {
     }
   }, [
     mainInfoPanelData,
-    formatPercent,
     latestDerivedApy,
     legacyVault,
     yDaemonForwardApyFormatted,

@@ -4,6 +4,25 @@ import { getAddress } from 'viem'
 
 const DEFAULT_CHAIN_IDS = [1, 10, 137, 146, 250, 8453, 42161, 747474] as const
 
+type RawStrategy = {
+  address?: string
+  netAPR?: unknown
+  apr?: {
+    netAPR?: unknown
+  }
+} | null
+
+type RawVault = {
+  address?: string
+  chainID?: number | string
+  apr?: {
+    forwardAPR?: {
+      netAPR?: unknown
+    }
+  }
+  strategies?: RawStrategy[] | null
+} | null
+
 const getBaseUrl = (): string => {
   const url = import.meta.env.VITE_PUBLIC_YDAEMON_URL
   if (!url) {
@@ -20,19 +39,19 @@ const safeNumber = (value: unknown): number | null => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-const normalizeVault = (raw: any): YDaemonVault | null => {
-  if (!raw?.address || !raw?.chainID) {
+const normalizeVault = (raw: RawVault): YDaemonVault | null => {
+  if (!raw || !raw.address || !raw.chainID) {
     return null
   }
 
   const strategies =
     Array.isArray(raw.strategies) && raw.strategies.length > 0
       ? raw.strategies
-          .map((strategy: any) => {
+          .map(strategy => {
             if (!strategy?.address) return null
             return {
               address: getAddress(strategy.address),
-              netAPR: safeNumber(strategy?.netAPR ?? strategy?.apr?.netAPR),
+              netAPR: safeNumber(strategy.netAPR ?? strategy.apr?.netAPR),
             }
           })
           .filter(Boolean)
@@ -43,7 +62,7 @@ const normalizeVault = (raw: any): YDaemonVault | null => {
     chainID: Number(raw.chainID) as ChainId,
     apr: {
       forwardAPR: {
-        netAPR: safeNumber(raw?.apr?.forwardAPR?.netAPR),
+        netAPR: safeNumber(raw.apr?.forwardAPR?.netAPR),
       },
     },
     strategies: strategies as YDaemonVault['strategies'],
@@ -80,13 +99,13 @@ export async function fetchYDaemonVaults(
     throw new Error(`Failed to fetch yDaemon vaults: ${response.statusText}`)
   }
 
-  const data = await response.json()
+  const data = (await response.json()) as unknown
   if (!Array.isArray(data)) {
     return []
   }
 
   return data
-    .map((vault) => normalizeVault(vault))
+    .map(vault => normalizeVault(vault as RawVault))
     .filter(Boolean) as YDaemonVault[]
 }
 
@@ -113,6 +132,6 @@ export async function fetchYDaemonVault(
     )
   }
 
-  const data = await response.json()
-  return normalizeVault(data)
+  const data = (await response.json()) as unknown
+  return normalizeVault(data as RawVault)
 }

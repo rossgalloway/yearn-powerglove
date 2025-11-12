@@ -133,7 +133,19 @@ const vaultTypes = useMemo(() => VAULT_TYPE_TO_NAME, [])
 const tokenUri = resolveTokenIcon(vault.asset.address, vault.asset.symbol, tokenAssets)
 ```
 
-If the V2/V3 naming nuance needs special handling, expose a helper like `getVaultDisplayType(vault)` in a utils module so every list uses the same decision tree.
+`useVaultListData` currently handles important nuance (e.g., distinguishing V3 Allocator vs. V2 Factory vs. Legacy Vaults by combining `apiVersion`, `vaultType`, and `name`). Preserve that logic by extracting it into a shared helper:
+
+```ts
+export function getVaultDisplayType(vault: Vault): string {
+  if (vault.apiVersion?.startsWith('3')) return 'V3 Allocator Vault'
+  if (vault.apiVersion?.startsWith('0')) {
+    return vault.name.includes('Factory') ? 'V2 Factory Vault' : 'V2 Legacy Vault'
+  }
+  return 'External Vault'
+}
+```
+
+Once that helper lives in `vaultDataUtils.ts` (or a new `vaultDisplay.ts`), every consumer can filter/sort with the same granular categories while still leaning on `VAULT_TYPE_TO_NAME` for the simple cases.
 
 ---
 

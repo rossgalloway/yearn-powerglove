@@ -14,6 +14,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { ChartDataPoint } from '@/types/dataTypes'
 import React, { useMemo, useState } from 'react'
+import { getTimeframeLimit } from '@/components/charts/chart-utils'
 
 type SeriesKey = 'derivedApy' | 'sevenDayApy' | 'thirtyDayApy'
 
@@ -219,23 +220,5 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
     )
   }
 )
-
-function getTimeframeLimit(timeframe: string): number {
-  switch (timeframe) {
-    case '7d':
-      return 7
-    case '30d':
-      return 30
-    case '90d':
-      return 90
-    case '180d':
-      return 180
-    case '1y':
-      return 365
-    case 'all':
-    default:
-      return 1000
-  }
-}
 
 export default APYChart

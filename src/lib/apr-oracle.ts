@@ -2,6 +2,7 @@ import { readContracts } from '@wagmi/core'
 import { Address } from 'viem'
 import type { ChainId } from '@/constants/chains'
 import { aprOracleAbi, getAprOracleAddress } from '@/constants/aprOracle'
+import { formatPercentNullable } from '@/lib/formatters'
 import { config } from '@/wagmi'
 
 const APR_PERCENT_SCALE = 1e16
@@ -50,16 +51,6 @@ export interface StrategyAprRequest {
 
 export type StrategyAprMap = Record<string, AprValue>
 
-const formatPercent = (value: number | null): string | null => {
-  if (value === null) {
-    return null
-  }
-  if (!Number.isFinite(value)) {
-    return null
-  }
-  return `${value.toFixed(2)}%`
-}
-
 const formatAprValue = (raw: bigint | null): AprValue => {
   if (raw === null || raw === undefined) {
     return {
@@ -73,7 +64,7 @@ const formatAprValue = (raw: bigint | null): AprValue => {
   return {
     raw,
     percent,
-    formatted: formatPercent(percent),
+    formatted: formatPercentNullable(percent),
   }
 }
 
