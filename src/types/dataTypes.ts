@@ -59,6 +59,7 @@ export type ppsChartData = {
 
 export type aprApyChartData = {
   date: string
+  sevenDayApy: number | null
   thirtyDayApy: number | null
   derivedApr: number | null
   derivedApy: number | null
@@ -80,6 +81,7 @@ export type Strategy = {
   allocationPercent: number
   allocationAmount: string
   estimatedAPY: string
+  estimatedApySource?: 'ydaemon' | 'oracle' | 'graph'
   tokenSymbol: string
   tokenIconUri: string
   details: StrategyDetails

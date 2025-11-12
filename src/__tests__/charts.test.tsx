@@ -7,6 +7,7 @@ describe('APYChart', () => {
   it('renders without crashing', () => {
     const data = Array.from({ length: 10 }).map((_, i) => ({
       date: `2025-01-${String(i + 1).padStart(2, '0')}`,
+      sevenDayApy: Math.random() * 10,
       thirtyDayApy: Math.random() * 10,
       derivedApr: Math.random() * 10,
       derivedApy: Math.random() * 10,
@@ -30,7 +31,11 @@ describe('APYChart', () => {
         <APYChart chartData={data} timeframe="30d" hideTooltip />
       </div>
     )
-    const derivedApyCheckbox = getByLabelText(/show derived apy lines/i)
+    expect(
+      container.querySelector('path[stroke="var(--color-sevenDayApy)"]')
+    ).toBeTruthy()
+
+    const derivedApyCheckbox = getByLabelText(/1-day apy/i)
     expect(
       container.querySelector('path[stroke="var(--color-derivedApy)"]')
     ).toBeTruthy()

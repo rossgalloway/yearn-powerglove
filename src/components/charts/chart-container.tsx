@@ -17,7 +17,8 @@ export function FixedHeightChartContainer({
           {
             '--chart-1': '#46a2ff',
             '--chart-2': '#46a2ff',
-            '--chart-3': '#6786db',
+            '--chart-3': '#94adf2',
+            // '--chart-3': '#6786db',
             '--chart-4': '#b0b5bf',
           } as React.CSSProperties
         }

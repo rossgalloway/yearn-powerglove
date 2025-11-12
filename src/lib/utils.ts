@@ -125,23 +125,30 @@ export function calculateApyFromApr(
 /**
  * Gets the earliest and latest timestamps from three arrays of timeseries data points.
  *
- * @param apy - Array of timeseries data points for APY.
+ * @param apy1 - Array of timeseries data points for APY.
  * @param tvl - Array of timeseries data points for TVL.
  * @param pps - Array of timeseries data points for PPS.
  * @returns An object containing the earliest and latest timestamps.
  */
 export function getEarliestAndLatestTimestamps(
-  apy: TimeseriesDataPoint[],
+  apy1: TimeseriesDataPoint[],
+  apy2: TimeseriesDataPoint[],
   tvl: TimeseriesDataPoint[],
   pps: TimeseriesDataPoint[]
 ) {
   // Convert string times to numbers for ease of comparison
-  const apyTimes = apy.map(d => Number(d.time))
+  const apy1Times = apy1.map(d => Number(d.time))
+  const apy2Times = apy2.map(d => Number(d.time))
   const tvlTimes = tvl.map(d => Number(d.time))
   const ppsTimes = pps.map(d => Number(d.time))
 
-  const earliest = Math.min(...apyTimes, ...tvlTimes, ...ppsTimes)
-  const latest = Math.max(...apyTimes, ...tvlTimes, ...ppsTimes)
+  const earliest = Math.min(
+    ...apy1Times,
+    ...apy2Times,
+    ...tvlTimes,
+    ...ppsTimes
+  )
+  const latest = Math.max(...apy1Times, ...apy2Times, ...tvlTimes, ...ppsTimes)
   return { earliest, latest }
 }
 

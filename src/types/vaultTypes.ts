@@ -6,6 +6,7 @@ export type VaultSimple = {
   name: string
   chainId: ChainId
   inceptTime: string
+  kind?: string
   asset: {
     name: string
     symbol: string
@@ -35,6 +36,8 @@ export type VaultSimple = {
   }
   managementFee: number
   performanceFee: number
+  forwardApyNet?: number | null
+  strategyForwardAprs?: Record<string, number | null>
 }
 
 export type Vault = VaultSimple &
@@ -107,6 +110,7 @@ export type VaultDebt = {
 
 export type EnrichedVaultDebt = {
   strategy: string
+  chainId?: ChainId
   v3Debt: {
     currentDebt: string
     currentDebtUsd: number

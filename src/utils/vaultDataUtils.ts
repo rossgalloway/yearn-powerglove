@@ -105,3 +105,15 @@ export function getVaultNetworkInfo(chainId: ChainId) {
     name: CHAIN_ID_TO_NAME[chainId],
   }
 }
+
+export function isLegacyVaultType(vault: {
+  apiVersion?: string
+  name?: string
+}): boolean {
+  const version = vault.apiVersion?.toLowerCase?.() ?? ''
+  if (!version.startsWith('0')) {
+    return false
+  }
+  const name = vault.name?.toLowerCase?.() ?? ''
+  return !name.includes('factory')
+}
