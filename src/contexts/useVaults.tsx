@@ -8,6 +8,7 @@ interface LoadingState {
   vaultsReady: boolean
   strategiesReady: boolean
   assetsReady: boolean
+   yDaemonReady: boolean
 }
 
 interface VaultsContextProps {

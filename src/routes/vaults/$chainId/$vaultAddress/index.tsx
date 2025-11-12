@@ -17,6 +17,7 @@ import { useChartData } from '@/hooks/useChartData'
 import { useAprOracle } from '@/hooks/useAprOracle'
 import { VaultPageLayout, VaultPageBreadcrumb } from '@/components/vault-page'
 import { ChainId } from '@/constants/chains'
+import { isLegacyVaultType } from '@/utils/vaultDataUtils'
 import { Address } from 'viem'
 
 function SingleVaultPage() {
@@ -27,7 +28,8 @@ function SingleVaultPage() {
   // Use our new data hooks
   const {
     vaultDetails,
-    apyData,
+    apyWeeklyData,
+    apyMonthlyData,
     tvlData,
     ppsData,
     isInitialLoading,
@@ -43,17 +45,15 @@ function SingleVaultPage() {
   })
 
   // Process chart data
-  const {
-    transformedAprApyData,
-    transformedTvlData,
-    transformedPpsData,
-  } = useChartData({
-    apyData,
-    tvlData,
-    ppsData,
-    isLoading: chartsLoading,
-    hasErrors: chartsError,
-  })
+  const { transformedAprApyData, transformedTvlData, transformedPpsData } =
+    useChartData({
+      apyWeeklyData,
+      apyMonthlyData,
+      tvlData,
+      ppsData,
+      isLoading: chartsLoading,
+      hasErrors: chartsError,
+    })
 
   const { data: vaultAprOracle } = useAprOracle({
     address: vaultDetails?.address
@@ -75,17 +75,21 @@ function SingleVaultPage() {
     return null
   }, [transformedAprApyData])
 
-  const latestThirtyDayApy = React.useMemo(() => {
-    if (!transformedAprApyData) return null
-    for (let i = transformedAprApyData.length - 1; i >= 0; i--) {
-      const point = transformedAprApyData[i]
-      if (point?.thirtyDayApy !== null && point?.thirtyDayApy !== undefined) {
-        return point.thirtyDayApy
-      }
-    }
-    return null
-  }, [transformedAprApyData])
+  // const latestThirtyDayApy = React.useMemo(() => {
+  //   if (!transformedAprApyData) return null
+  //   for (let i = transformedAprApyData.length - 1; i >= 0; i--) {
+  //     const point = transformedAprApyData[i]
+  //     if (point?.thirtyDayApy !== null && point?.thirtyDayApy !== undefined) {
+  //       return point.thirtyDayApy
+  //     }
+  //   }
+  //   return null
+  // }, [transformedAprApyData])
 
+  const legacyVault = vaultDetails ? isLegacyVaultType(vaultDetails) : false
+  const yDaemonForwardApy = legacyVault
+    ? null
+    : (vaultDetails?.forwardApyNet ?? null)
   const oracleOneDayApy = vaultAprOracle?.current.formatted ?? null
 
   const formatPercent = React.useCallback((value: number | null) => {
@@ -95,22 +99,43 @@ function SingleVaultPage() {
     return `${value.toFixed(2)}%`
   }, [])
 
+  const yDaemonForwardApyPercent = React.useMemo(() => {
+    if (yDaemonForwardApy === null || yDaemonForwardApy === undefined) {
+      return null
+    }
+    return yDaemonForwardApy * 100
+  }, [yDaemonForwardApy])
+
+  const yDaemonForwardApyFormatted = React.useMemo(() => {
+    if (
+      yDaemonForwardApyPercent === null ||
+      yDaemonForwardApyPercent === undefined
+    ) {
+      return null
+    }
+    return formatPercent(yDaemonForwardApyPercent)
+  }, [yDaemonForwardApyPercent, formatPercent])
+
   const mainInfoPanelProps = React.useMemo(() => {
     if (!mainInfoPanelData) return null
     const derivedApyFormatted = formatPercent(latestDerivedApy)
-    const thirtyDayFormatted =
-      formatPercent(latestThirtyDayApy) ?? mainInfoPanelData.thirtyDayAPY
+    const thirtyDayFormatted = mainInfoPanelData.thirtyDayAPY
+
+    const finalOneDayApy = legacyVault
+      ? ' - '
+      : (yDaemonForwardApyFormatted ?? oracleOneDayApy ?? derivedApyFormatted)
 
     return {
       ...mainInfoPanelData,
-      oneDayAPY: oracleOneDayApy ?? derivedApyFormatted,
+      oneDayAPY: finalOneDayApy,
       thirtyDayAPY: thirtyDayFormatted,
     }
   }, [
     mainInfoPanelData,
     formatPercent,
     latestDerivedApy,
-    latestThirtyDayApy,
+    legacyVault,
+    yDaemonForwardApyFormatted,
     oracleOneDayApy,
   ])
 

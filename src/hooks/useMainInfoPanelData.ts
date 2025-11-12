@@ -8,6 +8,7 @@ import {
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
 } from '@/constants/chains'
+import { isLegacyVaultType } from '@/utils/vaultDataUtils'
 
 interface UseMainInfoPanelDataProps {
   vaultDetails: VaultExtended | null
@@ -66,7 +67,11 @@ export function useMainInfoPanelData({
     }
 
     // APY formatting
-    const oneDayAPY = formatPercent(vaultDetails?.apy?.net)
+    const isLegacyVault = isLegacyVaultType(vaultDetails)
+    const forwardApyNet = isLegacyVault
+      ? null
+      : vaultDetails?.forwardApyNet ?? vaultDetails?.apy?.net ?? null
+    const oneDayAPY = isLegacyVault ? ' - ' : formatPercent(forwardApyNet)
     const thirtyDayAPY = formatPercent(
       vaultDetails?.apy?.monthlyNet ?? vaultDetails?.apy?.inceptionNet
     )

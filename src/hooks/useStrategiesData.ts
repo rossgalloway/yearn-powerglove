@@ -11,6 +11,7 @@ import { Strategy } from '@/types/dataTypes'
 import { useQueryStrategies } from '@/contexts/useQueryStrategies'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 import { ChainId } from '../constants/chains'
+import { isLegacyVaultType } from '@/utils/vaultDataUtils'
 import {
   fetchStrategyAprs,
   StrategyAprRequest,
@@ -57,6 +58,8 @@ export function useStrategiesData(
 
   const vaultStrategyAddresses = vaultDetails.strategies
   const shouldFetch = vaultStrategyAddresses != null
+  const strategyForwardAprs =
+    vaultDetails?.strategyForwardAprs ?? ({} as Record<string, number | null>)
 
   // Fetch strategy details for V3 vaults
   const {
@@ -141,11 +144,16 @@ export function useStrategiesData(
     }
     return enrichedVaultDebts
       .filter(debt => !!debt.address)
+      .filter(debt => {
+        const key = debt.address?.toLowerCase() || ''
+        const value = strategyForwardAprs[key]
+        return value === undefined || value === null || value === 0
+      })
       .map(debt => ({
         address: debt.address as Address,
         chainId: (debt.chainId ?? vaultChainId) as ChainId,
       }))
-  }, [enrichedVaultDebts, vaultDetails?.v3, vaultChainId])
+  }, [enrichedVaultDebts, vaultDetails?.v3, vaultChainId, strategyForwardAprs])
 
   const strategyAprKey = useMemo(() => {
     if (!strategyAprRequests.length) {
@@ -187,55 +195,76 @@ export function useStrategiesData(
   }, [sortedVaultDebts, vaultDetails.v3])
 
   // Transform to Strategy objects
+  const isLegacyVault = isLegacyVaultType(vaultDetails)
+
   const strategies = useMemo((): Strategy[] => {
-    return enrichedVaultDebts.map((debt, index) => ({
-      id: index,
-      name: debt.name || 'Unknown Strategy',
-      allocationPercent: totalVaultDebt
-        ? vaultDetails.v3
-          ? (Number(debt.v3Debt.currentDebtUsd) / totalVaultDebt) * 100
-          : (Number(debt.v2Debt.totalDebtUsd) / totalVaultDebt) * 100
-        : 0,
-      allocationAmount: vaultDetails.v3
-        ? debt.v3Debt.currentDebtUsd
-          ? debt.v3Debt.currentDebtUsd.toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            })
-          : '$0.00'
-        : debt.v2Debt.totalDebtUsd
-          ? debt.v2Debt.totalDebtUsd.toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            })
-          : '$0.00',
-      estimatedAPY: debt.netApy
-        ? `${(Number(debt.netApy) * 100).toFixed(2)}%`
-        : '0.00%',
-      tokenSymbol: debt.assetSymbol || '',
-      tokenIconUri:
-        tokenAssets.find(token => token.symbol === debt.assetSymbol)?.logoURI ||
-        '',
-      estimatedApySource: 'graph' as const,
-      details: {
-        chainId: vaultChainId,
-        vaultAddress: debt.address || '',
-        managementFee: debt.managementFee || 0,
-        performanceFee: debt.performanceFee || 0,
-        isVault: debt.v3 || false,
-        isEndorsed: debt.yearn || false,
-      },
-    }))
+    return enrichedVaultDebts.map((debt, index) => {
+      const strategyAddress = debt.address?.toLowerCase() || ''
+      const yDaemonApr = strategyForwardAprs[strategyAddress]
+      const graphApr = debt.netApy ?? null
+      let estimatedAprValue = 0
+      let estimatedApySource: Strategy['estimatedApySource'] = 'graph'
+
+      if (!isLegacyVault) {
+        if (yDaemonApr !== undefined && yDaemonApr !== null) {
+          estimatedAprValue = Number(yDaemonApr)
+          estimatedApySource = 'ydaemon'
+        } else if (graphApr !== null && graphApr !== undefined) {
+          estimatedAprValue = Number(graphApr)
+          estimatedApySource = 'graph'
+        }
+      }
+
+      return {
+        id: index,
+        name: debt.name || 'Unknown Strategy',
+        allocationPercent: totalVaultDebt
+          ? vaultDetails.v3
+            ? (Number(debt.v3Debt.currentDebtUsd) / totalVaultDebt) * 100
+            : (Number(debt.v2Debt.totalDebtUsd) / totalVaultDebt) * 100
+          : 0,
+        allocationAmount: vaultDetails.v3
+          ? debt.v3Debt.currentDebtUsd
+            ? debt.v3Debt.currentDebtUsd.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              })
+            : '$0.00'
+          : debt.v2Debt.totalDebtUsd
+            ? debt.v2Debt.totalDebtUsd.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              })
+            : '$0.00',
+        estimatedAPY: isLegacyVault
+          ? ' - '
+          : `${(estimatedAprValue * 100).toFixed(2)}%`,
+        tokenSymbol: debt.assetSymbol || '',
+        tokenIconUri:
+          tokenAssets.find(token => token.symbol === debt.assetSymbol)
+            ?.logoURI || '',
+        estimatedApySource: isLegacyVault ? 'graph' : estimatedApySource,
+        details: {
+          chainId: vaultChainId,
+          vaultAddress: debt.address || '',
+          managementFee: debt.managementFee || 0,
+          performanceFee: debt.performanceFee || 0,
+          isVault: debt.v3 || false,
+          isEndorsed: debt.yearn || false,
+        },
+      }
+    })
   }, [
     enrichedVaultDebts,
     totalVaultDebt,
     vaultDetails.v3,
     vaultChainId,
     tokenAssets,
+    strategyForwardAprs,
   ])
 
   const oracleAwareStrategies = useMemo((): Strategy[] => {
-    if (!vaultDetails?.v3 || !strategyAprMap) {
+    if (!vaultDetails?.v3 || isLegacyVault || !strategyAprMap) {
       return strategies
     }
     return strategies.map(strategy => {
@@ -244,7 +273,15 @@ export function useStrategiesData(
         return strategy
       }
       const oracleEntry = strategyAprMap[key]
-      if (!oracleEntry?.formatted) {
+      if (
+        strategy.estimatedApySource === 'ydaemon' ||
+        (strategy.estimatedAPY &&
+          parseFloat(strategy.estimatedAPY) > 0 &&
+          strategy.estimatedApySource === 'graph')
+      ) {
+        return strategy
+      }
+      if (!oracleEntry?.formatted || oracleEntry.percent === null) {
         return strategy
       }
       return {
