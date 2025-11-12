@@ -5,12 +5,12 @@ import TVLChart from '@/components/charts/TVLChart'
 import PPSChart from '@/components/charts/PPSChart'
 import { FixedHeightChartContainer } from '@/components/charts/chart-container'
 import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
-import { apyChartData, tvlChartData, ppsChartData } from '@/types/dataTypes'
+import { tvlChartData, ppsChartData, aprApyChartData } from '@/types/dataTypes'
 import ChartSkeleton from '@/components/charts/ChartSkeleton'
 import ChartsLoader from '@/components/charts/ChartsLoader'
 
 type ChartData = {
-  apyData: apyChartData | null
+  aprApyData: aprApyChartData | null
   tvlData: tvlChartData | null
   ppsData: ppsChartData | null
   isLoading?: boolean
@@ -20,7 +20,7 @@ type ChartData = {
 export function ChartsPanel(data: ChartData) {
   const [activeTab, setActiveTab] = useState('historical-apy')
   const {
-    apyData,
+    aprApyData,
     tvlData,
     ppsData,
     isLoading = false,
@@ -49,7 +49,7 @@ export function ChartsPanel(data: ChartData) {
   }
 
   // Show skeleton with loader overlay when loading or no data yet
-  if (isLoading || !apyData || !tvlData || !ppsData) {
+  if (isLoading || !aprApyData || !tvlData || !ppsData) {
     return (
       <div className="relative">
         <ChartSkeleton />
@@ -63,16 +63,16 @@ export function ChartsPanel(data: ChartData) {
   // Define chart titles and descriptions based on active tab
   const chartInfo = {
     'historical-apy': {
-      title: 'APY Performance (TVL shown ghosted)',
-      description: `Raw APY, 15-day, and 30-day moving averages over ${timeframe.label}.`,
+      title: 'Vault Performance (TVL shown ghosted)',
+      description: `1-Day, 7-Day, and 30-Day APYs over ${timeframe.label}.`,
     },
     'historical-pps': {
-      title: 'PPS (APY and TVL shown ghosted)',
-      description: `Price per vault share value over ${timeframe.label}.`,
+      title: 'Vault Share Growth (1-Day APY shown ghosted)',
+      description: `Price Per Share values over ${timeframe.label}.`,
     },
     'historical-tvl': {
-      title: 'TVL (APY shown ghosted)',
-      description: `Total Value Deposited in Vault over ${timeframe.label}.`,
+      title: 'Total Value Deposited (APY shown ghosted)',
+      description: `Value Deposited in Vault over ${timeframe.label}.`,
     },
   }
 
@@ -90,13 +90,13 @@ export function ChartsPanel(data: ChartData) {
                 value="historical-apy"
                 className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-[#0657f9] data-[state=active]:bg-transparent data-[state=active]:shadow-none"
               >
-                Historical APY
+                Historical Performance
               </TabsTrigger>
               <TabsTrigger
                 value="historical-pps"
                 className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-[#0657f9] data-[state=active]:bg-transparent data-[state=active]:shadow-none"
               >
-                Historical PPS
+                Historical Share Growth
               </TabsTrigger>
               <TabsTrigger
                 value="historical-tvl"
@@ -138,7 +138,7 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <APYChart chartData={apyData} timeframe={timeframe.value} />
+                <APYChart chartData={aprApyData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
@@ -159,25 +159,19 @@ export function ChartsPanel(data: ChartData) {
               <ChartErrorBoundary>
                 <PPSChart chartData={ppsData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-20 pointer-events-none">
-                {/* Ghosted APY chart */}
+              <div className="absolute inset-0 opacity-30 pointer-events-none">
+                {/* Ghosted APY chart (7-day) */}
                 <ChartErrorBoundary>
                   <APYChart
-                    chartData={apyData}
+                    chartData={aprApyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
-                  />
-                </ChartErrorBoundary>
-              </div>
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                {/* Ghosted TVL chart */}
-                <ChartErrorBoundary>
-                  <TVLChart
-                    chartData={tvlData}
-                    timeframe={timeframe.value}
-                    hideAxes={true}
-                    hideTooltip={true}
+                    defaultVisibleSeries={{
+                      sevenDayApy: false,
+                      thirtyDayApy: false,
+                      derivedApy: true,
+                    }}
                   />
                 </ChartErrorBoundary>
               </div>
@@ -189,14 +183,19 @@ export function ChartsPanel(data: ChartData) {
               <ChartErrorBoundary>
                 <TVLChart chartData={tvlData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-20 pointer-events-none">
-                {/* Ghosted APY chart */}
+              <div className="absolute inset-0 opacity-30 pointer-events-none">
+                {/* Ghosted APY chart (7-day) */}
                 <ChartErrorBoundary>
                   <APYChart
-                    chartData={apyData}
+                    chartData={aprApyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
+                    defaultVisibleSeries={{
+                      sevenDayApy: false,
+                      thirtyDayApy: true,
+                      derivedApy: false,
+                    }}
                   />
                 </ChartErrorBoundary>
               </div>

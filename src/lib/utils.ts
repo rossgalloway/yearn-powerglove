@@ -36,26 +36,119 @@ export const calculateSMA = (
   return sma
 }
 
+// Derive APR values from a PPS time series using optional smoothing
+export function calculateAprFromPps(
+  pps: TimeseriesDataPoint[],
+  smoothingWindowDays: number = 1
+): TimeseriesDataPoint[] {
+  if (pps.length === 0) return []
+
+  const aprSeries: TimeseriesDataPoint[] = []
+  const window = Math.max(1, Math.floor(smoothingWindowDays))
+
+  const smoothedValues: (number | null)[] = pps.map((point, index) => {
+    const windowStart = Math.max(0, index - window + 1)
+    let sum = 0
+    let count = 0
+
+    for (let i = windowStart; i <= index; i++) {
+      const value = pps[i].value
+      if (value !== null) {
+        sum += value
+        count++
+      }
+    }
+
+    return count > 0 ? sum / count : null
+  })
+
+  for (let i = 0; i < pps.length; i++) {
+    const current = pps[i]
+    const currentSmoothed = smoothedValues[i]
+
+    if (i === 0) {
+      aprSeries.push({ ...current, value: null })
+      continue
+    }
+
+    const prev = pps[i - 1]
+    const prevSmoothed = smoothedValues[i - 1]
+
+    if (
+      current.value === null ||
+      prev.value === null ||
+      currentSmoothed === null ||
+      prevSmoothed === null
+    ) {
+      aprSeries.push({ ...current, value: null })
+      continue
+    }
+
+    const prevTime = Number(prev.time)
+    const currTime = Number(current.time)
+    const deltaDays = (currTime - prevTime) / 86400
+    if (deltaDays <= 0) {
+      aprSeries.push({ ...current, value: null })
+      continue
+    }
+
+    const periodReturn = (currentSmoothed - prevSmoothed) / prevSmoothed
+    const apr = periodReturn * (365 / deltaDays)
+    aprSeries.push({ ...current, value: apr })
+  }
+
+  return aprSeries
+}
+
+// Convert APR timeseries values to APY with configurable compounding
+export function calculateApyFromApr(
+  aprSeries: TimeseriesDataPoint[],
+  compoundingPeriodDays: number = 7
+): TimeseriesDataPoint[] {
+  if (aprSeries.length === 0) return []
+
+  const periodDays = Math.max(1, compoundingPeriodDays)
+  const periodsPerYear = 365 / periodDays
+
+  return aprSeries.map(point => {
+    if (point.value === null) {
+      return { ...point, value: null }
+    }
+
+    const apr = point.value
+    const apy = Math.pow(1 + apr / periodsPerYear, periodsPerYear) - 1
+
+    return { ...point, value: apy }
+  })
+}
+
 /**
  * Gets the earliest and latest timestamps from three arrays of timeseries data points.
  *
- * @param apy - Array of timeseries data points for APY.
+ * @param apy1 - Array of timeseries data points for APY.
  * @param tvl - Array of timeseries data points for TVL.
  * @param pps - Array of timeseries data points for PPS.
  * @returns An object containing the earliest and latest timestamps.
  */
 export function getEarliestAndLatestTimestamps(
-  apy: TimeseriesDataPoint[],
+  apy1: TimeseriesDataPoint[],
+  apy2: TimeseriesDataPoint[],
   tvl: TimeseriesDataPoint[],
   pps: TimeseriesDataPoint[]
 ) {
   // Convert string times to numbers for ease of comparison
-  const apyTimes = apy.map(d => Number(d.time))
+  const apy1Times = apy1.map(d => Number(d.time))
+  const apy2Times = apy2.map(d => Number(d.time))
   const tvlTimes = tvl.map(d => Number(d.time))
   const ppsTimes = pps.map(d => Number(d.time))
 
-  const earliest = Math.min(...apyTimes, ...tvlTimes, ...ppsTimes)
-  const latest = Math.max(...apyTimes, ...tvlTimes, ...ppsTimes)
+  const earliest = Math.min(
+    ...apy1Times,
+    ...apy2Times,
+    ...tvlTimes,
+    ...ppsTimes
+  )
+  const latest = Math.max(...apy1Times, ...apy2Times, ...tvlTimes, ...ppsTimes)
   return { earliest, latest }
 }
 

@@ -1,13 +1,17 @@
 import { useMemo } from 'react'
-import { format } from 'date-fns'
 import { VaultExtended } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
 import { MainInfoPanelProps } from '@/types/dataTypes'
 import {
-  CHAIN_ID_TO_ICON,
-  CHAIN_ID_TO_NAME,
-  CHAIN_ID_TO_BLOCK_EXPLORER,
-} from '@/constants/chains'
+  isLegacyVaultType,
+  formatVaultDate,
+  resolveTokenIcon,
+  formatVaultTVL,
+  formatVaultMetrics,
+  generateVaultLinks,
+  getVaultNetworkInfo,
+} from '@/utils/vaultDataUtils'
+import { formatPercentFromDecimal } from '@/lib/formatters'
 
 interface UseMainInfoPanelDataProps {
   vaultDetails: VaultExtended | null
@@ -26,72 +30,49 @@ export function useMainInfoPanelData({
     if (!vaultDetails) return null
 
     // Date formatting
-    const deploymentDate = format(
-      new Date(parseInt(vaultDetails.inceptTime) * 1000),
-      'MMMM yyyy'
-    )
+    const deploymentDate = formatVaultDate(vaultDetails.inceptTime)
 
     const vaultName = vaultDetails.name
     const description = vaultDetails.meta?.description || ''
+    const chainId = vaultDetails.chainId
 
     // Token icon resolution
     const vaultToken = {
-      icon:
-        tokenAssets.find(token => {
-          const isMatch =
-            token.address.toLowerCase() ===
-            vaultDetails.asset.address.toLowerCase()
-          return isMatch
-        })?.logoURI || '',
+      icon: resolveTokenIcon(
+        vaultDetails.asset.address,
+        vaultDetails.asset.symbol,
+        tokenAssets
+      ),
       name: vaultDetails.asset.symbol,
     }
 
     // Currency formatting
-    const totalSupply = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2,
-    }).format(vaultDetails.tvl?.close ?? 0)
+    const totalSupply = formatVaultTVL(vaultDetails.tvl?.close ?? 0)
 
     // Network information
-    const network = {
-      icon: CHAIN_ID_TO_ICON[vaultDetails.chainId],
-      name: CHAIN_ID_TO_NAME[vaultDetails.chainId],
-    }
+    const network = getVaultNetworkInfo(chainId)
 
     // APY formatting
-    const estimatedAPY = vaultDetails?.apy?.net
-      ? `${(vaultDetails.apy.net * 100).toFixed(2)}%`
-      : '0%'
-
-    const historicalAPY = vaultDetails?.apy?.inceptionNet
-      ? `${(vaultDetails.apy.inceptionNet * 100).toFixed(2)}%`
-      : '0%'
+    const isLegacyVault = isLegacyVaultType(vaultDetails)
+    const forwardApyNet = isLegacyVault
+      ? null
+      : vaultDetails?.forwardApyNet ?? vaultDetails?.apy?.net ?? null
+    const oneDayAPY = isLegacyVault
+      ? ' - '
+      : formatPercentFromDecimal(forwardApyNet)
+    const thirtyDayAPY = formatPercentFromDecimal(
+      vaultDetails?.apy?.monthlyNet ?? vaultDetails?.apy?.inceptionNet
+    )
 
     // Fee formatting
-    const managementFee = vaultDetails?.fees?.managementFee
-      ? `${(vaultDetails.fees.managementFee / 100).toFixed(0)}%`
-      : '0%'
-
-    const performanceFee = vaultDetails?.fees?.performanceFee
-      ? `${(vaultDetails.fees.performanceFee / 100).toFixed(0)}%`
-      : vaultDetails?.performanceFee
-        ? `${(vaultDetails.performanceFee / 100).toFixed(0)}%`
-        : '0%'
+    const { managementFee, performanceFee } = formatVaultMetrics(vaultDetails)
 
     // Version and link generation
     const apiVersion = vaultDetails?.apiVersion || 'N/A'
 
-    const blockExplorerLink =
-      vaultDetails?.chainId && vaultDetails?.address
-        ? `${CHAIN_ID_TO_BLOCK_EXPLORER[vaultDetails.chainId]}/address/${vaultDetails.address}`
-        : '#'
-
-    const yearnVaultLink = vaultDetails?.apiVersion?.startsWith('3')
-      ? `https://yearn.fi/v3/${vaultDetails.chainId}/${vaultDetails.address}`
-      : vaultDetails?.chainId && vaultDetails?.address
-        ? `https://yearn.fi/vaults/${vaultDetails.chainId}/${vaultDetails.address}`
-        : '#'
+    const { blockExplorerLink, yearnVaultLink } = generateVaultLinks(
+      vaultDetails
+    )
 
     return {
       vaultId: vaultDetails.symbol,
@@ -101,8 +82,8 @@ export function useMainInfoPanelData({
       vaultToken,
       totalSupply,
       network,
-      estimatedAPY,
-      historicalAPY,
+      oneDayAPY,
+      thirtyDayAPY,
       managementFee,
       performanceFee,
       apiVersion,

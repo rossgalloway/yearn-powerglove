@@ -1,3 +1,5 @@
+import { ChainId } from '../constants/chains'
+
 export type MainInfoPanelProps = {
   vaultId: string
   deploymentDate: string
@@ -13,8 +15,8 @@ export type MainInfoPanelProps = {
     icon: string
     name: string
   }
-  estimatedAPY: string
-  historicalAPY: string
+  oneDayAPY: string
+  thirtyDayAPY: string
   managementFee: string
   performanceFee: string
   apiVersion: string
@@ -24,7 +26,7 @@ export type MainInfoPanelProps = {
 
 export interface TimeseriesDataPoint {
   address?: string
-  chainId?: number
+  chainId?: ChainId
   label: string
   component?: string // Optional, as it's not present in TVL data points
   period: string
@@ -34,7 +36,7 @@ export interface TimeseriesDataPoint {
 
 export interface Timeseries {
   address: string
-  chainId: number
+  chainId: ChainId
   apy: TimeseriesDataPoint[]
   tvl: TimeseriesDataPoint[]
   pps: TimeseriesDataPoint[]
@@ -46,12 +48,6 @@ export interface ChartDataPoint {
   [key: string]: number | string | null
 }
 
-export type apyChartData = {
-  date: string
-  APY: number | null
-  SMA15: number | null
-  SMA30: number | null
-}[]
 export type tvlChartData = {
   date: string
   TVL: number | null
@@ -61,8 +57,16 @@ export type ppsChartData = {
   PPS: number | null
 }[]
 
+export type aprApyChartData = {
+  date: string
+  sevenDayApy: number | null
+  thirtyDayApy: number | null
+  derivedApr: number | null
+  derivedApy: number | null
+}[]
+
 type StrategyDetails = {
-  chainId: number
+  chainId: ChainId
   vaultAddress: string
   managementFee: number
   performanceFee: number
@@ -77,6 +81,7 @@ export type Strategy = {
   allocationPercent: number
   allocationAmount: string
   estimatedAPY: string
+  estimatedApySource?: 'ydaemon' | 'oracle' | 'graph'
   tokenSymbol: string
   tokenIconUri: string
   details: StrategyDetails
@@ -86,7 +91,7 @@ export type VaultDebtData = {
   address: string
   currentDebt: string
   currentDebtUsd: number
-  chainId?: number
+  chainId?: ChainId
   name?: string
   erc4626?: boolean
   v3?: boolean

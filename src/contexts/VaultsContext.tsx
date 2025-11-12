@@ -7,13 +7,15 @@ import { GET_STRATEGIES } from '../graphql/queries/strategies'
 import { TokenAssetsContext } from '@/contexts/useTokenAssets'
 import { useTokenAssets } from '@/hooks/useTokenAssets'
 import { useMemo } from 'react'
+import { useYDaemonVaults } from '@/hooks/useYDaemonVaults'
+import type { Vault } from '@/types/vaultTypes'
 
 export function VaultsProvider({ children }: { children: React.ReactNode }) {
   const {
     data: vaultsData,
     loading: vaultsLoading,
     error: apolloError,
-  } = useQuery(GET_VAULTS_SIMPLE)
+  } = useQuery<{ vaults: Vault[] }>(GET_VAULTS_SIMPLE)
   const {
     data: strategiesData,
     loading: strategiesLoading,
@@ -24,23 +26,35 @@ export function VaultsProvider({ children }: { children: React.ReactNode }) {
     loading: assetsLoading,
     error: assetsError,
   } = useTokenAssets() // fetch token assets
+  const {
+    data: yDaemonVaults,
+    isLoading: yDaemonLoading,
+    error: yDaemonError,
+  } = useYDaemonVaults()
 
   // Improved loading state coordination
   const loadingState = useMemo(() => {
     const isVaultsLoading = vaultsLoading
     const isStrategiesLoading = strategiesLoading
     const isAssetsLoading = assetsLoading
+    const isYDaemonLoading = yDaemonLoading
 
     // All queries are loading
     const isInitialLoading =
-      isVaultsLoading && isStrategiesLoading && isAssetsLoading
+      isVaultsLoading &&
+      isStrategiesLoading &&
+      isAssetsLoading &&
+      isYDaemonLoading
 
     // Any query is still loading
     const isPartialLoading =
-      isVaultsLoading || isStrategiesLoading || isAssetsLoading
+      isVaultsLoading ||
+      isStrategiesLoading ||
+      isAssetsLoading ||
+      isYDaemonLoading
 
     // All critical data has loaded (vaults is most important)
-    const isDataReady = !isVaultsLoading && vaultsData?.vaults
+    const isDataReady = !isVaultsLoading && Boolean(vaultsData?.vaults)
 
     return {
       isInitialLoading,
@@ -49,20 +63,66 @@ export function VaultsProvider({ children }: { children: React.ReactNode }) {
       vaultsReady: !isVaultsLoading && !!vaultsData?.vaults,
       strategiesReady: !isStrategiesLoading && !!strategiesData?.strategies,
       assetsReady: !isAssetsLoading && !!assets?.length,
+      yDaemonReady: !isYDaemonLoading && !!yDaemonVaults?.length,
     }
   }, [
     vaultsLoading,
     strategiesLoading,
     assetsLoading,
+    yDaemonLoading,
     vaultsData,
     strategiesData,
     assets,
+    yDaemonVaults,
   ])
 
-  const globalError = apolloError || apolloError2 || assetsError || null
+  const globalError =
+    apolloError || apolloError2 || assetsError || yDaemonError || null
   const vaults = vaultsData?.vaults || []
   const strategies = strategiesData?.strategies || []
-  const filteredVaults = filters.filterYearnVaults(vaults)
+  const yDaemonMap = useMemo(() => {
+    if (!yDaemonVaults) {
+      return new Map<string, { forwardApy?: number | null; strategyAprs: Record<string, number | null> }>()
+    }
+    const map = new Map<
+      string,
+      { forwardApy?: number | null; strategyAprs: Record<string, number | null> }
+    >()
+    yDaemonVaults.forEach(vault => {
+      if (!vault?.address || !vault?.chainID) return
+      const key = `${vault.chainID}-${vault.address.toLowerCase()}`
+      const strategyAprs: Record<string, number | null> = {}
+      vault.strategies?.forEach(strategy => {
+        if (!strategy?.address) return
+        strategyAprs[strategy.address.toLowerCase()] =
+          strategy.netAPR ?? null
+      })
+      map.set(key, {
+        forwardApy: vault.apr?.forwardAPR?.netAPR ?? null,
+        strategyAprs,
+      })
+    })
+    return map
+  }, [yDaemonVaults])
+
+  const enrichedVaults = useMemo(() => {
+    if (!vaults.length) return vaults
+    return vaults.map(vault => {
+      if (!vault?.address) return vault
+      const key = `${vault.chainId}-${vault.address.toLowerCase()}`
+      const yDaemonEntry = yDaemonMap.get(key)
+      if (!yDaemonEntry) {
+        return vault
+      }
+      return {
+        ...vault,
+        forwardApyNet: yDaemonEntry.forwardApy ?? null,
+        strategyForwardAprs: yDaemonEntry.strategyAprs,
+      }
+    })
+  }, [vaults, yDaemonMap])
+
+  const filteredVaults = filters.filterYearnVaults(enrichedVaults)
 
   return (
     <TokenAssetsContext.Provider

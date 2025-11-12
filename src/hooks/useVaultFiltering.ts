@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { getChainIdByName } from '@/constants/chains'
 import { VaultListData } from '@/components/vaults-list/VaultRow'
 import { SortDirection } from '@/utils/sortingUtils'
@@ -117,9 +117,16 @@ export function useVaultFiltering(
   }
 
   const handleToggleType = (type: string) => {
-    setSelectedTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    )
+    setSelectedTypes(prev => {
+      const next = prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+      console.debug('[VaultFiltering] toggled type filter', {
+        type,
+        nextSelectedTypes: next,
+      })
+      return next
+    })
   }
 
   // Apply filtering and sorting
@@ -139,6 +146,13 @@ export function useVaultFiltering(
     sortColumn,
     sortDirection,
   ])
+
+  useEffect(() => {
+    console.debug('[VaultFiltering] applied type filters', {
+      selectedTypes,
+      filteredCount: filteredAndSortedVaults.length,
+    })
+  }, [selectedTypes, filteredAndSortedVaults.length])
 
   return {
     sortColumn,

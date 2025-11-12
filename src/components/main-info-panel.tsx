@@ -98,13 +98,11 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
           </div>
 
           <div>
-            <div className="text-sm text-gray-500 mb-1">Est. Current APY</div>
-            <div>{data.estimatedAPY}</div>
+            <div className="text-sm text-gray-500 mb-1">Est. APY</div>
+            <div>{data.oneDayAPY}</div>
 
-            <div className="text-sm text-gray-500 mt-4 mb-1">
-              Historical APY
-            </div>
-            <div>{data.historicalAPY}</div>
+            <div className="text-sm text-gray-500 mt-4 mb-1">30-day APY</div>
+            <div>{data.thirtyDayAPY}</div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1 flex items-center gap-1">
               Management Fee

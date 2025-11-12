@@ -9,35 +9,54 @@ import {
 } from 'recharts'
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
 import { ChartDataPoint } from '@/types/dataTypes'
+import { getTimeframeLimit } from '@/components/charts/chart-utils'
+
+type PercentSeriesKey = 'derivedApr'
 
 interface PPSChartProps {
   chartData: ChartDataPoint[]
   timeframe: string
-  hideAxes?: boolean // Added prop for hiding axes
-  hideTooltip?: boolean // Added prop for hiding tooltip
+  hideAxes?: boolean
+  hideTooltip?: boolean
+  dataKey?: 'PPS' | PercentSeriesKey
 }
 
 export const PPSChart: React.FC<PPSChartProps> = React.memo(
-  ({
-    // memoized component
-    chartData,
-    timeframe,
-    hideAxes,
-    hideTooltip,
-  }) => {
+  ({ chartData, timeframe, hideAxes, hideTooltip, dataKey = 'PPS' }) => {
     const filteredData = useMemo(
       () => chartData.slice(-getTimeframeLimit(timeframe)),
       [chartData, timeframe]
     )
 
+    const isPercentSeries = dataKey !== 'PPS'
+    const percentSeriesMeta: Record<PercentSeriesKey, { label: string; color: string }> = {
+      derivedApr: {
+        label: 'Derived APR %',
+        color: 'var(--chart-4)',
+      },
+    }
+    const activePercentMeta =
+      dataKey !== 'PPS'
+        ? percentSeriesMeta[dataKey as PercentSeriesKey]
+        : undefined
+
     return (
       <ChartContainer
-        config={{
-          pps: {
-            label: 'Price Per Share',
-            color: hideAxes ? 'black' : 'var(--chart-1)',
-          },
-        }}
+        config={
+          isPercentSeries && activePercentMeta
+            ? {
+                [dataKey]: {
+                  label: activePercentMeta.label,
+                  color: hideAxes ? 'black' : activePercentMeta.color,
+                },
+              }
+            : {
+                pps: {
+                  label: 'Price Per Share',
+                  color: hideAxes ? 'black' : 'var(--chart-1)',
+                },
+              }
+        }
         style={{ height: 'inherit' }}
       >
         <ResponsiveContainer width="100%" height="100%">
@@ -46,14 +65,13 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             margin={{
               top: 20,
               right: 30,
-              left: 10, // Increased left margin for Y-axis label
+              left: 10,
               bottom: 20,
             }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="date"
-              // tickFormatter={(date: string) => date.replace(/, \d{4}$/, '')} // Remove year from "MMM d, yyyy"
               tick={
                 hideAxes
                   ? false
@@ -63,27 +81,32 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
               }
               axisLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide axis line
+              }
               tickLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
               }
             />
             <YAxis
-              domain={['auto', 'auto']}
-              tickFormatter={value => value.toFixed(3)} // Round to 3 decimals and remove %
+              domain={isPercentSeries ? [0, 'auto'] : ['auto', 'auto']}
+              tickFormatter={value =>
+                isPercentSeries ? `${value}%` : Number(value).toFixed(3)
+              }
               label={
                 hideAxes
                   ? undefined
                   : {
-                      value: 'Price Per Share',
+                      value:
+                        isPercentSeries && activePercentMeta
+                          ? activePercentMeta.label
+                          : 'Price Per Share',
                       angle: -90,
-                      position: 'insideLeft', // Changed from 'center' to 'insideLeft'
-                      offset: 10, // Negative offset moves label closer to axis
+                      position: 'insideLeft',
+                      offset: 10,
                       style: {
                         textAnchor: 'middle',
                         fill: hideAxes
                           ? 'transparent'
-                          : 'hsl(var(--muted-foreground))', // Make label transparent when hiding axes
+                          : 'hsl(var(--muted-foreground))',
                       },
                     }
               }
@@ -93,20 +116,30 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
                   : {
                       fill: 'hsl(var(--muted-foreground))',
                     }
-              } // Hide ticks when hideAxes is true
+              }
               axisLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide axis line
+              }
               tickLine={
                 hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide tick lines
+              }
             />
-            {!hideTooltip && <ChartTooltip />}
+            {!hideTooltip && (
+              <ChartTooltip
+                formatter={(value: number) =>
+                  isPercentSeries && activePercentMeta
+                    ? [`${value.toFixed(2)}%`, activePercentMeta.label]
+                    : [value.toFixed(3), 'PPS']
+                }
+              />
+            )}
 
             <Line
               type="monotone"
-              dataKey="PPS"
-              stroke="var(--color-pps)"
+              dataKey={dataKey}
+              stroke={
+                isPercentSeries ? `var(--color-${dataKey})` : 'var(--color-pps)'
+              }
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
@@ -117,23 +150,5 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
     )
   }
 )
-
-function getTimeframeLimit(timeframe: string): number {
-  switch (timeframe) {
-    case '7d':
-      return 7
-    case '30d':
-      return 30
-    case '90d':
-      return 90
-    case '180d':
-      return 180
-    case '1y':
-      return 365
-    case 'all':
-    default:
-      return 1000
-  }
-}
 
 export default PPSChart

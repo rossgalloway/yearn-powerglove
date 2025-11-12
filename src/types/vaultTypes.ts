@@ -1,9 +1,12 @@
+import { ChainId } from '../constants/chains'
+
 export type VaultSimple = {
   address: string
   symbol: string
   name: string
-  chainId: number
+  chainId: ChainId
   inceptTime: string
+  kind?: string
   asset: {
     name: string
     symbol: string
@@ -16,6 +19,8 @@ export type VaultSimple = {
     grossApr: number
     net: number
     inceptionNet: number
+    weeklyNet?: number
+    monthlyNet?: number
   }
   tvl?: {
     close: number
@@ -31,6 +36,8 @@ export type VaultSimple = {
   }
   managementFee: number
   performanceFee: number
+  forwardApyNet?: number | null
+  strategyForwardAprs?: Record<string, number | null>
 }
 
 export type Vault = VaultSimple &
@@ -103,6 +110,7 @@ export type VaultDebt = {
 
 export type EnrichedVaultDebt = {
   strategy: string
+  chainId?: ChainId
   v3Debt: {
     currentDebt: string
     currentDebtUsd: number

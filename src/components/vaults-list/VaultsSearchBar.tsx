@@ -25,17 +25,11 @@ const headers: { label: string; key: keyof VaultListData }[] = [
   { label: 'Chain', key: 'chain' },
   { label: 'Token', key: 'token' },
   { label: 'Type', key: 'type' },
-  { label: 'Est. APY', key: 'APY' },
+  { label: '30D APY', key: 'APY' },
   { label: 'TVL', key: 'tvl' },
 ]
 
-const vaultTypes: Record<string, string> = {
-  1: 'V3 Allocator Vault',
-  2: 'V3 Strategy Vault',
-  3: 'V2 Factory Vault',
-  4: 'V2 Legacy Vault',
-  5: 'External Vault',
-}
+const vaultTypes = ['Allocator Vault', 'Strategy Vault', 'Factory Vault', 'Legacy Vault', 'External Vault']
 
 const chainOptions = Object.values(CHAIN_ID_TO_NAME)
 
@@ -110,7 +104,7 @@ export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
             className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
           >
             <option value="">All Types</option>
-            {Object.values(vaultTypes).map(option => (
+            {vaultTypes.map(option => (
               <option key={option} value={option}>
                 {option}
               </option>

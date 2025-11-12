@@ -1,6 +1,15 @@
-export type ChainId = 1 | 10 | 100 | 137 | 250 | 8453 | 42161 | 747474
+export type ChainId =
+  | 1
+  | 10
+  | 100
+  | 137
+  | 250
+  | 8453
+  | 42161
+  | 747474
+  | 80094
 
-export const CHAIN_ID_TO_NAME: Record<number, string> = {
+export const CHAIN_ID_TO_NAME: Record<ChainId, string> = {
   1: 'Ethereum',
   10: 'Optimism',
   100: 'GnosisChain',
@@ -12,14 +21,14 @@ export const CHAIN_ID_TO_NAME: Record<number, string> = {
   80094: 'Berachain',
 }
 
-export function getChainIdByName(name: string): number | undefined {
+export function getChainIdByName(name: string): ChainId | undefined {
   const entry = Object.entries(CHAIN_ID_TO_NAME).find(
-    ([, chainName]) => chainName === name
+    ([, chainName]) => chainName.toLowerCase() === name.toLowerCase()
   )
-  return entry ? Number(entry[0]) : undefined
+  return entry ? (Number(entry[0]) as ChainId) : undefined
 }
 
-export const CHAIN_ID_TO_ICON: Record<number, string> = {
+export const CHAIN_ID_TO_ICON: Record<ChainId, string> = {
   1: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/1/logo-32.png',
   10: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/10/logo-32.png',
   100: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/100/logo-32.png',
@@ -34,7 +43,7 @@ export const CHAIN_ID_TO_ICON: Record<number, string> = {
     'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/80094/logo-32.png',
 }
 
-export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<number, string> = {
+export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<ChainId, string> = {
   1: 'https://etherscan.io',
   10: 'https://optimistic.etherscan.io',
   100: 'https://gnosisscan.io/',

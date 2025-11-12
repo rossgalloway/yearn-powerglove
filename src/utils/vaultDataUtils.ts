@@ -1,11 +1,13 @@
 import { format } from 'date-fns'
-import { VaultExtended } from '@/types/vaultTypes'
+import { Vault, VaultExtended } from '@/types/vaultTypes'
 import { TokenAsset } from '@/types/tokenAsset'
 import {
   CHAIN_ID_TO_ICON,
   CHAIN_ID_TO_NAME,
   CHAIN_ID_TO_BLOCK_EXPLORER,
+  ChainId,
 } from '@/constants/chains'
+import { formatCurrency } from '@/lib/formatters'
 
 /**
  * Formats vault APY and fee percentages
@@ -88,19 +90,46 @@ export function formatVaultDate(inceptTime: string): string {
  * Formats vault TVL as currency
  */
 export function formatVaultTVL(tvlValue?: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  }).format(tvlValue ?? 0)
+  return formatCurrency(tvlValue ?? 0)
 }
 
 /**
  * Gets network information for vault
  */
-export function getVaultNetworkInfo(chainId: number) {
+export function getVaultNetworkInfo(chainId: ChainId) {
   return {
     icon: CHAIN_ID_TO_ICON[chainId],
     name: CHAIN_ID_TO_NAME[chainId],
   }
+}
+
+export function isLegacyVaultType(vault: {
+  apiVersion?: string
+  name?: string
+}): boolean {
+  const version = vault.apiVersion?.toLowerCase?.() ?? ''
+  if (!version.startsWith('0')) {
+    return false
+  }
+  const name = vault.name?.toLowerCase?.() ?? ''
+  return !name.includes('factory')
+}
+
+export function getVaultDisplayType(
+  vault: Pick<Vault, 'apiVersion' | 'name' | 'vaultType'>
+): string {
+  const typeId = Number(vault.vaultType)
+  if (typeId === 1) return 'Allocator Vault'
+  if (typeId === 2) return 'Strategy Vault'
+
+  const name = vault.name?.toLowerCase() ?? ''
+  if (name.includes('factory')) {
+    return 'Factory Vault'
+  }
+
+  if (vault.apiVersion?.startsWith('0')) {
+    return 'Legacy Vault'
+  }
+
+  return 'External Vault'
 }
