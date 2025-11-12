@@ -159,15 +159,19 @@ export function ChartsPanel(data: ChartData) {
               <ChartErrorBoundary>
                 <PPSChart chartData={ppsData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                {/* Ghosted APR chart */}
+              <div className="absolute inset-0 opacity-30 pointer-events-none">
+                {/* Ghosted APY chart (7-day) */}
                 <ChartErrorBoundary>
-                  <PPSChart
+                  <APYChart
                     chartData={aprApyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
-                    dataKey="derivedApr"
+                    defaultVisibleSeries={{
+                      sevenDayApy: false,
+                      thirtyDayApy: false,
+                      derivedApy: true,
+                    }}
                   />
                 </ChartErrorBoundary>
               </div>
@@ -179,14 +183,19 @@ export function ChartsPanel(data: ChartData) {
               <ChartErrorBoundary>
                 <TVLChart chartData={tvlData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
-              <div className="absolute inset-0 opacity-20 pointer-events-none">
-                {/* Ghosted APY chart */}
+              <div className="absolute inset-0 opacity-30 pointer-events-none">
+                {/* Ghosted APY chart (7-day) */}
                 <ChartErrorBoundary>
                   <APYChart
                     chartData={aprApyData}
                     timeframe={timeframe.value}
                     hideAxes={true}
                     hideTooltip={true}
+                    defaultVisibleSeries={{
+                      sevenDayApy: false,
+                      thirtyDayApy: true,
+                      derivedApy: false,
+                    }}
                   />
                 </ChartErrorBoundary>
               </div>

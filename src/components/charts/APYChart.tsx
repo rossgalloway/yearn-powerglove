@@ -45,16 +45,17 @@ interface APYChartProps {
   timeframe: string
   hideAxes?: boolean
   hideTooltip?: boolean
+  defaultVisibleSeries?: Partial<Record<SeriesKey, boolean>>
 }
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
-  ({ chartData, timeframe, hideAxes, hideTooltip }) => {
+  ({ chartData, timeframe, hideAxes, hideTooltip, defaultVisibleSeries }) => {
     const [visibleSeries, setVisibleSeries] = useState<
       Record<SeriesKey, boolean>
     >({
-      derivedApy: true,
-      sevenDayApy: true,
-      thirtyDayApy: true,
+      derivedApy: defaultVisibleSeries?.derivedApy ?? true,
+      sevenDayApy: defaultVisibleSeries?.sevenDayApy ?? true,
+      thirtyDayApy: defaultVisibleSeries?.thirtyDayApy ?? true,
     })
 
     const seriesConfig = SERIES_BASE_CONFIG
