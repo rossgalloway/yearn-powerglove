@@ -109,3 +109,5 @@ tsconfig.node.tsbuildinfo
 vite.config.js
 vite.config.d.ts
 
+# Old docs
+docs/old-docs
