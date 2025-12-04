@@ -160,20 +160,19 @@ function SingleVaultPage() {
           </div>
         )}
         {!isBlacklisted && overrideItems.length > 0 && (
-          <div className="relative z-30 mb-4 flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
+          <div className="relative z-30 flex items-start gap-3 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
             <span aria-hidden="true" className="text-xl leading-none">
               ⚠️
             </span>
             <div className="text-left">
               <p className="font-semibold">Vault info override active</p>
               <p className="text-sm text-amber-700">
-                Certain values are manually overridden until upstream data is
-                corrected.
+                Certain values have been manually overridden.
               </p>
               <ul className="mt-2 space-y-1 text-sm">
                 {overrideItems.map(item => (
                   <li key={item.label}>
-                    <span className="font-medium">{`${item.label} set to:`}</span>{' '}
+                    <span className="font-medium">{item.label}:</span>{' '}
                     <span>{item.value}</span>
                   </li>
                 ))}

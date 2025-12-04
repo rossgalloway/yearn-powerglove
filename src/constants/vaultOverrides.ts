@@ -25,7 +25,7 @@ export const VAULT_OVERRIDE_ENTRIES: VaultOverrideConfig[] = [
   {
     address: '0x58900d761Ae3765B75DDFc235c1536B527F25d8F', // Curve yETH Factory yVault
     chainId: 1,
-    blacklist: true,
+    blacklist: false,
     blacklistReason:
       'One of the underlying constituents of the pool (yETH) was exploited.',
     overrideReason:

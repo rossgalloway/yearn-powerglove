@@ -69,37 +69,37 @@ export const getVaultOverrideDisplayItems = (
   }
   if (overrides.meta?.description) {
     items.push({
-      label: 'Description',
+      label: 'Description set to',
       value: overrides.meta.description,
     })
   }
   if (overrides.meta?.displayName) {
     items.push({
-      label: 'Display Name',
+      label: 'Display Name set to',
       value: overrides.meta.displayName,
     })
   }
   if (overrides.meta?.displaySymbol) {
     items.push({
-      label: 'Display Symbol',
+      label: 'Display Symbol set to',
       value: overrides.meta.displaySymbol,
     })
   }
   if (overrides.tvl?.close !== undefined) {
     items.push({
-      label: 'TVL',
+      label: 'TVL set to',
       value: formatCurrency(overrides.tvl.close ?? 0),
     })
   }
   if (overrides.apy?.monthlyNet !== undefined) {
     items.push({
-      label: '30-day APY',
+      label: '30-day APY set to',
       value: formatPercentFromDecimal(overrides.apy.monthlyNet),
     })
   }
   if (overrides.forwardApyNet !== undefined) {
     items.push({
-      label: '1-day APY',
+      label: '1-day APY set to',
       value: formatPercentFromDecimal(overrides.forwardApyNet),
     })
   }
@@ -108,7 +108,11 @@ export const getVaultOverrideDisplayItems = (
 }
 
 export function applyVaultOverride<T extends VaultEntity>(vault: T): T {
-  if (!vault?.address || vault.chainId === undefined || vault.chainId === null) {
+  if (
+    !vault?.address ||
+    vault.chainId === undefined ||
+    vault.chainId === null
+  ) {
     return vault
   }
 
@@ -152,6 +156,8 @@ export function applyVaultOverride<T extends VaultEntity>(vault: T): T {
 
 export function applyVaultOverrides<T extends VaultEntity>(vaults: T[]): T[] {
   return vaults
-    .filter(vault => !isVaultBlacklisted(vault.chainId as ChainId, vault.address))
+    .filter(
+      vault => !isVaultBlacklisted(vault.chainId as ChainId, vault.address)
+    )
     .map(vault => applyVaultOverride(vault))
 }
