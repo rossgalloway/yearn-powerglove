@@ -6,6 +6,13 @@ import { TimeseriesDataPoint } from '@/types/dataTypes'
 import { useMemo } from 'react'
 import { ChainId } from '@/constants/chains'
 import { useYDaemonVault } from '@/hooks/useYDaemonVaults'
+import {
+  applyVaultOverride,
+  getVaultBlacklistReason,
+  getVaultOverride,
+  isVaultBlacklisted,
+} from '@/utils/vaultOverrides'
+import { VaultOverrideConfig } from '@/constants/vaultOverrides'
 
 interface UseVaultPageDataProps {
   vaultAddress: string
@@ -35,6 +42,9 @@ interface UseVaultPageDataReturn {
   // Combined states
   isInitialLoading: boolean
   hasErrors: boolean
+  isBlacklisted: boolean
+  blacklistReason?: string
+  overrideConfig?: VaultOverrideConfig
 }
 
 /**
@@ -44,6 +54,10 @@ export function useVaultPageData({
   vaultAddress,
   vaultChainId,
 }: UseVaultPageDataProps): UseVaultPageDataReturn {
+  const isBlacklisted = isVaultBlacklisted(vaultChainId, vaultAddress)
+  const blacklistReason = getVaultBlacklistReason(vaultChainId, vaultAddress)
+  const overrideConfig = getVaultOverride(vaultChainId, vaultAddress)
+
   // Fetch vault details
   const {
     data: vaultData,
@@ -120,25 +134,25 @@ export function useVaultPageData({
     if (!vaultData?.vault) return null
     const base = vaultData.vault
     if (!yDaemonVault) {
-      return {
+      return applyVaultOverride({
         ...base,
         forwardApyNet: base.forwardApyNet ?? null,
         strategyForwardAprs: base.strategyForwardAprs ?? {},
-      }
+      })
     }
     const strategyAprs: Record<string, number | null> = {}
     yDaemonVault.strategies?.forEach(strategy => {
       if (!strategy?.address) return
       strategyAprs[strategy.address.toLowerCase()] = strategy.netAPR ?? null
     })
-    return {
+    return applyVaultOverride({
       ...base,
       forwardApyNet:
         yDaemonVault.apr?.forwardAPR?.netAPR ?? base.forwardApyNet ?? null,
       strategyForwardAprs: strategyAprs,
       kind: base.kind,
-    }
-  }, [vaultData, yDaemonVault])
+    })
+  }, [vaultData, yDaemonVault, isBlacklisted])
 
   // Calculate combined loading states
   const chartsLoading = useMemo(() => {
@@ -175,5 +189,8 @@ export function useVaultPageData({
     // Combined states
     isInitialLoading,
     hasErrors,
+    isBlacklisted,
+    blacklistReason,
+    overrideConfig,
   }
 }
