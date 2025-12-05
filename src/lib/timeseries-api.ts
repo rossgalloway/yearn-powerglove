@@ -6,7 +6,7 @@ const API_BASE = `${import.meta.env.VITE_PUBLIC_REST_URL}/timeseries`
 type RestTimeseriesPoint = {
   time: number
   component: string
-  value: number
+  value: number | string
 }
 
 /**
@@ -37,11 +37,14 @@ export async function fetchTimeseries(
   const data: RestTimeseriesPoint[] = await response.json()
 
   // Transform to match TimeseriesDataPoint shape
-  return data.map(point => ({
-    time: String(point.time),
-    value: point.value,
-    component: point.component,
-    label: segment,
-    period: '1 day',
-  }))
+  return data.map(point => {
+    const numericValue = typeof point.value === 'string' ? Number(point.value) : point.value
+    return {
+      time: String(point.time),
+      value: Number.isNaN(numericValue) ? null : numericValue,
+      component: point.component,
+      label: segment,
+      period: '1 day',
+    }
+  })
 }
