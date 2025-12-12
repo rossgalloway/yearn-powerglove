@@ -1,54 +1,66 @@
-# React + TypeScript + Vite
+# Yearn Powerglove
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Yearn vault explorer built with React, TypeScript, Vite, TanStack Router, Apollo, and Wagmi.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node 18+ (Bun recommended for scripts)
+- Copy `.env.example` to `.env` and set values such as `VITE_PUBLIC_GRAPHQL_URL`.
 
-## Expanding the ESLint configuration
+## Install
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+bun install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Run
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Dev server: `bun run dev`
+- Type-check & build: `bun run build`
+- Preview latest build: `bun run preview`
+- Tests: `bun run test` (or `bun run test:watch`)
+- Lint: `bun run lint`
+- Format: `bun run format`
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
+## Editing
+
+- App code lives in `src/`:
+  - `components/` (Radix + Tailwind UI)
+  - `routes/` (TanStack Router)
+  - `contexts/`, `hooks/`, `utils/`
+  - GraphQL queries in `src/graphql/`
+- Router file `src/routeTree.gen.ts` is generated; do not edit by hand.
+
+## Vault overrides & blacklist
+
+Manual overrides and blacklist entries are defined in `src/constants/vaultOverrides.ts`.
+
+- Each entry is a `VaultOverrideConfig` with:
+  - `chainId`, `address`
+  - Optional `overrides` (partial fields on the vault), e.g. `name`, `symbol`, `meta.description`, `tvl.close`, `apy.monthlyNet`, `forwardApyNet`.
+  - Optional `overrideReason` (shown in the banner).
+  - Optional `blacklist` + `blacklistReason`.
+- The array `VAULT_OVERRIDE_ENTRIES` is reduced into an internal map automatically; just add a new object to the array.
+- Blacklisted vaults are hidden from lists/search, but direct vault pages still render with warnings and a disabled overlay.
+
+Example entry:
+
+```ts
+{
+  chainId: 1,
+  address: '0x1234...',
+  overrideReason: 'Upstream metadata incorrect. TVL set manually.',
+  overrides: {
+    name: 'My Vault',
+    tvl: { close: 0 },
+    apy: { monthlyNet: 0 },
   },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+  blacklist: true,
+  blacklistReason: 'Disabled until investigation completes.',
+}
 ```
+
+## Testing notes
+
+- Vitest runs in jsdom with Testing Library; shared mocks live in `setupTests.ts`.
+- Prefer mocking Apollo/HTTP rather than hitting live services.

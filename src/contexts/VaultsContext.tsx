@@ -9,6 +9,7 @@ import { useTokenAssets } from '@/hooks/useTokenAssets'
 import { useMemo } from 'react'
 import { useYDaemonVaults } from '@/hooks/useYDaemonVaults'
 import type { Vault } from '@/types/vaultTypes'
+import { applyVaultOverrides } from '@/utils/vaultOverrides'
 
 export function VaultsProvider({ children }: { children: React.ReactNode }) {
   const {
@@ -78,7 +79,8 @@ export function VaultsProvider({ children }: { children: React.ReactNode }) {
 
   const globalError =
     apolloError || apolloError2 || assetsError || yDaemonError || null
-  const vaults = vaultsData?.vaults || []
+  // Memoize vaults to prevent dependency changes in downstream useMemo hooks
+  const vaults = useMemo(() => vaultsData?.vaults || [], [vaultsData?.vaults])
   const strategies = strategiesData?.strategies || []
   const yDaemonMap = useMemo(() => {
     if (!yDaemonVaults) {
@@ -122,7 +124,12 @@ export function VaultsProvider({ children }: { children: React.ReactNode }) {
     })
   }, [vaults, yDaemonMap])
 
-  const filteredVaults = filters.filterYearnVaults(enrichedVaults)
+  const normalizedVaults = useMemo(
+    () => applyVaultOverrides(enrichedVaults),
+    [enrichedVaults]
+  )
+
+  const filteredVaults = filters.filterYearnVaults(normalizedVaults)
 
   return (
     <TokenAssetsContext.Provider
