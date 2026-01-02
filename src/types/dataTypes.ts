@@ -63,6 +63,7 @@ export type aprApyChartData = {
   thirtyDayApy: number | null
   derivedApr: number | null
   derivedApy: number | null
+  oracleApy?: number | null
 }[]
 
 type StrategyDetails = {

@@ -16,7 +16,7 @@ import { ChartDataPoint } from '@/types/dataTypes'
 import React, { useMemo, useState } from 'react'
 import { getTimeframeLimit } from '@/components/charts/chart-utils'
 
-type SeriesKey = 'derivedApy' | 'sevenDayApy' | 'thirtyDayApy'
+type SeriesKey = 'derivedApy' | 'sevenDayApy' | 'thirtyDayApy' | 'oracleApy'
 
 const SERIES_BASE_CONFIG: Record<
   SeriesKey,
@@ -25,21 +25,31 @@ const SERIES_BASE_CONFIG: Record<
   derivedApy: {
     chartLabel: '1-day APY %',
     legendLabel: '1-day APY',
-    color: 'var(--chart-4)',
+    color: 'var(--chart-3)',
   },
   sevenDayApy: {
     chartLabel: '7-day APY %',
     legendLabel: '7-day APY',
-    color: 'var(--chart-3)',
+    color: 'var(--chart-2)',
   },
   thirtyDayApy: {
     chartLabel: '30-day APY %',
     legendLabel: '30-day APY',
-    color: 'var(--chart-2)',
+    color: 'var(--chart-1)',
+  },
+  oracleApy: {
+    chartLabel: 'Oracle APY %',
+    legendLabel: 'Oracle APY',
+    color: 'var(--chart-4)',
   },
 }
 
-const SERIES_ORDER: SeriesKey[] = ['derivedApy', 'sevenDayApy', 'thirtyDayApy']
+const SERIES_ORDER: SeriesKey[] = [
+  'derivedApy',
+  'sevenDayApy',
+  'thirtyDayApy',
+  'oracleApy',
+]
 
 interface APYChartProps {
   chartData: ChartDataPoint[]
@@ -57,6 +67,7 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
       derivedApy: defaultVisibleSeries?.derivedApy ?? true,
       sevenDayApy: defaultVisibleSeries?.sevenDayApy ?? true,
       thirtyDayApy: defaultVisibleSeries?.thirtyDayApy ?? true,
+      oracleApy: defaultVisibleSeries?.oracleApy ?? false,
     })
 
     const seriesConfig = SERIES_BASE_CONFIG
@@ -67,15 +78,22 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
       [chartData, timeframe]
     )
 
+    const hasOracleApy = useMemo(() => {
+      return filteredData.some(point => typeof point.oracleApy === 'number')
+    }, [filteredData])
+
     const chartConfig = useMemo<ChartConfig>(() => {
       return Object.entries(SERIES_BASE_CONFIG).reduce((acc, [key, meta]) => {
+        if (key === 'oracleApy' && !hasOracleApy) {
+          return acc
+        }
         acc[key] = {
           label: meta.chartLabel,
           color: hideAxes ? 'black' : meta.color,
         }
         return acc
       }, {} as ChartConfig)
-    }, [hideAxes])
+    }, [hideAxes, hasOracleApy])
 
     const getSeriesLabel = (name: string) =>
       seriesConfig[name as SeriesKey]?.legendLabel || name
@@ -181,38 +199,52 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   isAnimationActive={false}
                 />
               )}
+              {hasOracleApy && visibleSeries.oracleApy && (
+                <Line
+                  type="monotone"
+                  dataKey="oracleApy"
+                  stroke="var(--color-oracleApy)"
+                  strokeWidth={hideAxes ? 1 : 1.5}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </ChartContainer>
         {!hideAxes && (
           <div className="absolute inset-x-0 bottom-[-1rem] flex justify-center">
             <div className="flex flex-wrap items-center justify-center gap-4 rounded-md bg-white/80 px-4 py-2 text-xs">
-              {seriesOrder.map(seriesKey => (
-                <div key={seriesKey} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`toggle-${seriesKey}`}
-                    checked={visibleSeries[seriesKey]}
-                    className="h-4 w-4 rounded-[4px] border border-gray-400 bg-white text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:bg-white data-[state=checked]:text-gray-800"
-                    onCheckedChange={checked =>
-                      setVisibleSeries(prev => ({
-                        ...prev,
-                        [seriesKey]: !!checked,
-                      }))
-                    }
-                  />
-                  <label
-                    htmlFor={`toggle-${seriesKey}`}
-                    className="flex items-center gap-1"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="inline-block h-3.5 w-3.5 rounded-sm border border-gray-200"
-                      style={{ backgroundColor: seriesConfig[seriesKey].color }}
+              {seriesOrder
+                .filter(seriesKey => seriesKey !== 'oracleApy' || hasOracleApy)
+                .map(seriesKey => (
+                  <div key={seriesKey} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`toggle-${seriesKey}`}
+                      checked={visibleSeries[seriesKey]}
+                      className="h-4 w-4 rounded-[4px] border border-gray-400 bg-white text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:bg-white data-[state=checked]:text-gray-800"
+                      onCheckedChange={checked =>
+                        setVisibleSeries(prev => ({
+                          ...prev,
+                          [seriesKey]: !!checked,
+                        }))
+                      }
                     />
-                    {seriesConfig[seriesKey].legendLabel}
-                  </label>
-                </div>
-              ))}
+                    <label
+                      htmlFor={`toggle-${seriesKey}`}
+                      className="flex items-center gap-1"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="inline-block h-3.5 w-3.5 rounded-sm border border-gray-200"
+                        style={{
+                          backgroundColor: seriesConfig[seriesKey].color,
+                        }}
+                      />
+                      {seriesConfig[seriesKey].legendLabel}
+                    </label>
+                  </div>
+                ))}
             </div>
           </div>
         )}

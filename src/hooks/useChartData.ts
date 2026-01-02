@@ -20,6 +20,7 @@ interface TimeseriesQueryResult {
 interface UseChartDataProps {
   apyWeeklyData: TimeseriesQueryResult | undefined
   apyMonthlyData: TimeseriesQueryResult | undefined
+  aprOracleApyData?: TimeseriesQueryResult | undefined
   tvlData: TimeseriesQueryResult | undefined
   ppsData: TimeseriesQueryResult | undefined
   isLoading: boolean
@@ -39,6 +40,7 @@ interface UseChartDataReturn {
 export function useChartData({
   apyWeeklyData,
   apyMonthlyData,
+  aprOracleApyData,
   tvlData,
   ppsData,
   isLoading,
@@ -66,14 +68,24 @@ export function useChartData({
     const apy30DayDataClean = apyMonthlyData.timeseries || []
     const tvlDataClean = tvlData.timeseries || []
     const ppsDataClean = ppsData.timeseries || []
+    const oracleApyDataClean = aprOracleApyData?.timeseries || []
 
     // Get timestamp range for data alignment
     const { earliest, latest } = getEarliestAndLatestTimestamps(
       apy7DayDataClean,
       apy30DayDataClean,
       tvlDataClean,
-      ppsDataClean
+      ppsDataClean,
+      oracleApyDataClean
     )
+
+    if (!Number.isFinite(earliest) || !Number.isFinite(latest) || earliest > latest) {
+      return {
+        transformedAprApyData: [],
+        transformedTvlData: [],
+        transformedPpsData: [],
+      }
+    }
 
     // Fill missing data points
     const apy7DayFilled = fillMissingDailyData(
@@ -88,6 +100,11 @@ export function useChartData({
     )
     const tvlFilled = fillMissingDailyData(tvlDataClean, earliest, latest)
     const ppsFilled = fillMissingDailyData(ppsDataClean, earliest, latest)
+    const oracleApyFilled = fillMissingDailyData(
+      oracleApyDataClean,
+      earliest,
+      latest
+    )
 
     // Calculate APR from PPS data
     const aprFilled = calculateAprFromPps(ppsFilled)
@@ -122,6 +139,10 @@ export function useChartData({
           aprAsApyFilled[index]?.value !== null
             ? aprAsApyFilled[index]!.value! * 100
             : null,
+        oracleApy:
+          oracleApyFilled[index]?.value !== null
+            ? oracleApyFilled[index]!.value! * 100
+            : null,
       })
     )
 
@@ -130,5 +151,13 @@ export function useChartData({
       transformedTvlData,
       transformedPpsData,
     }
-  }, [apyWeeklyData, apyMonthlyData, tvlData, ppsData, isLoading, hasErrors])
+  }, [
+    apyWeeklyData,
+    apyMonthlyData,
+    aprOracleApyData,
+    tvlData,
+    ppsData,
+    isLoading,
+    hasErrors,
+  ])
 }

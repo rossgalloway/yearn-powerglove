@@ -11,6 +11,7 @@ describe('APYChart', () => {
       thirtyDayApy: Math.random() * 10,
       derivedApr: Math.random() * 10,
       derivedApy: Math.random() * 10,
+      oracleApy: Math.random() * 10,
     }))
     
     // Mock getBoundingClientRect for Recharts ResponsiveContainer
@@ -48,6 +49,16 @@ describe('APYChart', () => {
     fireEvent.click(derivedApyCheckbox)
     expect(
       container.querySelector('path[stroke="var(--color-derivedApy)"]')
+    ).toBeTruthy()
+
+    expect(
+      container.querySelector('path[stroke="var(--color-oracleApy)"]')
+    ).toBeNull()
+
+    const oracleApyCheckbox = getByLabelText(/oracle apy/i)
+    fireEvent.click(oracleApyCheckbox)
+    expect(
+      container.querySelector('path[stroke="var(--color-oracleApy)"]')
     ).toBeTruthy()
   })
 })

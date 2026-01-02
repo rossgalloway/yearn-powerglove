@@ -138,7 +138,11 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <APYChart chartData={aprApyData} timeframe={timeframe.value} />
+                <APYChart
+                  chartData={aprApyData}
+                  timeframe={timeframe.value}
+                  defaultVisibleSeries={{ oracleApy: true }}
+                />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
@@ -171,6 +175,7 @@ export function ChartsPanel(data: ChartData) {
                       sevenDayApy: false,
                       thirtyDayApy: false,
                       derivedApy: true,
+                      oracleApy: false,
                     }}
                   />
                 </ChartErrorBoundary>
@@ -195,6 +200,7 @@ export function ChartsPanel(data: ChartData) {
                       sevenDayApy: false,
                       thirtyDayApy: true,
                       derivedApy: false,
+                      oracleApy: false,
                     }}
                   />
                 </ChartErrorBoundary>

@@ -33,6 +33,7 @@ interface UseVaultPageDataReturn {
   // Chart data (raw)
   apyWeeklyData: TimeseriesQueryResult | undefined
   apyMonthlyData: TimeseriesQueryResult | undefined
+  aprOracleApyData: TimeseriesQueryResult | undefined
   tvlData: TimeseriesQueryResult | undefined
   ppsData: TimeseriesQueryResult | undefined
 
@@ -73,6 +74,8 @@ export function useVaultPageData({
     vaultAddress
   )
 
+  const isV3Vault = Boolean(vaultData?.vault?.v3)
+
   // Fetch weekly APY data from REST API
   const {
     data: apyWeeklyData,
@@ -95,6 +98,17 @@ export function useVaultPageData({
     chainId: vaultChainId,
     address: vaultAddress,
     components: ['monthlyNet'],
+  })
+
+  // Fetch APR-oracle APY timeseries from REST API (v3 only)
+  const {
+    data: aprOracleApyData,
+  } = useRestTimeseries({
+    segment: 'apr-oracle',
+    chainId: vaultChainId,
+    address: vaultAddress,
+    components: ['apy'],
+    enabled: isV3Vault,
   })
 
   // Fetch TVL data from REST API
@@ -147,11 +161,13 @@ export function useVaultPageData({
 
   // Calculate combined loading states
   const chartsLoading = useMemo(() => {
+    // `aprOracleApyLoading` is intentionally excluded since it's optional overlay data.
     return apyWeeklyLoading || apyMonthlyLoading || tvlLoading || ppsLoading
   }, [apyWeeklyLoading, apyMonthlyLoading, tvlLoading, ppsLoading])
 
   // Calculate combined error states
   const chartsError = useMemo(() => {
+    // `aprOracleApyError` is intentionally excluded since it's optional overlay data.
     return !!apyWeeklyError || !!apyMonthlyError || !!tvlError || !!ppsError
   }, [apyWeeklyError, apyMonthlyError, tvlError, ppsError])
 
@@ -170,6 +186,7 @@ export function useVaultPageData({
     // Chart data
     apyWeeklyData: apyWeeklyData,
     apyMonthlyData: apyMonthlyData,
+    aprOracleApyData,
     tvlData,
     ppsData,
 
