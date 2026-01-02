@@ -33,7 +33,7 @@ interface UseVaultPageDataReturn {
   // Chart data (raw)
   apyWeeklyData: TimeseriesQueryResult | undefined
   apyMonthlyData: TimeseriesQueryResult | undefined
-  aprOracleApyData: TimeseriesQueryResult | undefined
+  aprOracleAprData: TimeseriesQueryResult | undefined
   tvlData: TimeseriesQueryResult | undefined
   ppsData: TimeseriesQueryResult | undefined
 
@@ -100,14 +100,14 @@ export function useVaultPageData({
     components: ['monthlyNet'],
   })
 
-  // Fetch APR-oracle APY timeseries from REST API (v3 only)
+  // Fetch APR-oracle APR timeseries from REST API (v3 only)
   const {
-    data: aprOracleApyData,
+    data: aprOracleAprData,
   } = useRestTimeseries({
     segment: 'apr-oracle',
     chainId: vaultChainId,
     address: vaultAddress,
-    components: ['apy'],
+    components: ['apr'],
     enabled: isV3Vault,
   })
 
@@ -186,7 +186,7 @@ export function useVaultPageData({
     // Chart data
     apyWeeklyData: apyWeeklyData,
     apyMonthlyData: apyMonthlyData,
-    aprOracleApyData,
+    aprOracleAprData,
     tvlData,
     ppsData,
 

@@ -17,10 +17,32 @@ interface TimeseriesQueryResult {
   timeseries: TimeseriesDataPoint[]
 }
 
+const averageLast = (
+  series: Array<number | null>,
+  endIndexInclusive: number,
+  windowSize: number
+): number | null => {
+  const start = Math.max(0, endIndexInclusive - windowSize + 1)
+  let sum = 0
+  let count = 0
+  for (let i = start; i <= endIndexInclusive; i++) {
+    const value = series[i]
+    if (value === null || value === undefined) continue
+    sum += value
+    count++
+  }
+  return count > 0 ? sum / count : null
+}
+
+const aprToApyWeekly = (apr: number): number => {
+  const periodsPerYear = 52
+  return Math.pow(1 + apr / periodsPerYear, periodsPerYear) - 1
+}
+
 interface UseChartDataProps {
   apyWeeklyData: TimeseriesQueryResult | undefined
   apyMonthlyData: TimeseriesQueryResult | undefined
-  aprOracleApyData?: TimeseriesQueryResult | undefined
+  aprOracleAprData?: TimeseriesQueryResult | undefined
   tvlData: TimeseriesQueryResult | undefined
   ppsData: TimeseriesQueryResult | undefined
   isLoading: boolean
@@ -40,7 +62,7 @@ interface UseChartDataReturn {
 export function useChartData({
   apyWeeklyData,
   apyMonthlyData,
-  aprOracleApyData,
+  aprOracleAprData,
   tvlData,
   ppsData,
   isLoading,
@@ -68,7 +90,7 @@ export function useChartData({
     const apy30DayDataClean = apyMonthlyData.timeseries || []
     const tvlDataClean = tvlData.timeseries || []
     const ppsDataClean = ppsData.timeseries || []
-    const oracleApyDataClean = aprOracleApyData?.timeseries || []
+    const oracleAprDataClean = aprOracleAprData?.timeseries || []
 
     // Get timestamp range for data alignment
     const { earliest, latest } = getEarliestAndLatestTimestamps(
@@ -76,7 +98,7 @@ export function useChartData({
       apy30DayDataClean,
       tvlDataClean,
       ppsDataClean,
-      oracleApyDataClean
+      oracleAprDataClean
     )
 
     if (!Number.isFinite(earliest) || !Number.isFinite(latest) || earliest > latest) {
@@ -100,8 +122,8 @@ export function useChartData({
     )
     const tvlFilled = fillMissingDailyData(tvlDataClean, earliest, latest)
     const ppsFilled = fillMissingDailyData(ppsDataClean, earliest, latest)
-    const oracleApyFilled = fillMissingDailyData(
-      oracleApyDataClean,
+    const oracleAprFilled = fillMissingDailyData(
+      oracleAprDataClean,
       earliest,
       latest
     )
@@ -109,6 +131,11 @@ export function useChartData({
     // Calculate APR from PPS data
     const aprFilled = calculateAprFromPps(ppsFilled)
     const aprAsApyFilled = calculateApyFromApr(aprFilled)
+
+    const oracleAprValues = oracleAprFilled.map(point => point.value ?? null)
+    const oracleApr30dAvgValues = oracleAprValues.map((_, index) =>
+      averageLast(oracleAprValues, index, 30)
+    )
 
     // Transform TVL data
     const transformedTvlData: tvlChartData = tvlFilled.map(dataPoint => ({
@@ -139,9 +166,13 @@ export function useChartData({
           aprAsApyFilled[index]?.value !== null
             ? aprAsApyFilled[index]!.value! * 100
             : null,
-        oracleApy:
-          oracleApyFilled[index]?.value !== null
-            ? oracleApyFilled[index]!.value! * 100
+        oracleApr:
+          oracleAprFilled[index]?.value !== null
+            ? oracleAprFilled[index]!.value! * 100
+            : null,
+        oracleApy30dAvg:
+          oracleApr30dAvgValues[index] !== null
+            ? aprToApyWeekly(oracleApr30dAvgValues[index]!) * 100
             : null,
       })
     )
@@ -154,7 +185,7 @@ export function useChartData({
   }, [
     apyWeeklyData,
     apyMonthlyData,
-    aprOracleApyData,
+    aprOracleAprData,
     tvlData,
     ppsData,
     isLoading,

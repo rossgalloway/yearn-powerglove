@@ -141,7 +141,6 @@ export function ChartsPanel(data: ChartData) {
                 <APYChart
                   chartData={aprApyData}
                   timeframe={timeframe.value}
-                  defaultVisibleSeries={{ oracleApy: true }}
                 />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -175,7 +174,8 @@ export function ChartsPanel(data: ChartData) {
                       sevenDayApy: false,
                       thirtyDayApy: false,
                       derivedApy: true,
-                      oracleApy: false,
+                      oracleApr: false,
+                      oracleApy30dAvg: false,
                     }}
                   />
                 </ChartErrorBoundary>
@@ -200,7 +200,8 @@ export function ChartsPanel(data: ChartData) {
                       sevenDayApy: false,
                       thirtyDayApy: true,
                       derivedApy: false,
-                      oracleApy: false,
+                      oracleApr: false,
+                      oracleApy30dAvg: false,
                     }}
                   />
                 </ChartErrorBoundary>
