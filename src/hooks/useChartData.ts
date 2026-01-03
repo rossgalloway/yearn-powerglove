@@ -17,6 +17,21 @@ interface TimeseriesQueryResult {
   timeseries: TimeseriesDataPoint[]
 }
 
+/**
+ * Calculates the average of the last N values in a timeseries, ending at a specific index.
+ * 
+ * Computes a rolling average by looking back `windowSize` positions from `endIndexInclusive`.
+ * Null and undefined values are excluded from the calculation - only numeric values contribute
+ * to both the sum and count.
+ * 
+ * @param series - Array of nullable numbers representing a timeseries
+ * @param endIndexInclusive - The index to end the averaging window at (inclusive)
+ * @param windowSize - Number of values to include in the average (looking backward)
+ * @returns The average of non-null values in the window, or null if no valid values exist
+ * 
+ * @example
+ * averageLast([1, 2, null, 4, 5], 4, 3) // returns 4.5 (avg of [null, 4, 5])
+ */
 const averageLast = (
   series: Array<number | null>,
   endIndexInclusive: number,
@@ -34,8 +49,23 @@ const averageLast = (
   return count > 0 ? sum / count : null
 }
 
-const aprToApyWeekly = (apr: number): number => {
-  const periodsPerYear = 52
+/**
+ * Convert a nominal annual APR to APY assuming weekly compounding.
+ *
+ * Uses the standard compound interest formula:
+ *   APY = (1 + APR / n)^n - 1
+ * where n is the number of compounding periods per year.
+ *
+ * In this context we assume interest compounds weekly, so n = 52.
+ *
+ * @param apr - The annual percentage rate as a decimal (e.g., 0.05 for 5%)
+ * @returns The annual percentage yield as a decimal after weekly compounding
+ * 
+ * @example
+ * convertAprToApy(0.05) // returns ~0.0512 (5% APR becomes ~5.12% APY)
+ */
+const convertAprToApy = (apr: number): number => {
+  const periodsPerYear = 52 // weekly compounding: 52 weeks per year
   return Math.pow(1 + apr / periodsPerYear, periodsPerYear) - 1
 }
 
@@ -172,7 +202,7 @@ export function useChartData({
             : null,
         oracleApy30dAvg:
           oracleApr30dAvgValues[index] !== null
-            ? aprToApyWeekly(oracleApr30dAvgValues[index]!) * 100
+            ? convertAprToApy(oracleApr30dAvgValues[index]!) * 100
             : null,
       })
     )
