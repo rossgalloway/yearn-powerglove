@@ -245,7 +245,8 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                                       stroke={color}
                                       strokeWidth="2"
                                       strokeDasharray={
-                                        isDashedSeries(seriesKey) ? '6 6' : undefined
+                                        // Use the same dash pattern as the chart series for visual consistency
+                                        isDashedSeries(seriesKey) ? '12 4' : undefined
                                       }
                                       strokeLinecap="butt"
                                     />
