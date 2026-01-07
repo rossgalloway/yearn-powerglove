@@ -31,6 +31,7 @@ function SingleVaultPage() {
     vaultDetails,
     apyWeeklyData,
     apyMonthlyData,
+    aprOracleAprData,
     tvlData,
     ppsData,
     isInitialLoading,
@@ -53,6 +54,7 @@ function SingleVaultPage() {
     useChartData({
       apyWeeklyData,
       apyMonthlyData,
+      aprOracleAprData,
       tvlData,
       ppsData,
       isLoading: chartsLoading,
