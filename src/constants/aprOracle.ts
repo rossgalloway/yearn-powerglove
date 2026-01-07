@@ -1,4 +1,5 @@
 import { Address } from 'viem'
+import { ChainId } from '@/constants/chains'
 
 export const aprOracleAbi = [
   {
@@ -78,12 +79,11 @@ export const aprOracleAddress = {
   10: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   100: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   137: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
-  146: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   250: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   8453: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   42161: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   747474: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
-} as const
+} as const satisfies Partial<Record<ChainId, Address>>
 
 export type SupportedAprOracleChainId = keyof typeof aprOracleAddress
 

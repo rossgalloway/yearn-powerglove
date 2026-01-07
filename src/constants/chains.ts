@@ -1,13 +1,16 @@
-export type ChainId =
-  | 1
-  | 10
-  | 100
-  | 137
-  | 250
-  | 8453
-  | 42161
-  | 747474
-  | 80094
+export const SUPPORTED_CHAIN_IDS = [
+  1,
+  10,
+  100,
+  137,
+  250,
+  8453,
+  42161,
+  747474,
+  80094,
+] as const
+
+export type ChainId = (typeof SUPPORTED_CHAIN_IDS)[number]
 
 export const CHAIN_ID_TO_NAME: Record<ChainId, string> = {
   1: 'Ethereum',

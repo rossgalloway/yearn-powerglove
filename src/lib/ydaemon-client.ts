@@ -1,8 +1,8 @@
-import { ChainId } from '@/constants/chains'
+import { ChainId, SUPPORTED_CHAIN_IDS } from '@/constants/chains'
 import type { YDaemonVault } from '@/types/ydaemon'
 import { getAddress } from 'viem'
 
-const DEFAULT_CHAIN_IDS = [1, 10, 137, 146, 250, 8453, 42161, 747474] as const
+const DEFAULT_CHAIN_IDS = SUPPORTED_CHAIN_IDS
 
 type RawStrategy = {
   address?: string
