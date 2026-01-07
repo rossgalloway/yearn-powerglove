@@ -2,7 +2,7 @@
 import { format, fromUnixTime } from 'date-fns'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { TimeseriesDataPoint } from '../types/vaultTypes'
+import { TimeseriesDataPoint } from '@/types/dataTypes'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

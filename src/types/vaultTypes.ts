@@ -160,28 +160,10 @@ export type DebtResult = {
   vaults: Vault[]
 }
 
-export interface TimeseriesDataPoint {
-  address?: string
-  chainId?: number
-  label: string
-  component?: string // Optional, as it's not present in TVL data points
-  period: string
-  time: string
-  value: number | null
-}
-
 export interface strategy {
   address: string
   name?: string | null
   apr?: number | null
-}
-
-export interface Timeseries {
-  address: string
-  chainId: number
-  apy: TimeseriesDataPoint[]
-  tvl: TimeseriesDataPoint[]
-  pps: TimeseriesDataPoint[]
 }
 
 export type TimePeriod = '7d' | '30d' | '90d' | '180d' | '1y' | 'all'
