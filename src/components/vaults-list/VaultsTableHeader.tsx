@@ -22,30 +22,46 @@ export const VaultsTableHeader: React.FC<VaultsTableHeaderProps> = React.memo(
   ({ sortColumn, sortDirection, onSort }) => {
     const renderSortIcon = (column: keyof VaultListData) => {
       if (sortColumn !== column) {
-        return <ChevronDown className="w-4 h-4 inline-block" />
+        return <ChevronDown className="w-4 h-4 inline-block" aria-hidden />
       }
       return sortDirection === 'asc' ? (
-        <ChevronUp className="w-4 h-4 inline-block text-[#0657f9]" />
+        <ChevronUp className="w-4 h-4 inline-block text-[#0657f9]" aria-hidden />
       ) : (
-        <ChevronDown className="w-4 h-4 inline-block text-[#0657f9]" />
+        <ChevronDown
+          className="w-4 h-4 inline-block text-[#0657f9]"
+          aria-hidden
+        />
       )
     }
 
+    const getSortState = (column: keyof VaultListData) => {
+      if (sortColumn !== column) {
+        return 'none'
+      }
+      return sortDirection === 'asc' ? 'ascending' : 'descending'
+    }
+
     return (
-      <div className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b">
+      <div
+        className="flex px-6 py-2 bg-white text-gray-900 font-medium border-b"
+        role="row"
+      >
         {headers.map(({ label, key }) => (
-          <div
+          <button
             key={key}
-            className={`${
+            className={`flex items-center gap-1 select-none p-0 bg-transparent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0657f9] ${
               key === 'name'
-                ? 'flex-[2] cursor-pointer select-none flex items-center gap-1 justify-start'
-                : 'flex-1 cursor-pointer select-none flex items-center gap-1 justify-end'
+                ? 'flex-[2] justify-start'
+                : 'flex-1 justify-end'
             }`}
+            type="button"
+            role="columnheader"
+            aria-sort={getSortState(key)}
             onClick={() => onSort(key)}
           >
-            {label}
+            <span>{label}</span>
             {renderSortIcon(key)}
-          </div>
+          </button>
         ))}
       </div>
     )
