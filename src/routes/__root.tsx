@@ -1,9 +1,16 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { Suspense, lazy } from 'react'
 import { VaultsProvider } from '@/contexts/VaultsContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/utils/ScrollToTop'
+
+const RouterDevtools = import.meta.env.DEV
+  ? lazy(async () => {
+      const mod = await import('@tanstack/react-router-devtools')
+      return { default: mod.TanStackRouterDevtools }
+    })
+  : null
 
 export const Route = createRootRoute({
   component: function RootComponent() {
@@ -18,7 +25,11 @@ export const Route = createRootRoute({
             </main>
             <Footer />
           </div>
-          <TanStackRouterDevtools />
+          {RouterDevtools ? (
+            <Suspense fallback={null}>
+              <RouterDevtools />
+            </Suspense>
+          ) : null}
         </VaultsProvider>
       </>
     )
