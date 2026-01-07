@@ -56,8 +56,10 @@ export function useStrategiesData(
   const { assets: tokenAssets } = useTokenAssetsContext()
   const allStrategies = useQueryStrategies()
 
-  const vaultStrategyAddresses = vaultDetails.strategies
-  const shouldFetch = vaultStrategyAddresses != null
+  const vaultStrategyAddresses = Array.isArray(vaultDetails?.strategies)
+    ? vaultDetails.strategies
+    : []
+  const shouldFetch = vaultStrategyAddresses.length > 0
   const strategyForwardAprs =
     vaultDetails?.strategyForwardAprs ?? ({} as Record<string, number | null>)
 
