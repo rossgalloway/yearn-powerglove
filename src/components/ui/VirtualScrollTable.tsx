@@ -5,6 +5,7 @@ interface VirtualScrollTableProps<T> {
   itemHeight: number
   containerHeight: number
   renderItem: (item: T, index: number) => React.ReactNode
+  getItemKey?: (item: T, index: number) => React.Key
   className?: string
   overscan?: number // Number of items to render outside visible area
 }
@@ -14,6 +15,7 @@ export function VirtualScrollTable<T>({
   itemHeight,
   containerHeight,
   renderItem,
+  getItemKey,
   className = '',
   overscan = 3,
 }: VirtualScrollTableProps<T>) {
@@ -64,7 +66,10 @@ export function VirtualScrollTable<T>({
       <div style={{ height: totalHeight, position: 'relative' }}>
         <div style={{ transform: `translateY(${offsetY}px)` }}>
           {visibleItems.map(({ item, index }) => (
-            <div key={index} style={{ height: itemHeight }}>
+            <div
+              key={getItemKey ? getItemKey(item, index) : index}
+              style={{ height: itemHeight }}
+            >
               {renderItem(item, index)}
             </div>
           ))}

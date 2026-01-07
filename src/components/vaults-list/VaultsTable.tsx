@@ -31,9 +31,8 @@ export const VaultsTable: React.FC<VaultsTableProps> = React.memo(
         data={vaults}
         itemHeight={50} // Fixed height per row - matches VaultRow height
         containerHeight={availableHeight} // Use full available viewport height
-        renderItem={(vault: VaultListData) => (
-          <VaultRow key={`${vault.chain}-${vault.id}`} vault={vault} />
-        )}
+        renderItem={(vault: VaultListData) => <VaultRow vault={vault} />}
+        getItemKey={(vault: VaultListData) => `${vault.chain}-${vault.id}`}
         className="border-0"
         overscan={3} // Render 3 extra items outside viewport
       />
