@@ -134,21 +134,32 @@ export function getEarliestAndLatestTimestamps(
   apy1: TimeseriesDataPoint[],
   apy2: TimeseriesDataPoint[],
   tvl: TimeseriesDataPoint[],
-  pps: TimeseriesDataPoint[]
+  pps: TimeseriesDataPoint[],
+  oracle?: TimeseriesDataPoint[]
 ) {
   // Convert string times to numbers for ease of comparison
   const apy1Times = apy1.map(d => Number(d.time))
   const apy2Times = apy2.map(d => Number(d.time))
   const tvlTimes = tvl.map(d => Number(d.time))
   const ppsTimes = pps.map(d => Number(d.time))
+  const oracleTimes = oracle?.map(d => Number(d.time)) ?? []
 
-  const earliest = Math.min(
+  // Combine all time arrays to check if any data exists
+  const allTimes = [
     ...apy1Times,
     ...apy2Times,
     ...tvlTimes,
-    ...ppsTimes
-  )
-  const latest = Math.max(...apy1Times, ...apy2Times, ...tvlTimes, ...ppsTimes)
+    ...ppsTimes,
+    ...oracleTimes,
+  ]
+
+  // Handle case where all input arrays are empty
+  if (allTimes.length === 0) {
+    return { earliest: Infinity, latest: -Infinity }
+  }
+
+  const earliest = Math.min(...allTimes)
+  const latest = Math.max(...allTimes)
   return { earliest, latest }
 }
 

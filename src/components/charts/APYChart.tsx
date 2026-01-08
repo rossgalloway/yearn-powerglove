@@ -16,7 +16,23 @@ import { ChartDataPoint } from '@/types/dataTypes'
 import React, { useMemo, useState } from 'react'
 import { getTimeframeLimit } from '@/components/charts/chart-utils'
 
-type SeriesKey = 'derivedApy' | 'sevenDayApy' | 'thirtyDayApy'
+type SeriesKey =
+  | 'derivedApy'
+  | 'sevenDayApy'
+  | 'thirtyDayApy'
+  | 'oracleApr'
+  | 'oracleApy30dAvg'
+
+const TOOLTIP_ORDER: Record<SeriesKey, number> = {
+  derivedApy: 0,
+  sevenDayApy: 1,
+  thirtyDayApy: 2,
+  oracleApr: 3,
+  oracleApy30dAvg: 4,
+}
+
+const isDashedSeries = (seriesKey: SeriesKey) =>
+  seriesKey === 'thirtyDayApy' || seriesKey === 'oracleApy30dAvg'
 
 const SERIES_BASE_CONFIG: Record<
   SeriesKey,
@@ -25,21 +41,37 @@ const SERIES_BASE_CONFIG: Record<
   derivedApy: {
     chartLabel: '1-day APY %',
     legendLabel: '1-day APY',
-    color: 'var(--chart-4)',
+    color: 'var(--chart-3)',
   },
   sevenDayApy: {
     chartLabel: '7-day APY %',
     legendLabel: '7-day APY',
-    color: 'var(--chart-3)',
+    color: 'var(--chart-2)',
   },
   thirtyDayApy: {
     chartLabel: '30-day APY %',
     legendLabel: '30-day APY',
-    color: 'var(--chart-2)',
+    color: 'var(--chart-1)',
+  },
+  oracleApr: {
+    chartLabel: 'Oracle APR %',
+    legendLabel: 'Oracle APR',
+    color: 'var(--chart-4)',
+  },
+  oracleApy30dAvg: {
+    chartLabel: 'Oracle APY (30d avg) %',
+    legendLabel: 'Oracle APY (30d avg)',
+    color: 'var(--chart-4)',
   },
 }
 
-const SERIES_ORDER: SeriesKey[] = ['derivedApy', 'sevenDayApy', 'thirtyDayApy']
+const SERIES_ORDER: SeriesKey[] = [
+  'derivedApy',
+  'sevenDayApy',
+  'thirtyDayApy',
+  'oracleApr',
+  'oracleApy30dAvg',
+]
 
 interface APYChartProps {
   chartData: ChartDataPoint[]
@@ -57,6 +89,8 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
       derivedApy: defaultVisibleSeries?.derivedApy ?? true,
       sevenDayApy: defaultVisibleSeries?.sevenDayApy ?? true,
       thirtyDayApy: defaultVisibleSeries?.thirtyDayApy ?? true,
+      oracleApr: defaultVisibleSeries?.oracleApr ?? false,
+      oracleApy30dAvg: defaultVisibleSeries?.oracleApy30dAvg ?? false,
     })
 
     const seriesConfig = SERIES_BASE_CONFIG
@@ -67,15 +101,31 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
       [chartData, timeframe]
     )
 
+    const hasOracleApr = useMemo(() => {
+      return filteredData.some(point => typeof point.oracleApr === 'number')
+    }, [filteredData])
+
+    const hasOracleApy30dAvg = useMemo(() => {
+      return filteredData.some(
+        point => typeof point.oracleApy30dAvg === 'number'
+      )
+    }, [filteredData])
+
     const chartConfig = useMemo<ChartConfig>(() => {
       return Object.entries(SERIES_BASE_CONFIG).reduce((acc, [key, meta]) => {
+        if (key === 'oracleApr' && !hasOracleApr) {
+          return acc
+        }
+        if (key === 'oracleApy30dAvg' && !hasOracleApy30dAvg) {
+          return acc
+        }
         acc[key] = {
           label: meta.chartLabel,
           color: hideAxes ? 'black' : meta.color,
         }
         return acc
       }, {} as ChartConfig)
-    }, [hideAxes])
+    }, [hideAxes, hasOracleApr, hasOracleApy30dAvg])
 
     const getSeriesLabel = (name: string) =>
       seriesConfig[name as SeriesKey]?.legendLabel || name
@@ -145,9 +195,71 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
               />
               {!hideTooltip && (
                 <ChartTooltip
-                  formatter={(value: number, name: string) => {
-                    const label = getSeriesLabel(name)
-                    return [`${value.toFixed(2)}%`, label]
+                  content={({ active, label, payload }) => {
+                    if (!active || !payload?.length) return null
+
+                    const sorted = [...payload].sort((a, b) => {
+                      const aKey = a.dataKey as SeriesKey
+                      const bKey = b.dataKey as SeriesKey
+                      return (
+                        (TOOLTIP_ORDER[aKey] ?? 999) -
+                        (TOOLTIP_ORDER[bKey] ?? 999)
+                      )
+                    })
+
+                    return (
+                      <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+                        <div className="font-medium">{label}</div>
+                        <div className="grid gap-1.5">
+                          {sorted.map(item => {
+                            const seriesKey = item.dataKey as SeriesKey
+                            const raw = item.value
+                            const value =
+                              typeof raw === 'number'
+                                ? `${raw.toFixed(2)}%`
+                                : raw
+
+                            const color =
+                              (item.color as string | undefined) ||
+                              (item.stroke as string | undefined) ||
+                              'currentColor'
+
+                            return (
+                              <div
+                                key={`${item.dataKey}`}
+                                className="flex items-center justify-between gap-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <svg
+                                    aria-hidden="true"
+                                    width={18}
+                                    height={6}
+                                    viewBox="0 0 18 6"
+                                    className="shrink-0"
+                                  >
+                                    <line
+                                      x1="0"
+                                      y1="3"
+                                      x2="18"
+                                      y2="3"
+                                      stroke={color}
+                                      strokeWidth="2"
+                                      strokeDasharray={
+                                        // Use the same dash pattern as the chart series for visual consistency
+                                        isDashedSeries(seriesKey) ? '12 4' : undefined
+                                      }
+                                      strokeLinecap="butt"
+                                    />
+                                  </svg>
+                                  <span>{getSeriesLabel(String(item.dataKey))}</span>
+                                </div>
+                                <span className="tabular-nums">{value}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
                   }}
                 />
               )}
@@ -166,7 +278,8 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   type="monotone"
                   dataKey="thirtyDayApy"
                   stroke="var(--color-thirtyDayApy)"
-                  strokeWidth={hideAxes ? 1 : 1.5}
+                  strokeDasharray="12 4"
+                  strokeWidth={hideAxes ? 1 : 2.5}
                   dot={false}
                   isAnimationActive={false}
                 />
@@ -181,38 +294,67 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   isAnimationActive={false}
                 />
               )}
+              {hasOracleApr && visibleSeries.oracleApr && (
+                <Line
+                  type="monotone"
+                  dataKey="oracleApr"
+                  stroke="var(--color-oracleApr)"
+                  strokeWidth={hideAxes ? 1 : 2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
+              {hasOracleApy30dAvg && visibleSeries.oracleApy30dAvg && (
+                <Line
+                  type="monotone"
+                  dataKey="oracleApy30dAvg"
+                  stroke="var(--color-oracleApy30dAvg)"
+                  strokeDasharray="12 4"
+                  strokeWidth={hideAxes ? 1 : 2.75}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </ChartContainer>
         {!hideAxes && (
           <div className="absolute inset-x-0 bottom-[-1rem] flex justify-center">
             <div className="flex flex-wrap items-center justify-center gap-4 rounded-md bg-white/80 px-4 py-2 text-xs">
-              {seriesOrder.map(seriesKey => (
-                <div key={seriesKey} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`toggle-${seriesKey}`}
-                    checked={visibleSeries[seriesKey]}
-                    className="h-4 w-4 rounded-[4px] border border-gray-400 bg-white text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:bg-white data-[state=checked]:text-gray-800"
-                    onCheckedChange={checked =>
-                      setVisibleSeries(prev => ({
-                        ...prev,
-                        [seriesKey]: !!checked,
-                      }))
-                    }
-                  />
-                  <label
-                    htmlFor={`toggle-${seriesKey}`}
-                    className="flex items-center gap-1"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="inline-block h-3.5 w-3.5 rounded-sm border border-gray-200"
-                      style={{ backgroundColor: seriesConfig[seriesKey].color }}
+              {seriesOrder
+                .filter(seriesKey => {
+                  if (seriesKey === 'oracleApr') return hasOracleApr
+                  if (seriesKey === 'oracleApy30dAvg') return hasOracleApy30dAvg
+                  return true
+                })
+                .map(seriesKey => (
+                  <div key={seriesKey} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`toggle-${seriesKey}`}
+                      checked={visibleSeries[seriesKey]}
+                      className="h-4 w-4 rounded-[4px] border border-gray-400 bg-white text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:bg-white data-[state=checked]:text-gray-800"
+                      onCheckedChange={checked =>
+                        setVisibleSeries(prev => ({
+                          ...prev,
+                          [seriesKey]: !!checked,
+                        }))
+                      }
                     />
-                    {seriesConfig[seriesKey].legendLabel}
-                  </label>
-                </div>
-              ))}
+                    <label
+                      htmlFor={`toggle-${seriesKey}`}
+                      className="flex items-center gap-1"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="inline-block h-3.5 w-3.5 rounded-sm border border-gray-200"
+                        style={{
+                          backgroundColor: seriesConfig[seriesKey].color,
+                        }}
+                      />
+                      {seriesConfig[seriesKey].legendLabel}
+                    </label>
+                  </div>
+                ))}
             </div>
           </div>
         )}
