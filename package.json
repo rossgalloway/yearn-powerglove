@@ -11,7 +11,8 @@
     "format": "biome check --write .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",
@@ -73,6 +74,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
+    "@playwright/test": "^1.57.0",
     "@tanstack/react-router-devtools": "^1.114.27",
     "@tanstack/router-plugin": "^1.114.27",
     "@testing-library/jest-dom": "^6.6.3",

@@ -19,6 +19,7 @@ bun install
 - Type-check & build: `bun run build`
 - Preview latest build: `bun run preview`
 - Tests: `bun run test` (or `bun run test:watch`)
+- E2E tests: `bun run test:e2e` (run `bunx playwright install` first)
 - Lint: `bun run lint`
 - Format: `bun run format`
 

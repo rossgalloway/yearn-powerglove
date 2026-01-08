@@ -44,6 +44,11 @@ Desktop.ini
 coverage/
 *.lcov
 
+# Playwright artifacts
+playwright-report/
+test-results/
+.playwright/
+
 # nyc test coverage
 .nyc_output
 
