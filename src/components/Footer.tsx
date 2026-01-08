@@ -6,11 +6,7 @@ export default function Footer() {
       <div className="container px-8 max-w-[1400px] mx-auto">
         <div className="flex flex-row items-center justify-between gap-6">
           <div className="flex items-center justify-center">
-            <img
-              src="/logo.svg"
-              alt="Yearn PowerGlove Logo"
-              className="w-6 h-6"
-            />
+            <img src="/logo.svg" alt="Yearn PowerGlove Logo" className="w-6 h-6" />
             <span className="ml-2 text-lg font-bold text-accent">Yearn</span>
           </div>
           <div className="flex items-center gap-6">
@@ -23,26 +19,14 @@ export default function Footer() {
               Docs <ExternalLink className="ml-1 h-3 w-3" />
             </a>
 
-            <a
-              href="/about"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
+            <a href="/about" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-700">
               About Yearn
             </a>
 
-            <a
-              href="/privacy"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
+            <a href="/privacy" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-700">
               Privacy Policy
             </a>
-            <a
-              href="/disclaimer"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
+            <a href="/disclaimer" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-700">
               Disclaimer
             </a>
           </div>
@@ -54,11 +38,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="text-gray-500 hover:text-gray-700"
             >
-              <img
-                src="/twitter-x.svg"
-                alt="X (formerly Twitter)"
-                className="h-5 w-5"
-              />
+              <img src="/twitter-x.svg" alt="X (formerly Twitter)" className="h-5 w-5" />
             </a>
             <a
               href="https://yearn.fi"
@@ -66,11 +46,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="text-gray-500 hover:text-gray-700"
             >
-              <img
-                src="/yearn-link-icon.svg"
-                alt="Yearn.fi"
-                className="h-5 w-5"
-              />
+              <img src="/yearn-link-icon.svg" alt="Yearn.fi" className="h-5 w-5" />
             </a>
             <a
               href="https://github.com/yearn"

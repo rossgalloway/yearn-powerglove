@@ -1,7 +1,7 @@
-import React from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { VaultListData } from '@/components/vaults-list/VaultRow'
-import { SortDirection } from '@/utils/sortingUtils'
+import React from 'react'
+import type { VaultListData } from '@/components/vaults-list/VaultRow'
+import type { SortDirection } from '@/utils/sortingUtils'
 
 interface VaultsTableHeaderProps {
   sortColumn: keyof VaultListData
@@ -15,7 +15,7 @@ const headers: { label: string; key: keyof VaultListData }[] = [
   { label: 'Token', key: 'token' },
   { label: 'Type', key: 'type' },
   { label: '30D APY', key: 'APY' },
-  { label: 'TVL', key: 'tvl' },
+  { label: 'TVL', key: 'tvl' }
 ]
 
 export const VaultsTableHeader: React.FC<VaultsTableHeaderProps> = React.memo(

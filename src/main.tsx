@@ -2,13 +2,12 @@ import { Buffer } from 'buffer'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './styles/globals.css'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ApolloProvider } from '@apollo/client'
 
-import { routeTree } from './routeTree.gen'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { apolloClient } from './lib/apollo-client'
+import { routeTree } from './routeTree.gen'
 
 // Polyfill Buffer for browser environment
 if (typeof globalThis.Buffer === 'undefined') {

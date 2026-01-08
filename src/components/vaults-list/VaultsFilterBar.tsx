@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import { ChainSelector } from './ChainSelector'
 import { TypeSelector } from './TypeSelector'
 
@@ -19,7 +19,7 @@ export const VaultsFilterBar: React.FC<VaultsFilterBarProps> = ({
   onChainToggle,
   onSetSelectedChains,
   onTypeToggle,
-  onSearchChange,
+  onSearchChange
 }) => {
   return (
     <div className="flex items-center justify-between gap-4 p-4 bg-white border-b">
@@ -29,10 +29,7 @@ export const VaultsFilterBar: React.FC<VaultsFilterBarProps> = ({
           onChainToggle={onChainToggle}
           onSetSelectedChains={onSetSelectedChains}
         />
-        <TypeSelector
-          selectedTypes={selectedTypes}
-          onTypeToggle={onTypeToggle}
-        />
+        <TypeSelector selectedTypes={selectedTypes} onTypeToggle={onTypeToggle} />
       </div>
 
       <div className="flex-1 flex justify-end">
@@ -40,7 +37,7 @@ export const VaultsFilterBar: React.FC<VaultsFilterBarProps> = ({
           type="text"
           placeholder="Search vaults or tokens"
           value={searchTerm}
-          onChange={e => onSearchChange(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="w-full max-w-[20rem] border border-gray-300 rounded px-3 h-10 text-sm"
         />
       </div>

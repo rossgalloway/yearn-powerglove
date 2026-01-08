@@ -1,15 +1,8 @@
-import {
-  Bar,
-  CartesianGrid,
-  ComposedChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
-import { ChartDataPoint } from '@/types/dataTypes'
 import React, { useMemo } from 'react'
+import { Bar, CartesianGrid, ComposedChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { getTimeframeLimit } from '@/components/charts/chart-utils'
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import type { ChartDataPoint } from '@/types/dataTypes'
 
 interface TVLChartProps {
   chartData: ChartDataPoint[]
@@ -29,17 +22,14 @@ export const TVLChart: React.FC<TVLChartProps> = React.memo(
     chartData,
     timeframe,
     hideAxes,
-    hideTooltip,
+    hideTooltip
   }) => {
-    const filteredData = useMemo(
-      () => chartData.slice(-getTimeframeLimit(timeframe)),
-      [chartData, timeframe]
-    )
+    const filteredData = useMemo(() => chartData.slice(-getTimeframeLimit(timeframe)), [chartData, timeframe])
 
     return (
       <ChartContainer
         config={{
-          value: { label: 'TVL (millions)', color: 'var(--chart-1)' },
+          value: { label: 'TVL (millions)', color: 'var(--chart-1)' }
         }}
         style={{ height: 'inherit' }}
       >
@@ -50,7 +40,7 @@ export const TVLChart: React.FC<TVLChartProps> = React.memo(
               top: 20,
               right: 30,
               left: 10, // Increased left margin for Y-axis label
-              bottom: 20,
+              bottom: 20
             }}
           >
             <CartesianGrid vertical={false} />
@@ -60,19 +50,15 @@ export const TVLChart: React.FC<TVLChartProps> = React.memo(
                 hideAxes
                   ? false
                   : {
-                      fill: 'hsl(var(--muted-foreground))',
+                      fill: 'hsl(var(--muted-foreground))'
                     }
               } // Hide ticks when hideAxes is true
-              axisLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide axis line
-              tickLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide tick lines
+              axisLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }} // Hide axis line
+              tickLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }} // Hide tick lines
             />
             <YAxis
               domain={[0, 'auto']}
-              tickFormatter={value => `$${(value / 1_000_000).toFixed(1)}M`}
+              tickFormatter={(value) => `$${(value / 1_000_000).toFixed(1)}M`}
               label={
                 hideAxes
                   ? undefined
@@ -83,23 +69,19 @@ export const TVLChart: React.FC<TVLChartProps> = React.memo(
                       offset: 10,
                       style: {
                         textAnchor: 'middle',
-                        fill: 'hsl(var(--muted-foreground))', // Added fill color
-                      },
+                        fill: 'hsl(var(--muted-foreground))' // Added fill color
+                      }
                     }
               } // Hide label when hideAxes is true
               tick={
                 hideAxes
                   ? false
                   : {
-                      fill: 'hsl(var(--muted-foreground))',
+                      fill: 'hsl(var(--muted-foreground))'
                     }
               } // Hide ticks when hideAxes is true
-              axisLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide axis line
-              tickLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              } // Hide tick lines
+              axisLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }} // Hide axis line
+              tickLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }} // Hide tick lines
             />
             {!hideTooltip && <ChartTooltip formatter={formatTooltipValue} />}
             <Bar

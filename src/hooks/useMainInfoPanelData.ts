@@ -1,17 +1,17 @@
 import { useMemo } from 'react'
-import { VaultExtended } from '@/types/vaultTypes'
-import { TokenAsset } from '@/types/tokenAsset'
-import { MainInfoPanelProps } from '@/types/dataTypes'
+import { formatPercentFromDecimal } from '@/lib/formatters'
+import type { MainInfoPanelProps } from '@/types/dataTypes'
+import type { TokenAsset } from '@/types/tokenAsset'
+import type { VaultExtended } from '@/types/vaultTypes'
 import {
-  isLegacyVaultType,
   formatVaultDate,
-  resolveTokenIcon,
-  formatVaultTVL,
   formatVaultMetrics,
+  formatVaultTVL,
   generateVaultLinks,
   getVaultNetworkInfo,
+  isLegacyVaultType,
+  resolveTokenIcon
 } from '@/utils/vaultDataUtils'
-import { formatPercentFromDecimal } from '@/lib/formatters'
 
 interface UseMainInfoPanelDataProps {
   vaultDetails: VaultExtended | null
@@ -24,7 +24,7 @@ interface UseMainInfoPanelDataProps {
  */
 export function useMainInfoPanelData({
   vaultDetails,
-  tokenAssets,
+  tokenAssets
 }: UseMainInfoPanelDataProps): MainInfoPanelProps | null {
   return useMemo(() => {
     if (!vaultDetails) return null
@@ -38,12 +38,8 @@ export function useMainInfoPanelData({
 
     // Token icon resolution
     const vaultToken = {
-      icon: resolveTokenIcon(
-        vaultDetails.asset.address,
-        vaultDetails.asset.symbol,
-        tokenAssets
-      ),
-      name: vaultDetails.asset.symbol,
+      icon: resolveTokenIcon(vaultDetails.asset.address, vaultDetails.asset.symbol, tokenAssets),
+      name: vaultDetails.asset.symbol
     }
 
     // Currency formatting
@@ -54,15 +50,9 @@ export function useMainInfoPanelData({
 
     // APY formatting
     const isLegacyVault = isLegacyVaultType(vaultDetails)
-    const forwardApyNet = isLegacyVault
-      ? null
-      : vaultDetails?.forwardApyNet ?? vaultDetails?.apy?.net ?? null
-    const oneDayAPY = isLegacyVault
-      ? ' - '
-      : formatPercentFromDecimal(forwardApyNet)
-    const thirtyDayAPY = formatPercentFromDecimal(
-      vaultDetails?.apy?.monthlyNet ?? vaultDetails?.apy?.inceptionNet
-    )
+    const forwardApyNet = isLegacyVault ? null : (vaultDetails?.forwardApyNet ?? vaultDetails?.apy?.net ?? null)
+    const oneDayAPY = isLegacyVault ? ' - ' : formatPercentFromDecimal(forwardApyNet)
+    const thirtyDayAPY = formatPercentFromDecimal(vaultDetails?.apy?.monthlyNet ?? vaultDetails?.apy?.inceptionNet)
 
     // Fee formatting
     const { managementFee, performanceFee } = formatVaultMetrics(vaultDetails)
@@ -70,9 +60,7 @@ export function useMainInfoPanelData({
     // Version and link generation
     const apiVersion = vaultDetails?.apiVersion || 'N/A'
 
-    const { blockExplorerLink, yearnVaultLink } = generateVaultLinks(
-      vaultDetails
-    )
+    const { blockExplorerLink, yearnVaultLink } = generateVaultLinks(vaultDetails)
 
     return {
       vaultId: vaultDetails.symbol,
@@ -89,7 +77,7 @@ export function useMainInfoPanelData({
       apiVersion,
       vaultAddress: vaultDetails.address,
       blockExplorerLink,
-      yearnVaultLink,
+      yearnVaultLink
     }
   }, [vaultDetails, tokenAssets])
 }

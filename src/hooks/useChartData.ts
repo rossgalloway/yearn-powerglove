@@ -1,17 +1,12 @@
 import { useMemo } from 'react'
 import {
-  TimeseriesDataPoint,
-  tvlChartData,
-  ppsChartData,
-  aprApyChartData,
-} from '@/types/dataTypes'
-import {
-  fillMissingDailyData,
-  formatUnixTimestamp,
-  getEarliestAndLatestTimestamps,
   calculateAprFromPps,
   calculateApyFromApr,
+  fillMissingDailyData,
+  formatUnixTimestamp,
+  getEarliestAndLatestTimestamps
 } from '@/lib/utils'
+import type { aprApyChartData, ppsChartData, TimeseriesDataPoint, tvlChartData } from '@/types/dataTypes'
 
 interface TimeseriesQueryResult {
   timeseries: TimeseriesDataPoint[]
@@ -19,24 +14,20 @@ interface TimeseriesQueryResult {
 
 /**
  * Calculates the average of the last N values in a timeseries, ending at a specific index.
- * 
+ *
  * Computes a rolling average by looking back `windowSize` positions from `endIndexInclusive`.
  * Null and undefined values are excluded from the calculation - only numeric values contribute
  * to both the sum and count.
- * 
+ *
  * @param series - Array of nullable numbers representing a timeseries
  * @param endIndexInclusive - The index to end the averaging window at (inclusive)
  * @param windowSize - Number of values to include in the average (looking backward)
  * @returns The average of non-null values in the window, or null if no valid values exist
- * 
+ *
  * @example
  * averageLast([1, 2, null, 4, 5], 4, 3) // returns 4.5 (avg of [null, 4, 5])
  */
-const averageLast = (
-  series: Array<number | null>,
-  endIndexInclusive: number,
-  windowSize: number
-): number | null => {
+const averageLast = (series: Array<number | null>, endIndexInclusive: number, windowSize: number): number | null => {
   const start = Math.max(0, endIndexInclusive - windowSize + 1)
   let sum = 0
   let count = 0
@@ -60,13 +51,13 @@ const averageLast = (
  *
  * @param apr - The annual percentage rate as a decimal (e.g., 0.05 for 5%)
  * @returns The annual percentage yield as a decimal after weekly compounding
- * 
+ *
  * @example
  * convertAprToApy(0.05) // returns ~0.0512 (5% APR becomes ~5.12% APY)
  */
 const convertAprToApy = (apr: number): number => {
   const periodsPerYear = 52 // weekly compounding: 52 weeks per year
-  return Math.pow(1 + apr / periodsPerYear, periodsPerYear) - 1
+  return (1 + apr / periodsPerYear) ** periodsPerYear - 1
 }
 
 interface UseChartDataProps {
@@ -96,22 +87,15 @@ export function useChartData({
   tvlData,
   ppsData,
   isLoading,
-  hasErrors,
+  hasErrors
 }: UseChartDataProps): UseChartDataReturn {
   return useMemo(() => {
     // Only process data if all queries are complete and successful
-    if (
-      isLoading ||
-      hasErrors ||
-      !apyWeeklyData ||
-      !apyMonthlyData ||
-      !tvlData ||
-      !ppsData
-    ) {
+    if (isLoading || hasErrors || !apyWeeklyData || !apyMonthlyData || !tvlData || !ppsData) {
       return {
         transformedAprApyData: null,
         transformedTvlData: null,
-        transformedPpsData: null,
+        transformedPpsData: null
       }
     }
 
@@ -135,90 +119,51 @@ export function useChartData({
       return {
         transformedAprApyData: [],
         transformedTvlData: [],
-        transformedPpsData: [],
+        transformedPpsData: []
       }
     }
 
     // Fill missing data points
-    const apy7DayFilled = fillMissingDailyData(
-      apy7DayDataClean,
-      earliest,
-      latest
-    )
-    const apy30DayFilled = fillMissingDailyData(
-      apy30DayDataClean,
-      earliest,
-      latest
-    )
+    const apy7DayFilled = fillMissingDailyData(apy7DayDataClean, earliest, latest)
+    const apy30DayFilled = fillMissingDailyData(apy30DayDataClean, earliest, latest)
     const tvlFilled = fillMissingDailyData(tvlDataClean, earliest, latest)
     const ppsFilled = fillMissingDailyData(ppsDataClean, earliest, latest)
-    const oracleAprFilled = fillMissingDailyData(
-      oracleAprDataClean,
-      earliest,
-      latest
-    )
+    const oracleAprFilled = fillMissingDailyData(oracleAprDataClean, earliest, latest)
 
     // Calculate APR from PPS data
     const aprFilled = calculateAprFromPps(ppsFilled)
     const aprAsApyFilled = calculateApyFromApr(aprFilled)
 
-    const oracleAprValues = oracleAprFilled.map(point => point.value ?? null)
-    const oracleApr30dAvgValues = oracleAprValues.map((_, index) =>
-      averageLast(oracleAprValues, index, 30)
-    )
+    const oracleAprValues = oracleAprFilled.map((point) => point.value ?? null)
+    const oracleApr30dAvgValues = oracleAprValues.map((_, index) => averageLast(oracleAprValues, index, 30))
 
     // Transform TVL data
-    const transformedTvlData: tvlChartData = tvlFilled.map(dataPoint => ({
+    const transformedTvlData: tvlChartData = tvlFilled.map((dataPoint) => ({
       date: formatUnixTimestamp(dataPoint.time),
-      TVL: dataPoint.value ?? null,
+      TVL: dataPoint.value ?? null
     }))
 
     // Transform PPS data
-    const transformedPpsData: ppsChartData = ppsFilled.map(dataPoint => ({
+    const transformedPpsData: ppsChartData = ppsFilled.map((dataPoint) => ({
       date: formatUnixTimestamp(dataPoint.time),
-      PPS: dataPoint.value ?? null,
+      PPS: dataPoint.value ?? null
     }))
 
-    const transformedAprApyData: aprApyChartData = aprFilled.map(
-      (aprDataPoint, index) => ({
-        date: formatUnixTimestamp(aprDataPoint.time),
-        sevenDayApy:
-          apy7DayFilled[index]?.value !== null
-            ? apy7DayFilled[index]!.value! * 100
-            : null,
-        thirtyDayApy:
-          apy30DayFilled[index]?.value !== null
-            ? apy30DayFilled[index]!.value! * 100
-            : null,
-        derivedApr:
-          aprDataPoint.value !== null ? aprDataPoint.value * 100 : null,
-        derivedApy:
-          aprAsApyFilled[index]?.value !== null
-            ? aprAsApyFilled[index]!.value! * 100
-            : null,
-        oracleApr:
-          oracleAprFilled[index]?.value !== null
-            ? oracleAprFilled[index]!.value! * 100
-            : null,
-        oracleApy30dAvg:
-          oracleApr30dAvgValues[index] !== null
-            ? convertAprToApy(oracleApr30dAvgValues[index]!) * 100
-            : null,
-      })
-    )
+    const transformedAprApyData: aprApyChartData = aprFilled.map((aprDataPoint, index) => ({
+      date: formatUnixTimestamp(aprDataPoint.time),
+      sevenDayApy: apy7DayFilled[index]?.value !== null ? apy7DayFilled[index]!.value! * 100 : null,
+      thirtyDayApy: apy30DayFilled[index]?.value !== null ? apy30DayFilled[index]!.value! * 100 : null,
+      derivedApr: aprDataPoint.value !== null ? aprDataPoint.value * 100 : null,
+      derivedApy: aprAsApyFilled[index]?.value !== null ? aprAsApyFilled[index]!.value! * 100 : null,
+      oracleApr: oracleAprFilled[index]?.value !== null ? oracleAprFilled[index]!.value! * 100 : null,
+      oracleApy30dAvg:
+        oracleApr30dAvgValues[index] !== null ? convertAprToApy(oracleApr30dAvgValues[index]!) * 100 : null
+    }))
 
     return {
       transformedAprApyData,
       transformedTvlData,
-      transformedPpsData,
+      transformedPpsData
     }
-  }, [
-    apyWeeklyData,
-    apyMonthlyData,
-    aprOracleAprData,
-    tvlData,
-    ppsData,
-    isLoading,
-    hasErrors,
-  ])
+  }, [apyWeeklyData, apyMonthlyData, aprOracleAprData, tvlData, ppsData, isLoading, hasErrors])
 }

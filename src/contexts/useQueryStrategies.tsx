@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import { type VaultStrategiesQuery } from '@/graphql/queries/strategies'
+import type { VaultStrategiesQuery } from '@/graphql/queries/strategies'
 
 interface VaultsContextProps {
   strategies: VaultStrategiesQuery[]
@@ -11,7 +11,7 @@ interface VaultsContextProps {
 export const StrategiesContext = createContext<VaultsContextProps>({
   strategies: [],
   loading: false,
-  error: null,
+  error: null
 })
 
 export const useQueryStrategies = () => useContext(StrategiesContext)

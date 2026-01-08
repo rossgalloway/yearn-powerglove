@@ -1,5 +1,4 @@
-import { Address } from 'viem'
-import { ChainId } from '@/constants/chains'
+import type { Address } from 'viem'
 
 export const aprOracleAbi = [
   {
@@ -7,71 +6,69 @@ export const aprOracleAbi = [
     inputs: [{ name: '_vault', internalType: 'address', type: 'address' }],
     name: 'getCurrentApr',
     outputs: [{ name: 'apr', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
+    stateMutability: 'view'
   },
   {
     type: 'function',
     inputs: [
       { name: '_vault', internalType: 'address', type: 'address' },
-      { name: '_delta', internalType: 'int256', type: 'int256' },
+      { name: '_delta', internalType: 'int256', type: 'int256' }
     ],
     name: 'getExpectedApr',
     outputs: [{ name: 'apr', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
+    stateMutability: 'view'
   },
   {
     type: 'function',
     inputs: [
       { name: '_strategy', internalType: 'address', type: 'address' },
-      { name: '_debtChange', internalType: 'int256', type: 'int256' },
+      { name: '_debtChange', internalType: 'int256', type: 'int256' }
     ],
     name: 'getStrategyApr',
     outputs: [{ name: 'apr', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
+    stateMutability: 'view'
   },
   {
     type: 'function',
     inputs: [
       { name: '_vault', internalType: 'address', type: 'address' },
-      { name: '_delta', internalType: 'int256', type: 'int256' },
+      { name: '_delta', internalType: 'int256', type: 'int256' }
     ],
     name: 'getWeightedAverageApr',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
+    stateMutability: 'view'
   },
   {
     type: 'function',
     inputs: [],
     name: 'governance',
     outputs: [{ name: '', internalType: 'address', type: 'address' }],
-    stateMutability: 'view',
+    stateMutability: 'view'
   },
   {
     type: 'function',
     inputs: [{ name: '', internalType: 'address', type: 'address' }],
     name: 'oracles',
     outputs: [{ name: '', internalType: 'address', type: 'address' }],
-    stateMutability: 'view',
+    stateMutability: 'view'
   },
   {
     type: 'function',
     inputs: [
       { name: '_strategy', internalType: 'address', type: 'address' },
-      { name: '_oracle', internalType: 'address', type: 'address' },
+      { name: '_oracle', internalType: 'address', type: 'address' }
     ],
     name: 'setOracle',
     outputs: [],
-    stateMutability: 'nonpayable',
+    stateMutability: 'nonpayable'
   },
   {
     type: 'function',
-    inputs: [
-      { name: '_newGovernance', internalType: 'address', type: 'address' },
-    ],
+    inputs: [{ name: '_newGovernance', internalType: 'address', type: 'address' }],
     name: 'transferGovernance',
     outputs: [],
-    stateMutability: 'nonpayable',
-  },
+    stateMutability: 'nonpayable'
+  }
 ] as const
 
 export const aprOracleAddress = {
@@ -79,11 +76,12 @@ export const aprOracleAddress = {
   10: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   100: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   137: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
+  146: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   250: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   8453: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
   42161: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
-  747474: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address,
-} as const satisfies Partial<Record<ChainId, Address>>
+  747474: '0x1981AD9F44F2EA9aDd2dC4AD7D075c102C70aF92' as Address
+} as const
 
 export type SupportedAprOracleChainId = keyof typeof aprOracleAddress
 

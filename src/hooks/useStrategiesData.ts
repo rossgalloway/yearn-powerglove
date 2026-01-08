@@ -1,22 +1,15 @@
-import { useMemo } from 'react'
-import { useQuery as useApolloQuery, ApolloError } from '@apollo/client'
+import { type ApolloError, useQuery as useApolloQuery } from '@apollo/client'
 import { useQuery as useReactQuery } from '@tanstack/react-query'
-import { Address } from 'viem'
-import {
-  GET_STRATEGY_DETAILS,
-  StrategyDetailsQuery,
-} from '@/graphql/queries/strategies'
-import { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
-import { Strategy } from '@/types/dataTypes'
+import { useMemo } from 'react'
+import type { Address } from 'viem'
 import { useQueryStrategies } from '@/contexts/useQueryStrategies'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
-import { ChainId } from '../constants/chains'
+import { GET_STRATEGY_DETAILS, type StrategyDetailsQuery } from '@/graphql/queries/strategies'
+import { fetchStrategyAprs, type StrategyAprMap, type StrategyAprRequest } from '@/lib/apr-oracle'
+import type { Strategy } from '@/types/dataTypes'
+import type { EnrichedVaultDebt, VaultDebt, VaultExtended } from '@/types/vaultTypes'
 import { isLegacyVaultType } from '@/utils/vaultDataUtils'
-import {
-  fetchStrategyAprs,
-  StrategyAprRequest,
-  StrategyAprMap,
-} from '@/lib/apr-oracle'
+import type { ChainId } from '../constants/chains'
 
 export interface StrategiesData {
   strategies: Strategy[]
@@ -50,27 +43,24 @@ export interface StrategiesData {
 
 export function useStrategiesData(
   vaultChainId: ChainId,
-  vaultAddress: string,
+  _vaultAddress: string,
   vaultDetails: VaultExtended
 ): StrategiesData {
   const { assets: tokenAssets } = useTokenAssetsContext()
   const allStrategies = useQueryStrategies()
 
-  const vaultStrategyAddresses = Array.isArray(vaultDetails?.strategies)
-    ? vaultDetails.strategies
-    : []
-  const shouldFetch = vaultStrategyAddresses.length > 0
-  const strategyForwardAprs =
-    vaultDetails?.strategyForwardAprs ?? ({} as Record<string, number | null>)
+  const vaultStrategyAddresses = vaultDetails.strategies
+  const shouldFetch = vaultStrategyAddresses != null
+  const strategyForwardAprs = vaultDetails?.strategyForwardAprs ?? ({} as Record<string, number | null>)
 
   // Fetch strategy details for V3 vaults
   const {
     data: strategyData,
     loading,
-    error,
+    error
   } = useApolloQuery<{ vaults: StrategyDetailsQuery[] }>(GET_STRATEGY_DETAILS, {
     variables: { addresses: vaultStrategyAddresses },
-    skip: !shouldFetch,
+    skip: !shouldFetch
   })
 
   const v3StrategyData = shouldFetch ? strategyData?.vaults : undefined
@@ -81,13 +71,9 @@ export function useStrategiesData(
       ? (vaultDetails.debts as VaultDebt[])
       : []
 
-    return selectedVaultDebts.map(debt => {
-      const v3Strategy = v3StrategyData?.find(
-        strategy => strategy.address === debt.strategy
-      )
-      const v2Strategy = allStrategies.strategies.find(
-        strategy => strategy.address === debt.strategy
-      )
+    return selectedVaultDebts.map((debt) => {
+      const v3Strategy = v3StrategyData?.find((strategy) => strategy.address === debt.strategy)
+      const v2Strategy = allStrategies.strategies.find((strategy) => strategy.address === debt.strategy)
 
       return {
         strategy: debt.strategy,
@@ -98,7 +84,7 @@ export function useStrategiesData(
           maxDebt: debt.maxDebt,
           maxDebtUsd: debt.maxDebtUsd,
           targetDebtRatio: debt.targetDebtRatio,
-          maxDebtRatio: debt.maxDebtRatio,
+          maxDebtRatio: debt.maxDebtRatio
         },
         v2Debt: {
           debtRatio: debt.debtRatio,
@@ -107,35 +93,19 @@ export function useStrategiesData(
           totalGain: debt.totalGain,
           totalGainUsd: debt.totalGainUsd,
           totalLoss: debt.totalLoss,
-          totalLossUsd: debt.totalLossUsd,
+          totalLossUsd: debt.totalLossUsd
         },
         address: debt.strategy,
         name: vaultDetails.v3 ? v3Strategy?.name || '' : v2Strategy?.name || '',
-        erc4626: vaultDetails.v3
-          ? v3Strategy?.erc4626 || false
-          : v2Strategy?.erc4626 || false,
-        yearn: vaultDetails.v3
-          ? v3Strategy?.yearn || false
-          : v2Strategy?.yearn || false,
+        erc4626: vaultDetails.v3 ? v3Strategy?.erc4626 || false : v2Strategy?.erc4626 || false,
+        yearn: vaultDetails.v3 ? v3Strategy?.yearn || false : v2Strategy?.yearn || false,
         v3: vaultDetails.v3 || false,
-        managementFee: vaultDetails.v3
-          ? v3Strategy?.fees?.managementFee || 0
-          : 0,
-        performanceFee: vaultDetails.v3
-          ? v3Strategy?.fees?.performanceFee || 0
-          : v2Strategy?.performanceFee || 0,
-        grossApr: vaultDetails.v3
-          ? v3Strategy?.apy?.grossApr
-          : v2Strategy?.lastReportDetail?.apr.gross,
-        netApy: vaultDetails.v3
-          ? v3Strategy?.apy?.net
-          : v2Strategy?.lastReportDetail?.apr.net,
-        inceptionNetApy: vaultDetails.v3
-          ? (v3Strategy?.apy?.inceptionNet ?? undefined)
-          : undefined,
-        assetSymbol: vaultDetails.v3
-          ? v3Strategy?.asset?.symbol
-          : vaultDetails?.asset.symbol,
+        managementFee: vaultDetails.v3 ? v3Strategy?.fees?.managementFee || 0 : 0,
+        performanceFee: vaultDetails.v3 ? v3Strategy?.fees?.performanceFee || 0 : v2Strategy?.performanceFee || 0,
+        grossApr: vaultDetails.v3 ? v3Strategy?.apy?.grossApr : v2Strategy?.lastReportDetail?.apr.gross,
+        netApy: vaultDetails.v3 ? v3Strategy?.apy?.net : v2Strategy?.lastReportDetail?.apr.net,
+        inceptionNetApy: vaultDetails.v3 ? (v3Strategy?.apy?.inceptionNet ?? undefined) : undefined,
+        assetSymbol: vaultDetails.v3 ? v3Strategy?.asset?.symbol : vaultDetails?.asset.symbol
       }
     })
   }, [vaultDetails, v3StrategyData, allStrategies.strategies, vaultChainId])
@@ -145,15 +115,15 @@ export function useStrategiesData(
       return []
     }
     return enrichedVaultDebts
-      .filter(debt => !!debt.address)
-      .filter(debt => {
+      .filter((debt) => !!debt.address)
+      .filter((debt) => {
         const key = debt.address?.toLowerCase() || ''
         const value = strategyForwardAprs[key]
         return value === undefined || value === null || value === 0
       })
-      .map(debt => ({
+      .map((debt) => ({
         address: debt.address as Address,
-        chainId: (debt.chainId ?? vaultChainId) as ChainId,
+        chainId: (debt.chainId ?? vaultChainId) as ChainId
       }))
   }, [enrichedVaultDebts, vaultDetails?.v3, vaultChainId, strategyForwardAprs])
 
@@ -162,7 +132,7 @@ export function useStrategiesData(
       return ''
     }
     return strategyAprRequests
-      .map(request => `${request.chainId}:${request.address.toLowerCase()}`)
+      .map((request) => `${request.chainId}:${request.address.toLowerCase()}`)
       .sort()
       .join('|')
   }, [strategyAprRequests])
@@ -171,7 +141,7 @@ export function useStrategiesData(
     queryKey: ['strategy-apr-oracle', strategyAprKey],
     queryFn: () => fetchStrategyAprs(strategyAprRequests),
     staleTime: 60_000,
-    enabled: Boolean(vaultDetails?.v3 && strategyAprRequests.length > 0),
+    enabled: Boolean(vaultDetails?.v3 && strategyAprRequests.length > 0)
   })
 
   // Sort enriched debts by allocation
@@ -229,22 +199,18 @@ export function useStrategiesData(
           ? debt.v3Debt.currentDebtUsd
             ? debt.v3Debt.currentDebtUsd.toLocaleString('en-US', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'USD'
               })
             : '$0.00'
           : debt.v2Debt.totalDebtUsd
             ? debt.v2Debt.totalDebtUsd.toLocaleString('en-US', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'USD'
               })
             : '$0.00',
-        estimatedAPY: isLegacyVault
-          ? ' - '
-          : `${(estimatedAprValue * 100).toFixed(2)}%`,
+        estimatedAPY: isLegacyVault ? ' - ' : `${(estimatedAprValue * 100).toFixed(2)}%`,
         tokenSymbol: debt.assetSymbol || '',
-        tokenIconUri:
-          tokenAssets.find(token => token.symbol === debt.assetSymbol)
-            ?.logoURI || '',
+        tokenIconUri: tokenAssets.find((token) => token.symbol === debt.assetSymbol)?.logoURI || '',
         estimatedApySource: isLegacyVault ? 'graph' : estimatedApySource,
         details: {
           chainId: vaultChainId,
@@ -252,8 +218,8 @@ export function useStrategiesData(
           managementFee: debt.managementFee || 0,
           performanceFee: debt.performanceFee || 0,
           isVault: debt.v3 || false,
-          isEndorsed: debt.yearn || false,
-        },
+          isEndorsed: debt.yearn || false
+        }
       }
     })
   }, [
@@ -263,13 +229,14 @@ export function useStrategiesData(
     vaultChainId,
     tokenAssets,
     strategyForwardAprs,
+    isLegacyVault
   ])
 
   const oracleAwareStrategies = useMemo((): Strategy[] => {
     if (!vaultDetails?.v3 || isLegacyVault || !strategyAprMap) {
       return strategies
     }
-    return strategies.map(strategy => {
+    return strategies.map((strategy) => {
       const key = strategy.details.vaultAddress?.toLowerCase()
       if (!key) {
         return strategy
@@ -277,9 +244,7 @@ export function useStrategiesData(
       const oracleEntry = strategyAprMap[key]
       if (
         strategy.estimatedApySource === 'ydaemon' ||
-        (strategy.estimatedAPY &&
-          parseFloat(strategy.estimatedAPY) > 0 &&
-          strategy.estimatedApySource === 'graph')
+        (strategy.estimatedAPY && parseFloat(strategy.estimatedAPY) > 0 && strategy.estimatedApySource === 'graph')
       ) {
         return strategy
       }
@@ -289,24 +254,23 @@ export function useStrategiesData(
       return {
         ...strategy,
         estimatedAPY: oracleEntry.formatted,
-        estimatedApySource: 'oracle' as const,
+        estimatedApySource: 'oracle' as const
       }
     })
-  }, [strategies, strategyAprMap, vaultDetails?.v3])
+  }, [strategies, strategyAprMap, vaultDetails?.v3, isLegacyVault])
 
   // Filter strategies with positive allocation for charts
   const chartStrategies = useMemo(() => {
     return oracleAwareStrategies
-      .filter(s => s.allocationPercent > 0)
+      .filter((s) => s.allocationPercent > 0)
       .sort((a, b) => b.allocationPercent - a.allocationPercent)
   }, [oracleAwareStrategies])
 
   // Calculate APY contributions
   const apyContributions = useMemo(() => {
-    const parseAPY = (apy: string) =>
-      Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
+    const parseAPY = (apy: string) => Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
 
-    return chartStrategies.map(strategy => {
+    return chartStrategies.map((strategy) => {
       const apyValue = parseAPY(strategy.estimatedAPY)
       const contribution = (apyValue * strategy.allocationPercent) / 100
       return {
@@ -315,7 +279,7 @@ export function useStrategiesData(
         apyValue,
         allocationPercent: strategy.allocationPercent,
         contribution,
-        formattedContribution: contribution.toFixed(2),
+        formattedContribution: contribution.toFixed(2)
       }
     })
   }, [chartStrategies])
@@ -327,22 +291,22 @@ export function useStrategiesData(
 
   // Prepare chart data
   const allocationChartData = useMemo(() => {
-    return chartStrategies.map(strategy => ({
+    return chartStrategies.map((strategy) => ({
       id: strategy.id,
       name: strategy.name,
       value: strategy.allocationPercent,
-      amount: strategy.allocationAmount,
+      amount: strategy.allocationAmount
     }))
   }, [chartStrategies])
 
   const apyContributionChartData = useMemo(() => {
-    return apyContributions.map(item => ({
+    return apyContributions.map((item) => ({
       id: item.id,
       name: item.name,
       value: item.contribution,
       formattedValue: item.formattedContribution,
       apyValue: item.apyValue,
-      allocationPercent: item.allocationPercent,
+      allocationPercent: item.allocationPercent
     }))
   }, [apyContributions])
 
@@ -354,6 +318,6 @@ export function useStrategiesData(
     allocationChartData,
     apyContributionChartData,
     isLoading: loading,
-    error,
+    error
   }
 }

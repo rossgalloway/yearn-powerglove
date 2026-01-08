@@ -4,25 +4,15 @@ export interface SortableItem {
   [key: string]: string | number
 }
 
-export function sortByString<T extends SortableItem>(
-  items: T[],
-  key: keyof T,
-  direction: SortDirection
-): T[] {
+export function sortByString<T extends SortableItem>(items: T[], key: keyof T, direction: SortDirection): T[] {
   return [...items].sort((a, b) => {
     const aVal = String(a[key])
     const bVal = String(b[key])
-    return direction === 'asc'
-      ? aVal.localeCompare(bVal)
-      : bVal.localeCompare(aVal)
+    return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
   })
 }
 
-export function sortByNumber<T extends SortableItem>(
-  items: T[],
-  key: keyof T,
-  direction: SortDirection
-): T[] {
+export function sortByNumber<T extends SortableItem>(items: T[], key: keyof T, direction: SortDirection): T[] {
   return [...items].sort((a, b) => {
     const aVal = Number(a[key])
     const bVal = Number(b[key])

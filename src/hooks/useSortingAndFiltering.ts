@@ -1,12 +1,8 @@
-import { useState, useMemo } from 'react'
-import { Strategy } from '@/types/dataTypes'
-import { SortDirection } from '@/utils/sortingUtils'
+import { useMemo, useState } from 'react'
+import type { Strategy } from '@/types/dataTypes'
+import type { SortDirection } from '@/utils/sortingUtils'
 
-export type StrategySortColumn =
-  | 'name'
-  | 'allocationPercent'
-  | 'allocationAmount'
-  | 'estimatedAPY'
+export type StrategySortColumn = 'name' | 'allocationPercent' | 'allocationAmount' | 'estimatedAPY'
 
 export interface SortingAndFilteringState {
   sortColumn: StrategySortColumn
@@ -31,11 +27,8 @@ function parseFormattedPercentage(percentage: string): number {
   return Number.parseFloat(percentage.replace(/[^0-9.]/g, ''))
 }
 
-export function useSortingAndFiltering(
-  strategies: Strategy[]
-): SortingAndFilteringState {
-  const [sortColumn, setSortColumn] =
-    useState<StrategySortColumn>('allocationPercent')
+export function useSortingAndFiltering(strategies: Strategy[]): SortingAndFilteringState {
+  const [sortColumn, setSortColumn] = useState<StrategySortColumn>('allocationPercent')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const handleSort = (column: StrategySortColumn) => {
@@ -51,9 +44,7 @@ export function useSortingAndFiltering(
     return [...strategies].sort((a, b) => {
       switch (sortColumn) {
         case 'name':
-          return sortDirection === 'asc'
-            ? a.name.localeCompare(b.name)
-            : b.name.localeCompare(a.name)
+          return sortDirection === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
         case 'allocationPercent':
           return sortDirection === 'asc'
             ? a.allocationPercent - b.allocationPercent
@@ -75,11 +66,11 @@ export function useSortingAndFiltering(
   }, [strategies, sortColumn, sortDirection])
 
   const allocatedStrategies = useMemo(() => {
-    return sortedStrategies.filter(strategy => strategy.allocationPercent > 0)
+    return sortedStrategies.filter((strategy) => strategy.allocationPercent > 0)
   }, [sortedStrategies])
 
   const unallocatedStrategies = useMemo(() => {
-    return sortedStrategies.filter(strategy => strategy.allocationPercent === 0)
+    return sortedStrategies.filter((strategy) => strategy.allocationPercent === 0)
   }, [sortedStrategies])
 
   return {
@@ -90,6 +81,6 @@ export function useSortingAndFiltering(
     handleSort,
     sortedStrategies,
     allocatedStrategies,
-    unallocatedStrategies,
+    unallocatedStrategies
   }
 }

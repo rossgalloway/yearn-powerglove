@@ -1,5 +1,5 @@
 // src/lib/timeseries-api.ts
-import { TimeseriesDataPoint } from '@/types/dataTypes'
+import type { TimeseriesDataPoint } from '@/types/dataTypes'
 
 const API_BASE = `${import.meta.env.VITE_PUBLIC_REST_URL}/timeseries`
 
@@ -22,7 +22,9 @@ export async function fetchTimeseries(
   const url = new URL(`${API_BASE}/${segment}/${chainId}/${address}`)
 
   if (components?.length) {
-    components.forEach(c => url.searchParams.append('components', c))
+    components.forEach((component) => {
+      url.searchParams.append('components', component)
+    })
   }
 
   const response = await fetch(url.toString())
@@ -37,14 +39,14 @@ export async function fetchTimeseries(
   const data: RestTimeseriesPoint[] = await response.json()
 
   // Transform to match TimeseriesDataPoint shape
-  return data.map(point => {
+  return data.map((point) => {
     const numericValue = typeof point.value === 'string' ? Number(point.value) : point.value
     return {
       time: String(point.time),
       value: Number.isNaN(numericValue) ? null : numericValue,
       component: point.component,
       label: segment,
-      period: '1 day',
+      period: '1 day'
     }
   })
 }

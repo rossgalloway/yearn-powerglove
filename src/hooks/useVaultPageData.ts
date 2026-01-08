@@ -1,19 +1,18 @@
-import { useQuery, ApolloError } from '@apollo/client'
-import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
-import { VaultExtended } from '@/types/vaultTypes'
-import { TimeseriesDataPoint } from '@/types/dataTypes'
+import { type ApolloError, useQuery } from '@apollo/client'
 import { useMemo } from 'react'
-import { ChainId } from '@/constants/chains'
-import { useYDaemonVault } from '@/hooks/useYDaemonVaults'
+import type { ChainId } from '@/constants/chains'
+import type { VaultOverrideConfig } from '@/constants/vaultOverrides'
+import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
 import { useRestTimeseries } from '@/hooks/useRestTimeseries'
+import { useYDaemonVault } from '@/hooks/useYDaemonVaults'
+import type { TimeseriesDataPoint } from '@/types/dataTypes'
+import type { VaultExtended } from '@/types/vaultTypes'
 import {
   applyVaultOverride,
   getVaultBlacklistReason,
   getVaultOverride,
-  isVaultBlacklisted,
+  isVaultBlacklisted
 } from '@/utils/vaultOverrides'
-import { VaultOverrideConfig } from '@/constants/vaultOverrides'
-
 
 interface UseVaultPageDataProps {
   vaultAddress: string
@@ -53,10 +52,7 @@ interface UseVaultPageDataReturn {
  * Coordinates data fetching for the vault page and manages loading states
  * Uses GraphQL for vault details and REST API for timeseries data
  */
-export function useVaultPageData({
-  vaultAddress,
-  vaultChainId,
-}: UseVaultPageDataProps): UseVaultPageDataReturn {
+export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDataProps): UseVaultPageDataReturn {
   const isBlacklisted = isVaultBlacklisted(vaultChainId, vaultAddress)
   const blacklistReason = getVaultBlacklistReason(vaultChainId, vaultAddress)
   const overrideConfig = getVaultOverride(vaultChainId, vaultAddress)
@@ -65,14 +61,11 @@ export function useVaultPageData({
   const {
     data: vaultData,
     loading: vaultLoading,
-    error: vaultError,
+    error: vaultError
   } = useQuery<{ vault: VaultExtended }>(GET_VAULT_DETAILS, {
-    variables: { address: vaultAddress, chainId: vaultChainId },
+    variables: { address: vaultAddress, chainId: vaultChainId }
   })
-  const { data: yDaemonVault, isLoading: yDaemonLoading } = useYDaemonVault(
-    vaultChainId,
-    vaultAddress
-  )
+  const { data: yDaemonVault, isLoading: yDaemonLoading } = useYDaemonVault(vaultChainId, vaultAddress)
 
   const isV3Vault = Boolean(vaultData?.vault?.v3)
 
@@ -80,58 +73,56 @@ export function useVaultPageData({
   const {
     data: apyWeeklyData,
     isLoading: apyWeeklyLoading,
-    error: apyWeeklyError,
+    error: apyWeeklyError
   } = useRestTimeseries({
     segment: 'apy-historical',
     chainId: vaultChainId,
     address: vaultAddress,
-    components: ['weeklyNet'],
+    components: ['weeklyNet']
   })
 
   // Fetch monthly APY data from REST API
   const {
     data: apyMonthlyData,
     isLoading: apyMonthlyLoading,
-    error: apyMonthlyError,
+    error: apyMonthlyError
   } = useRestTimeseries({
     segment: 'apy-historical',
     chainId: vaultChainId,
     address: vaultAddress,
-    components: ['monthlyNet'],
+    components: ['monthlyNet']
   })
 
   // Fetch APR-oracle APR timeseries from REST API (v3 only)
-  const {
-    data: aprOracleAprData,
-  } = useRestTimeseries({
+  const { data: aprOracleAprData } = useRestTimeseries({
     segment: 'apr-oracle',
     chainId: vaultChainId,
     address: vaultAddress,
     components: ['apr'],
-    enabled: isV3Vault,
+    enabled: isV3Vault
   })
 
   // Fetch TVL data from REST API
   const {
     data: tvlData,
     isLoading: tvlLoading,
-    error: tvlError,
+    error: tvlError
   } = useRestTimeseries({
     segment: 'tvl',
     chainId: vaultChainId,
-    address: vaultAddress,
+    address: vaultAddress
   })
 
   // Fetch PPS data from REST API
   const {
     data: ppsData,
     isLoading: ppsLoading,
-    error: ppsError,
+    error: ppsError
   } = useRestTimeseries({
     segment: 'pps',
     chainId: vaultChainId,
     address: vaultAddress,
-    components: ['humanized'],
+    components: ['humanized']
   })
 
   // Extract vault details with null safety
@@ -142,22 +133,21 @@ export function useVaultPageData({
       return applyVaultOverride({
         ...base,
         forwardApyNet: base.forwardApyNet ?? null,
-        strategyForwardAprs: base.strategyForwardAprs ?? {},
+        strategyForwardAprs: base.strategyForwardAprs ?? {}
       })
     }
     const strategyAprs: Record<string, number | null> = {}
-    yDaemonVault.strategies?.forEach(strategy => {
+    yDaemonVault.strategies?.forEach((strategy) => {
       if (!strategy?.address) return
       strategyAprs[strategy.address.toLowerCase()] = strategy.netAPR ?? null
     })
     return applyVaultOverride({
       ...base,
-      forwardApyNet:
-        yDaemonVault.apr?.forwardAPR?.netAPR ?? base.forwardApyNet ?? null,
+      forwardApyNet: yDaemonVault.apr?.forwardAPR?.netAPR ?? base.forwardApyNet ?? null,
       strategyForwardAprs: strategyAprs,
-      kind: base.kind,
+      kind: base.kind
     })
-  }, [vaultData, yDaemonVault, isBlacklisted])
+  }, [vaultData, yDaemonVault])
 
   // Calculate combined loading states
   const chartsLoading = useMemo(() => {
@@ -199,6 +189,6 @@ export function useVaultPageData({
     hasErrors,
     isBlacklisted,
     blacklistReason,
-    overrideConfig,
+    overrideConfig
   }
 }

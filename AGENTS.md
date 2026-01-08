@@ -12,13 +12,13 @@
 - `bun run build` – Type-check via `tsc -b` and create the production bundle.
 - `bun run preview` – Serve the latest build for local smoke tests.
 - `bun run test` / `bun run test:watch` – Execute Vitest suites once or in watch mode.
-- `bun run lint` / `bun run format` – Apply ESLint and Prettier; run both before pushing changes.
+- `bun run lint` / `bun run lint:fix` / `bun run format` – Apply Biome checks and fixes; run before pushing changes.
 
 ## Coding Style & Naming Conventions
 
 - Favor TypeScript-first patterns: reuse interfaces from `src/types/`, avoid `any`, and import with the `@/` alias instead of relative chains.
 - Components are PascalCase, hooks begin with `use`, helpers/utilities stay camelCase, and route filenames mirror their URL segments.
-- Prettier + ESLint enforce 2-space indentation, single quotes, and React hook rules. Tailwind utilities should follow the existing ordering patterns in `src/styles/globals.css`.
+- Biome enforces 2-space indentation, single quotes, and the lint rules defined in `biome.jsonc`. Tailwind utilities should follow the existing ordering patterns in `src/styles/globals.css`.
 
 ## Testing Guidelines
 

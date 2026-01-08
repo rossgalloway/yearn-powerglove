@@ -1,4 +1,5 @@
-import React, { useState, ReactNode } from 'react'
+import type React from 'react'
+import { type ReactNode, useState } from 'react'
 
 interface ExpandableFilterProps {
   /** The collapsed button content (icon + text) */
@@ -15,7 +16,7 @@ export const ExpandableFilter: React.FC<ExpandableFilterProps> = ({
   buttonContent,
   expandedContent,
   className = '',
-  expandOnHover = true,
+  expandOnHover = true
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const isExpanded = expandOnHover && isHovered
@@ -42,9 +43,7 @@ export const ExpandableFilter: React.FC<ExpandableFilterProps> = ({
           style={{ minWidth: '100%' }}
         >
           {/* Button content (same as collapsed) */}
-          <div className="flex items-center whitespace-nowrap mr-4">
-            {buttonContent}
-          </div>
+          <div className="flex items-center whitespace-nowrap mr-4">{buttonContent}</div>
           {/* Expanded content */}
           <div className="flex items-center">{expandedContent}</div>
         </div>

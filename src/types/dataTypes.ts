@@ -1,4 +1,4 @@
-import { ChainId } from '../constants/chains'
+import type { ChainId } from '../constants/chains'
 
 export type MainInfoPanelProps = {
   vaultId: string

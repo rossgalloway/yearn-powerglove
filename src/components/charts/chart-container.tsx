@@ -5,10 +5,7 @@ interface ChartContainerProps {
   className?: string
 }
 
-export function FixedHeightChartContainer({
-  children,
-  className = '',
-}: ChartContainerProps) {
+export function FixedHeightChartContainer({ children, className = '' }: ChartContainerProps) {
   return (
     <div className={`${className} relative h-[400px]`}>
       <div
@@ -19,7 +16,7 @@ export function FixedHeightChartContainer({
             '--chart-2': '#46a2ff',
             '--chart-3': '#94adf2',
             // '--chart-3': '#6786db',
-            '--chart-4': '#b0b5bf',
+            '--chart-4': '#b0b5bf'
           } as React.CSSProperties
         }
       >

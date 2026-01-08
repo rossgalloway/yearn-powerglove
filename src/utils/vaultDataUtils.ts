@@ -1,29 +1,18 @@
 import { format } from 'date-fns'
-import { Vault, VaultExtended } from '@/types/vaultTypes'
-import { TokenAsset } from '@/types/tokenAsset'
-import {
-  CHAIN_ID_TO_ICON,
-  CHAIN_ID_TO_NAME,
-  CHAIN_ID_TO_BLOCK_EXPLORER,
-  ChainId,
-} from '@/constants/chains'
+import { CHAIN_ID_TO_BLOCK_EXPLORER, CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME, type ChainId } from '@/constants/chains'
 import { formatCurrency } from '@/lib/formatters'
+import type { TokenAsset } from '@/types/tokenAsset'
+import type { Vault, VaultExtended } from '@/types/vaultTypes'
 
 /**
  * Formats vault APY and fee percentages
  */
 export function formatVaultMetrics(vaultData: VaultExtended) {
-  const estimatedAPY = vaultData?.apy?.net
-    ? `${(vaultData.apy.net * 100).toFixed(2)}%`
-    : '0%'
+  const estimatedAPY = vaultData?.apy?.net ? `${(vaultData.apy.net * 100).toFixed(2)}%` : '0%'
 
-  const historicalAPY = vaultData?.apy?.inceptionNet
-    ? `${(vaultData.apy.inceptionNet * 100).toFixed(2)}%`
-    : '0%'
+  const historicalAPY = vaultData?.apy?.inceptionNet ? `${(vaultData.apy.inceptionNet * 100).toFixed(2)}%` : '0%'
 
-  const managementFee = vaultData?.fees?.managementFee
-    ? `${(vaultData.fees.managementFee / 100).toFixed(0)}%`
-    : '0%'
+  const managementFee = vaultData?.fees?.managementFee ? `${(vaultData.fees.managementFee / 100).toFixed(0)}%` : '0%'
 
   const performanceFee = vaultData?.fees?.performanceFee
     ? `${(vaultData.fees.performanceFee / 100).toFixed(0)}%`
@@ -35,7 +24,7 @@ export function formatVaultMetrics(vaultData: VaultExtended) {
     estimatedAPY,
     historicalAPY,
     managementFee,
-    performanceFee,
+    performanceFee
   }
 }
 
@@ -56,7 +45,7 @@ export function generateVaultLinks(vaultData: VaultExtended) {
 
   return {
     blockExplorerLink,
-    yearnVaultLink,
+    yearnVaultLink
   }
 }
 
@@ -65,12 +54,10 @@ export function generateVaultLinks(vaultData: VaultExtended) {
  */
 export function resolveTokenIcon(
   vaultAssetAddress: string,
-  vaultAssetSymbol: string,
+  _vaultAssetSymbol: string,
   tokenAssets: TokenAsset[]
 ): string {
-  const tokenAsset = tokenAssets.find(
-    token => token.address.toLowerCase() === vaultAssetAddress.toLowerCase()
-  )
+  const tokenAsset = tokenAssets.find((token) => token.address.toLowerCase() === vaultAssetAddress.toLowerCase())
 
   if (tokenAsset) {
     return tokenAsset.logoURI
@@ -83,7 +70,7 @@ export function resolveTokenIcon(
  * Formats vault deployment date
  */
 export function formatVaultDate(inceptTime: string): string {
-  return format(new Date(parseInt(inceptTime) * 1000), 'MMMM yyyy')
+  return format(new Date(parseInt(inceptTime, 10) * 1000), 'MMMM yyyy')
 }
 
 /**
@@ -99,14 +86,11 @@ export function formatVaultTVL(tvlValue?: number): string {
 export function getVaultNetworkInfo(chainId: ChainId) {
   return {
     icon: CHAIN_ID_TO_ICON[chainId],
-    name: CHAIN_ID_TO_NAME[chainId],
+    name: CHAIN_ID_TO_NAME[chainId]
   }
 }
 
-export function isLegacyVaultType(vault: {
-  apiVersion?: string
-  name?: string
-}): boolean {
+export function isLegacyVaultType(vault: { apiVersion?: string; name?: string }): boolean {
   const version = vault.apiVersion?.toLowerCase?.() ?? ''
   if (!version.startsWith('0')) {
     return false
@@ -115,9 +99,7 @@ export function isLegacyVaultType(vault: {
   return !name.includes('factory')
 }
 
-export function getVaultDisplayType(
-  vault: Pick<Vault, 'apiVersion' | 'name' | 'vaultType'>
-): string {
+export function getVaultDisplayType(vault: Pick<Vault, 'apiVersion' | 'name' | 'vaultType'>): string {
   const typeId = Number(vault.vaultType)
   if (typeId === 1) return 'Allocator Vault'
   if (typeId === 2) return 'Strategy Vault'

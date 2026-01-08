@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import { Vault } from '@/types/vaultTypes'
+import type { Vault } from '@/types/vaultTypes'
 
 interface LoadingState {
   isInitialLoading: boolean
@@ -8,7 +8,7 @@ interface LoadingState {
   vaultsReady: boolean
   strategiesReady: boolean
   assetsReady: boolean
-   yDaemonReady: boolean
+  yDaemonReady: boolean
 }
 
 interface VaultsContextProps {
@@ -21,7 +21,7 @@ interface VaultsContextProps {
 export const VaultsContext = createContext<VaultsContextProps>({
   vaults: [],
   loading: false,
-  error: null,
+  error: null
 })
 
 export const useVaults = () => useContext(VaultsContext)

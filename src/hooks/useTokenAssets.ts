@@ -15,11 +15,7 @@ export function useTokenAssets() {
     async function fetchAssets() {
       // Check if we have valid cached data
       const now = Date.now()
-      if (
-        cachedAssets &&
-        cacheTimestamp &&
-        now - cacheTimestamp < CACHE_DURATION
-      ) {
+      if (cachedAssets && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
         setAssets(cachedAssets)
         setLoading(false)
         return
@@ -36,7 +32,7 @@ export function useTokenAssets() {
         // Process and normalize token data
         const assetsData = rawAssetsData.map((token: TokenAsset) => ({
           ...token,
-          address: token.address.toLowerCase(),
+          address: token.address.toLowerCase()
         }))
 
         // Update cache

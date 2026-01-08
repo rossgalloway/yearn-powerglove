@@ -1,12 +1,9 @@
-import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
+import React from 'react'
+import { CHAIN_ID_TO_BLOCK_EXPLORER, CHAIN_ID_TO_NAME } from '@/constants/chains'
 import { cn } from '@/lib/utils'
-import {
-  CHAIN_ID_TO_NAME,
-  CHAIN_ID_TO_BLOCK_EXPLORER,
-} from '@/constants/chains'
-import { Strategy } from '@/types/dataTypes'
+import type { Strategy } from '@/types/dataTypes'
 
 interface StrategyRowProps {
   strategy: Strategy
@@ -19,17 +16,11 @@ export const StrategyRow: React.FC<StrategyRowProps> = React.memo(
   ({ strategy, isExpanded, onToggle, isUnallocated = false }) => {
     return (
       <div
-        className={cn(
-          'border-t border-[#f5f5f5]',
-          (strategy.allocationPercent === 0 || isUnallocated) && 'opacity-50'
-        )}
+        className={cn('border-t border-[#f5f5f5]', (strategy.allocationPercent === 0 || isUnallocated) && 'opacity-50')}
       >
         {/* Main Row */}
         <div
-          className={cn(
-            'flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer',
-            isExpanded && 'bg-[#f5f5f5]/30'
-          )}
+          className={cn('flex items-center p-3 hover:bg-[#f5f5f5]/50 cursor-pointer', isExpanded && 'bg-[#f5f5f5]/30')}
           onClick={onToggle}
         >
           <div className="w-8 flex justify-center">
@@ -42,22 +33,14 @@ export const StrategyRow: React.FC<StrategyRowProps> = React.memo(
           <div className="w-[calc(50%-2rem)] flex items-center gap-2">
             <div className="flex items-center">
               {strategy.tokenIconUri ? (
-                <img
-                  src={strategy.tokenIconUri}
-                  alt={strategy.tokenSymbol}
-                  className="w-6 h-6"
-                />
+                <img src={strategy.tokenIconUri} alt={strategy.tokenSymbol} className="w-6 h-6" />
               ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                  ?
-                </div>
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">?</div>
               )}
             </div>
             <span className="font-medium">{strategy.name}</span>
           </div>
-          <div className="w-1/6 text-right">
-            {strategy.allocationPercent.toFixed(1)}%
-          </div>
+          <div className="w-1/6 text-right">{strategy.allocationPercent.toFixed(1)}%</div>
           <div className="w-1/6 text-right">{strategy.allocationAmount}</div>
           <div className="w-1/6 text-right">{strategy.estimatedAPY} APY</div>
         </div>
@@ -71,7 +54,7 @@ export const StrategyRow: React.FC<StrategyRowProps> = React.memo(
                   to="/vaults/$chainId/$vaultAddress"
                   params={{
                     chainId: strategy.details.chainId.toString(),
-                    vaultAddress: strategy.details.vaultAddress,
+                    vaultAddress: strategy.details.vaultAddress
                   }}
                   className="px-3 py-1 bg-[#f5f5f5] text-sm flex items-center gap-1 hover:bg-[#e5e5e5] transition-colors"
                 >
