@@ -10,13 +10,13 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     launchOptions: {
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    },
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
+      use: { ...devices['Desktop Chrome'] }
+    }
+  ]
 })

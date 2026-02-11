@@ -116,3 +116,6 @@ vite.config.d.ts
 
 # Old docs
 docs/old-docs
+
+#AI
+.codex

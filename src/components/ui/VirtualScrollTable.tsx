@@ -55,10 +55,7 @@ export function VirtualScrollTable<T>({
       <div style={{ height: totalHeight, position: 'relative' }}>
         <div style={{ transform: `translateY(${offsetY}px)` }}>
           {visibleItems.map(({ item, index }) => (
-            <div
-              key={getItemKey ? getItemKey(item, index) : index}
-              style={{ height: itemHeight }}
-            >
+            <div key={getItemKey ? getItemKey(item, index) : index} style={{ height: itemHeight }}>
               {renderItem(item, index)}
             </div>
           ))}
