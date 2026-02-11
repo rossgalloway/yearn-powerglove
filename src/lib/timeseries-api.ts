@@ -1,7 +1,7 @@
 // src/lib/timeseries-api.ts
-import type { TimeseriesDataPoint } from '@/types/dataTypes'
 
-const API_BASE = `${import.meta.env.VITE_PUBLIC_REST_URL}/timeseries`
+import { getKongTimeseriesUrl } from '@/lib/kong-rest'
+import type { TimeseriesDataPoint } from '@/types/dataTypes'
 
 type RestTimeseriesPoint = {
   time: number
@@ -19,15 +19,8 @@ export async function fetchTimeseries(
   address: string,
   components?: string[]
 ): Promise<TimeseriesDataPoint[]> {
-  const url = new URL(`${API_BASE}/${segment}/${chainId}/${address}`)
-
-  if (components?.length) {
-    components.forEach((component) => {
-      url.searchParams.append('components', component)
-    })
-  }
-
-  const response = await fetch(url.toString())
+  const url = getKongTimeseriesUrl(segment, chainId, address, components)
+  const response = await fetch(url)
 
   if (!response.ok) {
     if (response.status === 404) {

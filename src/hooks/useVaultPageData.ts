@@ -1,11 +1,13 @@
-import { type ApolloError, useQuery } from '@apollo/client'
+import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { ChainId } from '@/constants/chains'
 import type { VaultOverrideConfig } from '@/constants/vaultOverrides'
-import { GET_VAULT_DETAILS } from '@/graphql/queries/vaults'
+import { useVaults } from '@/contexts/useVaults'
 import { useRestTimeseries } from '@/hooks/useRestTimeseries'
-import { useYDaemonVault } from '@/hooks/useYDaemonVaults'
+import { fetchKongVaultSnapshotRaw } from '@/lib/kong-vault-client'
+import { mapKongSnapshotToVaultExtended } from '@/lib/kong-vault-derivation'
 import type { TimeseriesDataPoint } from '@/types/dataTypes'
+import type { KongVaultSnapshot } from '@/types/kong'
 import type { VaultExtended } from '@/types/vaultTypes'
 import {
   applyVaultOverride,
@@ -27,7 +29,7 @@ interface UseVaultPageDataReturn {
   // Vault data
   vaultDetails: VaultExtended | null
   vaultLoading: boolean
-  vaultError: ApolloError | undefined
+  vaultError: Error | undefined
 
   // Chart data (raw)
   apyWeeklyData: TimeseriesQueryResult | undefined
@@ -50,24 +52,51 @@ interface UseVaultPageDataReturn {
 
 /**
  * Coordinates data fetching for the vault page and manages loading states
- * Uses GraphQL for vault details and REST API for timeseries data
+ * Uses Kong REST for vault details and timeseries data
  */
 export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDataProps): UseVaultPageDataReturn {
   const isBlacklisted = isVaultBlacklisted(vaultChainId, vaultAddress)
   const blacklistReason = getVaultBlacklistReason(vaultChainId, vaultAddress)
   const overrideConfig = getVaultOverride(vaultChainId, vaultAddress)
+  const { vaults } = useVaults()
+  const normalizedAddress = vaultAddress.toLowerCase()
 
-  // Fetch vault details
+  const baseVault = useMemo(
+    () =>
+      vaults.find((vault) => vault.chainId === vaultChainId && vault.address.toLowerCase() === normalizedAddress) ??
+      null,
+    [vaults, vaultChainId, normalizedAddress]
+  )
+
   const {
-    data: vaultData,
-    loading: vaultLoading,
-    error: vaultError
-  } = useQuery<{ vault: VaultExtended }>(GET_VAULT_DETAILS, {
-    variables: { address: vaultAddress, chainId: vaultChainId }
+    data: snapshotData,
+    isLoading: vaultLoading,
+    error: snapshotError
+  } = useQuery<KongVaultSnapshot | null>({
+    queryKey: ['kong', 'vault', 'snapshot', vaultChainId, normalizedAddress],
+    queryFn: () => fetchKongVaultSnapshotRaw(vaultChainId, vaultAddress),
+    staleTime: 30 * 1000,
+    enabled: Boolean(vaultAddress)
   })
-  const { data: yDaemonVault, isLoading: yDaemonLoading } = useYDaemonVault(vaultChainId, vaultAddress)
 
-  const isV3Vault = Boolean(vaultData?.vault?.v3)
+  const vaultDetails = useMemo(() => {
+    if (!snapshotData && !baseVault) return null
+    if (!snapshotData && baseVault) {
+      return applyVaultOverride({
+        ...(baseVault as VaultExtended),
+        forwardApyNet: baseVault.forwardApyNet ?? null,
+        strategyForwardAprs: baseVault.strategyForwardAprs ?? {},
+        strategyDetails: (baseVault as VaultExtended).strategyDetails ?? []
+      })
+    }
+    return applyVaultOverride(
+      mapKongSnapshotToVaultExtended(snapshotData as KongVaultSnapshot, baseVault as VaultExtended | null)
+    )
+  }, [snapshotData, baseVault])
+
+  const isV3Vault = Boolean(
+    vaultDetails?.v3 || snapshotData?.apiVersion?.startsWith('3') || snapshotData?.apiVersion?.startsWith('~3')
+  )
 
   // Fetch weekly APY data from REST API
   const {
@@ -125,30 +154,6 @@ export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDat
     components: ['humanized']
   })
 
-  // Extract vault details with null safety
-  const vaultDetails = useMemo(() => {
-    if (!vaultData?.vault) return null
-    const base = vaultData.vault
-    if (!yDaemonVault) {
-      return applyVaultOverride({
-        ...base,
-        forwardApyNet: base.forwardApyNet ?? null,
-        strategyForwardAprs: base.strategyForwardAprs ?? {}
-      })
-    }
-    const strategyAprs: Record<string, number | null> = {}
-    yDaemonVault.strategies?.forEach((strategy) => {
-      if (!strategy?.address) return
-      strategyAprs[strategy.address.toLowerCase()] = strategy.netAPR ?? null
-    })
-    return applyVaultOverride({
-      ...base,
-      forwardApyNet: yDaemonVault.apr?.forwardAPR?.netAPR ?? base.forwardApyNet ?? null,
-      strategyForwardAprs: strategyAprs,
-      kind: base.kind
-    })
-  }, [vaultData, yDaemonVault])
-
   // Calculate combined loading states
   const chartsLoading = useMemo(() => {
     // `aprOracleApyLoading` is intentionally excluded since it's optional overlay data.
@@ -162,16 +167,16 @@ export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDat
   }, [apyWeeklyError, apyMonthlyError, tvlError, ppsError])
 
   // Initial loading only waits for vault data (charts can load separately)
-  const isInitialLoading = vaultLoading || yDaemonLoading
+  const isInitialLoading = vaultLoading
 
   // Has errors if vault fails to load
-  const hasErrors = !!vaultError
+  const hasErrors = !!snapshotError
 
   return {
     // Vault data
     vaultDetails,
     vaultLoading,
-    vaultError,
+    vaultError: snapshotError as Error | undefined,
 
     // Chart data
     apyWeeklyData: apyWeeklyData,
