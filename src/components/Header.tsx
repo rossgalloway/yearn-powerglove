@@ -15,7 +15,7 @@ export default function Header() {
   const filteredVaults = vaults.filter(
     (vault) =>
       vault.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vault.address.toLowerCase().includes(searchTerm.toLowerCase()),
+      vault.address.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   // Close dropdown when clicking outside
@@ -42,11 +42,7 @@ export default function Header() {
     <header className="sticky top-0 z-10 border-b border-border bg-white py-2">
       <div className="container flex items-center justify-between px-8">
         <Link to="/" className="flex items-center gap-2 cursor-pointer">
-          <img
-            src="/logo.svg"
-            alt="Yearn PowerGlove Logo"
-            className="w-6 h-6"
-          />
+          <img src="/logo.svg" alt="Yearn PowerGlove Logo" className="w-6 h-6" />
           <span className="text-lg font-bold">Yearn PowerGlove</span>
         </Link>
         <div className="flex items-center gap-4 relative">
@@ -69,7 +65,7 @@ export default function Header() {
               ref={dropdownRef} // Attach the ref to the dropdown
               className="absolute bg-white border border-gray-300 rounded shadow-md left-0 right-0 top-full overflow-y-auto"
               style={{
-                maxHeight: '50vh', // Half the window height
+                maxHeight: '50vh' // Half the window height
               }}
             >
               {filteredVaults.map((vault) => (
@@ -78,7 +74,7 @@ export default function Header() {
                   to="/vaults/$chainId/$vaultAddress"
                   params={{
                     chainId: vault.chainId.toString(),
-                    vaultAddress: vault.address,
+                    vaultAddress: vault.address
                   }}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex gap-2 items-center"
                   onClick={() => {
@@ -87,9 +83,7 @@ export default function Header() {
                   }}
                 >
                   <span>{vault.name}</span>
-                  <span className="text-gray-600 text-sm">
-                    {vault.apiVersion}
-                  </span>{' '}
+                  <span className="text-gray-600 text-sm">{vault.apiVersion}</span>{' '}
                 </Link>
               ))}
             </div>

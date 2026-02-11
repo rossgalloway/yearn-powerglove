@@ -3,6 +3,7 @@ import {
   formatAllocationPercent,
   formatApyDisplay,
   formatTvlDisplay,
+  normalizeApyDisplayValue,
   parseCompactDisplayNumber
 } from '@/lib/formatters'
 
@@ -14,6 +15,17 @@ describe('formatApyDisplay', () => {
 
   it('caps very large APY display', () => {
     expect(formatApyDisplay(5.01, { locales: ['en-US'] })).toBe('≥ 500%')
+  })
+})
+
+describe('normalizeApyDisplayValue', () => {
+  it('normalizes APY values using display precision', () => {
+    expect(normalizeApyDisplayValue(0.1234)).toBe(12.3)
+    expect(normalizeApyDisplayValue(0.04567)).toBe(4.57)
+  })
+
+  it('preserves infinite values for sorting', () => {
+    expect(normalizeApyDisplayValue(Number.POSITIVE_INFINITY)).toBe(Number.POSITIVE_INFINITY)
   })
 })
 

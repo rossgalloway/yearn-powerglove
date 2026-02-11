@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { ChainId } from '@/constants/chains'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 import { useVaults } from '@/contexts/useVaults'
-import { formatApyDisplay, formatTvlDisplay } from '@/lib/formatters'
+import { formatApyDisplay, formatTvlDisplay, parseCompactDisplayNumber } from '@/lib/formatters'
 import type { Strategy } from '@/types/dataTypes'
 import type { VaultDerivedStrategy, VaultExtended } from '@/types/vaultTypes'
 import { isLegacyVaultType } from '@/utils/vaultDataUtils'
@@ -71,6 +71,15 @@ const getFallbackStrategyDetails = (vaultDetails: VaultExtended): VaultDerivedSt
   }))
 }
 
+export const hasAllocatedDebt = (strategy: Pick<VaultDerivedStrategy, 'status' | 'debtRatio'>): boolean => {
+  return strategy.debtRatio > 0
+}
+
+const parseStrategyApyDisplayValue = (apyValue: string): number => {
+  const parsed = parseCompactDisplayNumber(apyValue)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
 export function useStrategiesData(vaultChainId: ChainId, vaultDetails: VaultExtended): StrategiesData {
   const { assets: tokenAssets } = useTokenAssetsContext()
   const { vaults } = useVaults()
@@ -100,7 +109,7 @@ export function useStrategiesData(vaultChainId: ChainId, vaultDetails: VaultExte
         strategy.name && !strategy.name.startsWith('Strategy ') ? strategy.name : linkedVault?.name || strategy.name
 
       const strategyUsdValue = strategy.totalDebtUsd > 0 ? strategy.totalDebtUsd : strategy.currentDebtUsd
-      const hasAllocation = strategy.status === 'active' && strategy.debtRatio > 0
+      const hasAllocation = hasAllocatedDebt(strategy)
       const allocationPercent = hasAllocation ? strategy.debtRatio / 100 : 0
       const displayApr = strategy.estimatedApy ?? strategy.netApr ?? 0
       const estimatedAPY = isLegacyVault || !hasAllocation ? ' - ' : formatApyDisplay(displayApr)
@@ -138,10 +147,8 @@ export function useStrategiesData(vaultChainId: ChainId, vaultDetails: VaultExte
   }, [strategies])
 
   const apyContributions = useMemo(() => {
-    const parseAPY = (apy: string) => Number.parseFloat(apy.replace(/[^0-9.]/g, ''))
-
     return chartStrategies.map((strategy) => {
-      const apyValue = parseAPY(strategy.estimatedAPY)
+      const apyValue = parseStrategyApyDisplayValue(strategy.estimatedAPY)
       const contribution = (apyValue * strategy.allocationPercent) / 100
       return {
         id: strategy.id,

@@ -12,6 +12,8 @@ export interface VaultListData {
   tokenUri: string
   type: string
   APY: string
+  apySortValue: number
+  apyRawValue: number
   tvl: string
 }
 

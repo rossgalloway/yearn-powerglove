@@ -23,41 +23,37 @@ export interface VaultFilteringState {
   filteredAndSortedVaults: VaultListData[]
 }
 
-function sortVaults(
+const compareNumbers = (valueA: number, valueB: number): number => {
+  if (Number.isNaN(valueA) && Number.isNaN(valueB)) return 0
+  if (Number.isNaN(valueA)) return 1
+  if (Number.isNaN(valueB)) return -1
+  return valueA - valueB
+}
+
+export function sortVaults(
   vaultListData: VaultListData[],
   sortColumn: VaultSortColumn,
   sortDirection: SortDirection
 ): VaultListData[] {
+  const direction = sortDirection === 'asc' ? 1 : -1
   return [...vaultListData].sort((a, b) => {
-    const compare = (valA: string | number, valB: string | number) => {
-      if (sortColumn === 'tvl') {
-        const numA = parseCompactDisplayNumber(String(valA))
-        const numB = parseCompactDisplayNumber(String(valB))
-        // Handle NaN values so they sort to the end
-        if (Number.isNaN(numA) && Number.isNaN(numB)) return 0
-        if (Number.isNaN(numA)) return 1
-        if (Number.isNaN(numB)) return -1
-        return numA - numB
-      }
-      if (sortColumn === 'APY') {
-        const numA = parseFloat(String(valA).replace(/[%]/g, ''))
-        const numB = parseFloat(String(valB).replace(/[%]/g, ''))
-        // Handle NaN values so they sort to the end
-        if (Number.isNaN(numA) && Number.isNaN(numB)) return 0
-        if (Number.isNaN(numA)) return 1
-        if (Number.isNaN(numB)) return -1
-        return numA - numB
-      }
-      // Default string/number comparison for other columns
-      if (valA < valB) return -1
-      if (valA > valB) return 1
-      return 0
+    if (sortColumn === 'tvl') {
+      const valueA = parseCompactDisplayNumber(a.tvl)
+      const valueB = parseCompactDisplayNumber(b.tvl)
+      return direction * compareNumbers(valueA, valueB)
     }
 
-    const valueA = a[sortColumn]
-    const valueB = b[sortColumn]
+    if (sortColumn === 'APY') {
+      const displaySort = compareNumbers(a.apySortValue, b.apySortValue)
+      if (displaySort !== 0) {
+        return direction * displaySort
+      }
+      return direction * compareNumbers(a.apyRawValue, b.apyRawValue)
+    }
 
-    return sortDirection === 'asc' ? compare(valueA, valueB) : compare(valueB, valueA)
+    const valueA = String(a[sortColumn])
+    const valueB = String(b[sortColumn])
+    return direction * valueA.localeCompare(valueB)
   })
 }
 

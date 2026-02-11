@@ -80,6 +80,16 @@ export const formatApyDisplay = (value: number, options?: LocaleFormatOptions): 
   return `${formatWithSignificantDigits(percentValue, options)}%`
 }
 
+export const normalizeApyDisplayValue = (value: number): number => {
+  if (value === Infinity || value === -Infinity) {
+    return value
+  }
+
+  const percentValue = (Number.isFinite(value) ? value : 0) * 100
+  const fractionDigits = resolveSignificantFractionDigits(percentValue)
+  return Number(percentValue.toFixed(fractionDigits))
+}
+
 export const formatTvlDisplay = (value: number, options?: LocaleFormatOptions): string => {
   if (value === Infinity || value === -Infinity) {
     return '$∞'
