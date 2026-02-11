@@ -1,12 +1,15 @@
 // src/lib/timeseries-api.ts
 
-import { getKongTimeseriesUrl } from '@/lib/kong-rest'
+import { fetchKongJson, getKongTimeseriesUrl } from '@/lib/kong-rest'
 import type { TimeseriesDataPoint } from '@/types/dataTypes'
+import type { KongTimeseriesPoint } from '@/types/kong'
 
-type RestTimeseriesPoint = {
-  time: number
-  component: string
-  value: number | string
+const toNullableNumber = (value: KongTimeseriesPoint['value']): number | null => {
+  if (value === null || value === undefined) {
+    return null
+  }
+  const numericValue = typeof value === 'string' ? Number(value) : value
+  return Number.isFinite(numericValue) ? numericValue : null
 }
 
 /**
@@ -20,24 +23,17 @@ export async function fetchTimeseries(
   components?: string[]
 ): Promise<TimeseriesDataPoint[]> {
   const url = getKongTimeseriesUrl(segment, chainId, address, components)
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      return []
-    }
-    throw new Error(`Failed to fetch timeseries: ${response.status}`)
+  const data = await fetchKongJson<KongTimeseriesPoint[]>(url, { allow404: true })
+  if (!data) {
+    return []
   }
-
-  const data: RestTimeseriesPoint[] = await response.json()
 
   // Transform to match TimeseriesDataPoint shape
   return data.map((point) => {
-    const numericValue = typeof point.value === 'string' ? Number(point.value) : point.value
     return {
       time: String(point.time),
-      value: Number.isNaN(numericValue) ? null : numericValue,
-      component: point.component,
+      value: toNullableNumber(point.value),
+      component: point.component ?? undefined,
       label: segment,
       period: '1 day'
     }

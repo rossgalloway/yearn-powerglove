@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { VaultListData } from '@/components/vaults-list/VaultRow'
 import { getChainIdByName } from '@/constants/chains'
+import { parseCompactDisplayNumber } from '@/lib/formatters'
 import type { SortDirection } from '@/utils/sortingUtils'
 
 type VaultSortColumn = keyof VaultListData
@@ -30,8 +31,8 @@ function sortVaults(
   return [...vaultListData].sort((a, b) => {
     const compare = (valA: string | number, valB: string | number) => {
       if (sortColumn === 'tvl') {
-        const numA = parseFloat(String(valA).replace(/[$,]/g, ''))
-        const numB = parseFloat(String(valB).replace(/[$,]/g, ''))
+        const numA = parseCompactDisplayNumber(String(valA))
+        const numB = parseCompactDisplayNumber(String(valB))
         // Handle NaN values so they sort to the end
         if (Number.isNaN(numA) && Number.isNaN(numB)) return 0
         if (Number.isNaN(numA)) return 1
@@ -105,12 +106,7 @@ export function useVaultFiltering(vaultListData: VaultListData[]): VaultFilterin
 
   const handleToggleType = (type: string) => {
     setSelectedTypes((prev) => {
-      const next = prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-      console.debug('[VaultFiltering] toggled type filter', {
-        type,
-        nextSelectedTypes: next
-      })
-      return next
+      return prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     })
   }
 
@@ -119,13 +115,6 @@ export function useVaultFiltering(vaultListData: VaultListData[]): VaultFilterin
     const filtered = filterVaults(vaultListData, searchTerm, selectedChains, selectedTypes)
     return sortVaults(filtered, sortColumn, sortDirection)
   }, [vaultListData, searchTerm, selectedChains, selectedTypes, sortColumn, sortDirection])
-
-  useEffect(() => {
-    console.debug('[VaultFiltering] applied type filters', {
-      selectedTypes,
-      filteredCount: filteredAndSortedVaults.length
-    })
-  }, [selectedTypes, filteredAndSortedVaults.length])
 
   return {
     sortColumn,

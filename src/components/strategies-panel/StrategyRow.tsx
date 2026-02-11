@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
 import React from 'react'
 import { CHAIN_ID_TO_BLOCK_EXPLORER, CHAIN_ID_TO_NAME } from '@/constants/chains'
+import { formatAllocationPercent } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import type { Strategy } from '@/types/dataTypes'
 
@@ -40,7 +41,7 @@ export const StrategyRow: React.FC<StrategyRowProps> = React.memo(
             </div>
             <span className="font-medium">{strategy.name}</span>
           </div>
-          <div className="w-1/6 text-right">{strategy.allocationPercent.toFixed(1)}%</div>
+          <div className="w-1/6 text-right">{formatAllocationPercent(strategy.allocationPercent)}</div>
           <div className="w-1/6 text-right">{strategy.allocationAmount}</div>
           <div className="w-1/6 text-right">{strategy.estimatedAPY} APY</div>
         </div>

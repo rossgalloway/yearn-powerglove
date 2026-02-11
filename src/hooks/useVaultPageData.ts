@@ -8,7 +8,7 @@ import { fetchKongVaultSnapshotRaw } from '@/lib/kong-vault-client'
 import { mapKongSnapshotToVaultExtended } from '@/lib/kong-vault-derivation'
 import type { TimeseriesDataPoint } from '@/types/dataTypes'
 import type { KongVaultSnapshot } from '@/types/kong'
-import type { VaultExtended } from '@/types/vaultTypes'
+import type { Vault, VaultExtended } from '@/types/vaultTypes'
 import {
   applyVaultOverride,
   getVaultBlacklistReason,
@@ -50,6 +50,19 @@ interface UseVaultPageDataReturn {
   overrideConfig?: VaultOverrideConfig
 }
 
+const toBaseVaultExtended = (vault: Vault | null): VaultExtended | null => {
+  if (!vault) {
+    return null
+  }
+
+  return {
+    ...vault,
+    forwardApyNet: vault.forwardApyNet ?? null,
+    strategyForwardAprs: vault.strategyForwardAprs ?? {},
+    strategyDetails: []
+  }
+}
+
 /**
  * Coordinates data fetching for the vault page and manages loading states
  * Uses Kong REST for vault details and timeseries data
@@ -61,18 +74,19 @@ export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDat
   const { vaults } = useVaults()
   const normalizedAddress = vaultAddress.toLowerCase()
 
-  const baseVault = useMemo(
-    () =>
+  const baseVault = useMemo(() => {
+    const matchedVault =
       vaults.find((vault) => vault.chainId === vaultChainId && vault.address.toLowerCase() === normalizedAddress) ??
-      null,
-    [vaults, vaultChainId, normalizedAddress]
-  )
+      null
+
+    return toBaseVaultExtended(matchedVault)
+  }, [vaults, vaultChainId, normalizedAddress])
 
   const {
     data: snapshotData,
     isLoading: vaultLoading,
     error: snapshotError
-  } = useQuery<KongVaultSnapshot | null>({
+  } = useQuery<KongVaultSnapshot | null, Error>({
     queryKey: ['kong', 'vault', 'snapshot', vaultChainId, normalizedAddress],
     queryFn: () => fetchKongVaultSnapshotRaw(vaultChainId, vaultAddress),
     staleTime: 30 * 1000,
@@ -80,18 +94,11 @@ export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDat
   })
 
   const vaultDetails = useMemo(() => {
-    if (!snapshotData && !baseVault) return null
-    if (!snapshotData && baseVault) {
-      return applyVaultOverride({
-        ...(baseVault as VaultExtended),
-        forwardApyNet: baseVault.forwardApyNet ?? null,
-        strategyForwardAprs: baseVault.strategyForwardAprs ?? {},
-        strategyDetails: (baseVault as VaultExtended).strategyDetails ?? []
-      })
+    if (!snapshotData) {
+      return baseVault ? applyVaultOverride(baseVault) : null
     }
-    return applyVaultOverride(
-      mapKongSnapshotToVaultExtended(snapshotData as KongVaultSnapshot, baseVault as VaultExtended | null)
-    )
+
+    return applyVaultOverride(mapKongSnapshotToVaultExtended(snapshotData, baseVault))
   }, [snapshotData, baseVault])
 
   const isV3Vault = Boolean(
@@ -176,11 +183,11 @@ export function useVaultPageData({ vaultAddress, vaultChainId }: UseVaultPageDat
     // Vault data
     vaultDetails,
     vaultLoading,
-    vaultError: snapshotError as Error | undefined,
+    vaultError: snapshotError ?? undefined,
 
     // Chart data
-    apyWeeklyData: apyWeeklyData,
-    apyMonthlyData: apyMonthlyData,
+    apyWeeklyData,
+    apyMonthlyData,
     aprOracleAprData,
     tvlData,
     ppsData,

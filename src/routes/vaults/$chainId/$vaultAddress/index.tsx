@@ -169,7 +169,7 @@ function SingleVaultPage() {
               hasErrors={chartsError}
             />
           </Suspense>
-          <StrategiesPanel vaultAddress={vaultAddress} vaultChainId={vaultChainId} vaultDetails={vaultDetails} />
+          <StrategiesPanel vaultChainId={vaultChainId} vaultDetails={vaultDetails} />
         </div>
       </div>
     </VaultPageLayout>

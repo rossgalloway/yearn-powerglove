@@ -178,14 +178,13 @@ const deriveVaultType = ({
 }
 
 const resolveForwardApy = (performance?: KongVaultPerformance | null, fallback?: number | null): number | null => {
-  const resolved = toNumberOrNull(
+  return toNumberOrNull(
     performance?.estimated?.apy,
     performance?.estimated?.apr,
     performance?.oracle?.apy,
     performance?.oracle?.apr,
     fallback
   )
-  return resolved
 }
 
 const resolveYearnFlag = (inclusion?: Record<string, boolean>, explicitYearn?: boolean, fallback = true): boolean => {
@@ -198,28 +197,13 @@ const resolveYearnFlag = (inclusion?: Record<string, boolean>, explicitYearn?: b
   return fallback
 }
 
-const computeDebtRatioFromCurrentDebt = (
-  currentDebt: KongNullableNumberish,
-  totalDebt: KongNullableNumberish
-): number => {
-  const debt = toBigIntValue(currentDebt)
-  const total = toBigIntValue(totalDebt)
+const computeDebtRatio = (debtValue: KongNullableNumberish, totalValue: KongNullableNumberish): number => {
+  const debt = toBigIntValue(debtValue)
+  const total = toBigIntValue(totalValue)
   if (debt <= 0n || total <= 0n) {
     return 0
   }
   return Number((debt * 10000n) / total)
-}
-
-const computeDebtRatioFromTotalAssets = (
-  totalDebt: KongNullableNumberish,
-  totalAssets: KongNullableNumberish
-): number => {
-  const debt = toBigIntValue(totalDebt)
-  const assets = toBigIntValue(totalAssets)
-  if (debt <= 0n || assets <= 0n) {
-    return 0
-  }
-  return Number((debt * 10000n) / assets)
 }
 
 const normalizeCompositionStatus = (
@@ -314,7 +298,7 @@ const mapCompositionToStrategies = (
 
     const totalDebt = pickNonZeroBigNumberish([entry.totalDebt, entry.currentDebt])
     const currentDebt = pickNonZeroBigNumberish([entry.currentDebt, totalDebt], totalDebt)
-    const computedDebtRatio = computeDebtRatioFromTotalAssets(totalDebt, totalAssetsForRatios.toString())
+    const computedDebtRatio = computeDebtRatio(totalDebt, totalAssetsForRatios.toString())
     const debtRatio = pickNonZeroNumber([entry.debtRatio, computedDebtRatio], computedDebtRatio)
     const hasAllocation = toBigIntValue(totalDebt) > 0n || debtRatio > 0
     const lastReport = toNumber(entry.lastReport, 0)
@@ -359,7 +343,7 @@ const mapDebtsToStrategies = (debts: KongVaultSnapshotDebt[], totalDebtForRatios
   return debts.map((debt, index) => {
     const totalDebt = pickNonZeroBigNumberish([debt.totalDebt, debt.currentDebt])
     const currentDebt = pickNonZeroBigNumberish([debt.currentDebt, debt.totalDebt], totalDebt)
-    const computedDebtRatio = computeDebtRatioFromCurrentDebt(currentDebt, totalDebtForRatios)
+    const computedDebtRatio = computeDebtRatio(currentDebt, totalDebtForRatios)
     const debtRatio = pickNonZeroNumber([debt.debtRatio, computedDebtRatio], computedDebtRatio)
     const hasAllocation = toBigIntValue(totalDebt) > 0n || debtRatio > 0
 
@@ -491,13 +475,10 @@ export const mapKongSnapshotToVaultExtended = (
     managementFee
   }))
 
-  const strategyForwardAprs = strategyDetails.reduce(
-    (acc, strategy) => {
-      acc[strategy.address.toLowerCase()] = strategy.estimatedApy
-      return acc
-    },
-    {} as Record<string, number | null>
-  )
+  const strategyForwardAprs = strategyDetails.reduce<Record<string, number | null>>((acc, strategy) => {
+    acc[strategy.address.toLowerCase()] = strategy.estimatedApy
+    return acc
+  }, {})
 
   const forwardApyNet = resolveForwardApy(performance, baseVault?.forwardApyNet ?? null)
 

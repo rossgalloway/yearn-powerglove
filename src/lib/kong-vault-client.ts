@@ -16,7 +16,7 @@ export async function fetchKongVaultListRaw(): Promise<KongVaultListItem[]> {
 
 export async function fetchKongVaultList(): Promise<Vault[]> {
   const list = await fetchKongVaultListRaw()
-  return list.map((item) => mapKongListItemToVault(item))
+  return list.map(mapKongListItemToVault)
 }
 
 export async function fetchKongVaultSnapshotRaw(chainId: number, address: string): Promise<KongVaultSnapshot | null> {
@@ -32,7 +32,7 @@ export async function fetchKongVaultSnapshot(
 ): Promise<VaultExtended | null> {
   const snapshot = await fetchKongVaultSnapshotRaw(chainId, address)
   if (!snapshot) {
-    return baseVault ? ({ ...baseVault } as VaultExtended) : null
+    return baseVault ? { ...baseVault } : null
   }
 
   return mapKongSnapshotToVaultExtended(snapshot, baseVault)

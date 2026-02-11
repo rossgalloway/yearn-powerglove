@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { parseCompactDisplayNumber } from '@/lib/formatters'
 import type { Strategy } from '@/types/dataTypes'
 import type { SortDirection } from '@/utils/sortingUtils'
 
@@ -13,14 +14,6 @@ export interface SortingAndFilteringState {
   sortedStrategies: Strategy[]
   allocatedStrategies: Strategy[]
   unallocatedStrategies: Strategy[]
-}
-
-function parseFormattedAmount(amount: string): number {
-  if (amount === '0') return 0
-  const num = Number.parseFloat(amount.replace(/[^0-9.]/g, ''))
-  if (amount.includes('K')) return num * 1000
-  if (amount.includes('M')) return num * 1000000
-  return num
 }
 
 function parseFormattedPercentage(percentage: string): number {
@@ -50,8 +43,8 @@ export function useSortingAndFiltering(strategies: Strategy[]): SortingAndFilter
             ? a.allocationPercent - b.allocationPercent
             : b.allocationPercent - a.allocationPercent
         case 'allocationAmount': {
-          const aVal = parseFormattedAmount(a.allocationAmount)
-          const bVal = parseFormattedAmount(b.allocationAmount)
+          const aVal = parseCompactDisplayNumber(a.allocationAmount)
+          const bVal = parseCompactDisplayNumber(b.allocationAmount)
           return sortDirection === 'asc' ? aVal - bVal : bVal - aVal
         }
         case 'estimatedAPY': {

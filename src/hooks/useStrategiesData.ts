@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { ChainId } from '@/constants/chains'
 import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 import { useVaults } from '@/contexts/useVaults'
+import { formatApyDisplay, formatTvlDisplay } from '@/lib/formatters'
 import type { Strategy } from '@/types/dataTypes'
 import type { VaultDerivedStrategy, VaultExtended } from '@/types/vaultTypes'
 import { isLegacyVaultType } from '@/utils/vaultDataUtils'
@@ -34,13 +35,6 @@ export interface StrategiesData {
   }>
   isLoading: boolean
   error: Error | undefined
-}
-
-const toCurrency = (value: number): string => {
-  return value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  })
 }
 
 const getFallbackStrategyDetails = (vaultDetails: VaultExtended): VaultDerivedStrategy[] => {
@@ -77,11 +71,7 @@ const getFallbackStrategyDetails = (vaultDetails: VaultExtended): VaultDerivedSt
   }))
 }
 
-export function useStrategiesData(
-  vaultChainId: ChainId,
-  _vaultAddress: string,
-  vaultDetails: VaultExtended
-): StrategiesData {
+export function useStrategiesData(vaultChainId: ChainId, vaultDetails: VaultExtended): StrategiesData {
   const { assets: tokenAssets } = useTokenAssetsContext()
   const { vaults } = useVaults()
   const isLegacyVault = isLegacyVaultType(vaultDetails)
@@ -113,7 +103,7 @@ export function useStrategiesData(
       const hasAllocation = strategy.status === 'active' && strategy.debtRatio > 0
       const allocationPercent = hasAllocation ? strategy.debtRatio / 100 : 0
       const displayApr = strategy.estimatedApy ?? strategy.netApr ?? 0
-      const estimatedAPY = isLegacyVault || !hasAllocation ? ' - ' : `${(displayApr * 100).toFixed(2)}%`
+      const estimatedAPY = isLegacyVault || !hasAllocation ? ' - ' : formatApyDisplay(displayApr)
 
       const tokenIconUri =
         tokenAssets.find((token) => token.address.toLowerCase() === linkedVault?.asset?.address?.toLowerCase())
@@ -125,7 +115,7 @@ export function useStrategiesData(
         id: index,
         name: strategyDisplayName || 'Unknown Strategy',
         allocationPercent,
-        allocationAmount: strategyUsdValue > 0 ? toCurrency(strategyUsdValue) : '$0.00',
+        allocationAmount: formatTvlDisplay(strategyUsdValue),
         estimatedAPY,
         tokenSymbol,
         tokenIconUri,
