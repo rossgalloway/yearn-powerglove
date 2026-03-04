@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface UseViewportHeightOptions {
   headerHeight?: number
@@ -9,15 +9,14 @@ interface UseViewportHeightOptions {
 export const useViewportHeight = ({
   headerHeight = 80, // Approximate header height
   footerHeight = 64, // Approximate footer height (py-3 = 12px top/bottom + content)
-  extraOffset = 150, // Offset for summary, table headers, search bar, margins
+  extraOffset = 150 // Offset for summary, table headers, search bar, margins
 }: UseViewportHeightOptions = {}) => {
   const [availableHeight, setAvailableHeight] = useState(400) // Default fallback
 
   useEffect(() => {
     const calculateHeight = () => {
       const viewportHeight = window.innerHeight
-      const calculatedHeight =
-        viewportHeight - headerHeight - footerHeight - extraOffset
+      const calculatedHeight = viewportHeight - headerHeight - footerHeight - extraOffset
 
       // Ensure minimum height
       const finalHeight = Math.max(calculatedHeight, 300)

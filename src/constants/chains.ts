@@ -1,13 +1,4 @@
-export type ChainId =
-  | 1
-  | 10
-  | 100
-  | 137
-  | 250
-  | 8453
-  | 42161
-  | 747474
-  | 80094
+export type ChainId = 1 | 10 | 100 | 137 | 250 | 8453 | 42161 | 747474 | 80094
 
 export const CHAIN_ID_TO_NAME: Record<ChainId, string> = {
   1: 'Ethereum',
@@ -18,13 +9,11 @@ export const CHAIN_ID_TO_NAME: Record<ChainId, string> = {
   8453: 'Base',
   42161: 'Arbitrum',
   747474: 'Katana',
-  80094: 'Berachain',
+  80094: 'Berachain'
 }
 
 export function getChainIdByName(name: string): ChainId | undefined {
-  const entry = Object.entries(CHAIN_ID_TO_NAME).find(
-    ([, chainName]) => chainName.toLowerCase() === name.toLowerCase()
-  )
+  const entry = Object.entries(CHAIN_ID_TO_NAME).find(([, chainName]) => chainName.toLowerCase() === name.toLowerCase())
   return entry ? (Number(entry[0]) as ChainId) : undefined
 }
 
@@ -35,12 +24,9 @@ export const CHAIN_ID_TO_ICON: Record<ChainId, string> = {
   137: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/137/logo-32.png',
   250: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/250/logo-32.png',
   8453: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/8453/logo-32.png',
-  42161:
-    'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/42161/logo-32.png',
-  747474:
-    'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/747474/logo-32.png',
-  80094:
-    'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/80094/logo-32.png',
+  42161: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/42161/logo-32.png',
+  747474: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/747474/logo-32.png',
+  80094: 'https://cdn.jsdelivr.net/gh/yearn/tokenassets@main/chains/80094/logo-32.png'
 }
 
 export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<ChainId, string> = {
@@ -52,10 +38,10 @@ export const CHAIN_ID_TO_BLOCK_EXPLORER: Record<ChainId, string> = {
   8453: 'https://basescan.org/',
   42161: 'https://arbiscan.io',
   747474: 'https://explorer.katanarpc.com/',
-  80094: 'https://berascan.com',
+  80094: 'https://berascan.com'
 }
 
 export const VAULT_TYPE_TO_NAME: Record<string, string> = {
   1: 'Allocator Vault',
-  2: 'Strategy Vault',
+  2: 'Strategy Vault'
 }

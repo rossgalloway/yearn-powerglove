@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useMemo, useState } from 'react'
+import type { VaultListData } from '@/components/vaults-list/VaultRow'
 import { getChainIdByName } from '@/constants/chains'
-import { VaultListData } from '@/components/vaults-list/VaultRow'
-import { SortDirection } from '@/utils/sortingUtils'
+import { parseCompactDisplayNumber } from '@/lib/formatters'
+import type { SortDirection } from '@/utils/sortingUtils'
 
 type VaultSortColumn = keyof VaultListData
 
@@ -22,43 +23,37 @@ export interface VaultFilteringState {
   filteredAndSortedVaults: VaultListData[]
 }
 
-function sortVaults(
+const compareNumbers = (valueA: number, valueB: number): number => {
+  if (Number.isNaN(valueA) && Number.isNaN(valueB)) return 0
+  if (Number.isNaN(valueA)) return 1
+  if (Number.isNaN(valueB)) return -1
+  return valueA - valueB
+}
+
+export function sortVaults(
   vaultListData: VaultListData[],
   sortColumn: VaultSortColumn,
   sortDirection: SortDirection
 ): VaultListData[] {
+  const direction = sortDirection === 'asc' ? 1 : -1
   return [...vaultListData].sort((a, b) => {
-    const compare = (valA: string | number, valB: string | number) => {
-      if (sortColumn === 'tvl') {
-        const numA = parseFloat(String(valA).replace(/[$,]/g, ''))
-        const numB = parseFloat(String(valB).replace(/[$,]/g, ''))
-        // Handle NaN values so they sort to the end
-        if (isNaN(numA) && isNaN(numB)) return 0
-        if (isNaN(numA)) return 1
-        if (isNaN(numB)) return -1
-        return numA - numB
-      }
-      if (sortColumn === 'APY') {
-        const numA = parseFloat(String(valA).replace(/[%]/g, ''))
-        const numB = parseFloat(String(valB).replace(/[%]/g, ''))
-        // Handle NaN values so they sort to the end
-        if (isNaN(numA) && isNaN(numB)) return 0
-        if (isNaN(numA)) return 1
-        if (isNaN(numB)) return -1
-        return numA - numB
-      }
-      // Default string/number comparison for other columns
-      if (valA < valB) return -1
-      if (valA > valB) return 1
-      return 0
+    if (sortColumn === 'tvl') {
+      const valueA = parseCompactDisplayNumber(a.tvl)
+      const valueB = parseCompactDisplayNumber(b.tvl)
+      return direction * compareNumbers(valueA, valueB)
     }
 
-    const valueA = a[sortColumn]
-    const valueB = b[sortColumn]
+    if (sortColumn === 'APY') {
+      const displaySort = compareNumbers(a.apySortValue, b.apySortValue)
+      if (displaySort !== 0) {
+        return direction * displaySort
+      }
+      return direction * compareNumbers(a.apyRawValue, b.apyRawValue)
+    }
 
-    return sortDirection === 'asc'
-      ? compare(valueA, valueB)
-      : compare(valueB, valueA)
+    const valueA = String(a[sortColumn])
+    const valueB = String(b[sortColumn])
+    return direction * valueA.localeCompare(valueB)
   })
 }
 
@@ -69,30 +64,23 @@ function filterVaults(
   selectedTypes: string[]
 ): VaultListData[] {
   const term = searchTerm.trim().toLowerCase()
-  return vaultListData.filter(vault => {
+  return vaultListData.filter((vault) => {
     // Search across name and token
-    const matchesSearch =
-      !term ||
-      vault.name.toLowerCase().includes(term) ||
-      vault.token.toLowerCase().includes(term)
+    const matchesSearch = !term || vault.name.toLowerCase().includes(term) || vault.token.toLowerCase().includes(term)
 
     // Chain filter (if any selected chains, only include those)
     const vaultChainId = getChainIdByName(vault.chain)
     const matchesChain =
-      selectedChains.length === 0 ||
-      (vaultChainId !== undefined && selectedChains.includes(vaultChainId))
+      selectedChains.length === 0 || (vaultChainId !== undefined && selectedChains.includes(vaultChainId))
 
     // Type filter
-    const matchesType =
-      selectedTypes.length === 0 || selectedTypes.includes(vault.type)
+    const matchesType = selectedTypes.length === 0 || selectedTypes.includes(vault.type)
 
     return matchesSearch && matchesChain && matchesType
   })
 }
 
-export function useVaultFiltering(
-  vaultListData: VaultListData[]
-): VaultFilteringState {
+export function useVaultFiltering(vaultListData: VaultListData[]): VaultFilteringState {
   const [sortColumn, setSortColumn] = useState<VaultSortColumn>('tvl')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -109,50 +97,20 @@ export function useVaultFiltering(
   }
 
   const handleToggleChain = (chainId: number) => {
-    setSelectedChains(prev =>
-      prev.includes(chainId)
-        ? prev.filter(id => id !== chainId)
-        : [...prev, chainId]
-    )
+    setSelectedChains((prev) => (prev.includes(chainId) ? prev.filter((id) => id !== chainId) : [...prev, chainId]))
   }
 
   const handleToggleType = (type: string) => {
-    setSelectedTypes(prev => {
-      const next = prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-      console.debug('[VaultFiltering] toggled type filter', {
-        type,
-        nextSelectedTypes: next,
-      })
-      return next
+    setSelectedTypes((prev) => {
+      return prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     })
   }
 
   // Apply filtering and sorting
   const filteredAndSortedVaults = useMemo(() => {
-    const filtered = filterVaults(
-      vaultListData,
-      searchTerm,
-      selectedChains,
-      selectedTypes
-    )
+    const filtered = filterVaults(vaultListData, searchTerm, selectedChains, selectedTypes)
     return sortVaults(filtered, sortColumn, sortDirection)
-  }, [
-    vaultListData,
-    searchTerm,
-    selectedChains,
-    selectedTypes,
-    sortColumn,
-    sortDirection,
-  ])
-
-  useEffect(() => {
-    console.debug('[VaultFiltering] applied type filters', {
-      selectedTypes,
-      filteredCount: filteredAndSortedVaults.length,
-    })
-  }, [selectedTypes, filteredAndSortedVaults.length])
+  }, [vaultListData, searchTerm, selectedChains, selectedTypes, sortColumn, sortDirection])
 
   return {
     sortColumn,
@@ -168,6 +126,6 @@ export function useVaultFiltering(
     handleSort,
     handleToggleChain,
     handleToggleType,
-    filteredAndSortedVaults,
+    filteredAndSortedVaults
   }
 }

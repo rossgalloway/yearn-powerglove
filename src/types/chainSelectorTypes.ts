@@ -53,29 +53,29 @@ export const mockChains: ChainData[] = [
   { id: 137, name: 'Polygon', icon: '/icons/polygon.svg' },
   { id: 10, name: 'Optimism', icon: '/icons/optimism.svg' },
   { id: 8453, name: 'Base', icon: '/icons/base.svg' },
-  { id: 250, name: 'Fantom', icon: '/icons/fantom.svg' },
+  { id: 250, name: 'Fantom', icon: '/icons/fantom.svg' }
 ]
 
 // Mock props for different states
 export const mockPropsDefault: ChainSelectorProps = {
   selectedChains: [],
-  onChainToggle: chainId => console.log('Toggle chain:', chainId),
-  onSetSelectedChains: chainIds => console.log('Set chains:', chainIds),
-  isCollapsed: true,
+  onChainToggle: (chainId) => console.log('Toggle chain:', chainId),
+  onSetSelectedChains: (chainIds) => console.log('Set chains:', chainIds),
+  isCollapsed: true
 }
 
 export const mockPropsWithSelection: ChainSelectorProps = {
   selectedChains: [1, 42161], // Ethereum and Arbitrum selected
-  onChainToggle: chainId => console.log('Toggle chain:', chainId),
-  onSetSelectedChains: chainIds => console.log('Set chains:', chainIds),
-  isCollapsed: true,
+  onChainToggle: (chainId) => console.log('Toggle chain:', chainId),
+  onSetSelectedChains: (chainIds) => console.log('Set chains:', chainIds),
+  isCollapsed: true
 }
 
 export const mockPropsAllSelected: ChainSelectorProps = {
   selectedChains: [1, 42161, 137, 10, 8453, 250], // All chains selected
-  onChainToggle: chainId => console.log('Toggle chain:', chainId),
-  onSetSelectedChains: chainIds => console.log('Set chains:', chainIds),
-  isCollapsed: true,
+  onChainToggle: (chainId) => console.log('Toggle chain:', chainId),
+  onSetSelectedChains: (chainIds) => console.log('Set chains:', chainIds),
+  isCollapsed: true
 }
 
 // Test scenarios for different states
@@ -85,22 +85,22 @@ export const testScenarios = {
     props: mockPropsDefault,
     expectedText: 'Filter Chains',
     expectedIconCount: 0,
-    expectedWidth: 140,
+    expectedWidth: 140
   },
   someSelected: {
     name: 'Some Chains Selected',
     props: mockPropsWithSelection,
     expectedText: 'Selected Chains',
     expectedIconCount: 2,
-    expectedWidth: 180,
+    expectedWidth: 180
   },
   allSelected: {
     name: 'All Chains Selected',
     props: mockPropsAllSelected,
     expectedText: 'Filter Chains',
     expectedIconCount: 0,
-    expectedWidth: 140,
-  },
+    expectedWidth: 140
+  }
 }
 
 // Animation configuration constants
@@ -109,32 +109,29 @@ export const animationConfig = {
   ICON_WIDTH_COLLAPSED: 20,
   TRANSITION_DURATION: 300,
   TRANSITION_EASING: 'ease-in-out',
-  MIN_BUTTON_WIDTH: 140,
+  MIN_BUTTON_WIDTH: 140
 }
 
 // Mock event handlers for testing
 export const mockEventHandlers = {
   onChainToggle: (chainId: number) => console.log('Toggle:', chainId),
   onSetSelectedChains: (chainIds: number[]) => console.log('Set:', chainIds),
-  onToggleCollapsed: () => console.log('Toggle collapsed'),
+  onToggleCollapsed: () => console.log('Toggle collapsed')
 }
 
 // Helper function to create test props
-export function createMockProps(
-  selectedChains: number[] = []
-): ChainSelectorProps {
+export function createMockProps(selectedChains: number[] = []): ChainSelectorProps {
   return {
     selectedChains,
     onChainToggle: mockEventHandlers.onChainToggle,
     onSetSelectedChains: mockEventHandlers.onSetSelectedChains,
-    isCollapsed: true,
+    isCollapsed: true
   }
 }
 
 // CSS class names for testing
 export const cssClasses = {
-  container:
-    'relative flex items-center border rounded-md transition-all duration-200 bg-white',
+  container: 'relative flex items-center border rounded-md transition-all duration-200 bg-white',
   containerHover: 'border-gray-400 shadow-sm',
   containerDefault: 'border-gray-300',
   buttonContent: 'flex items-center px-3 py-2',
@@ -146,5 +143,5 @@ export const cssClasses = {
   iconSelected: 'z-10 w-8 h-8',
   iconUnselected: 'z-5 filter grayscale',
   iconExpanded: 'w-8 h-8',
-  iconCollapsed: 'w-6 h-6',
+  iconCollapsed: 'w-6 h-6'
 }

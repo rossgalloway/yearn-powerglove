@@ -1,2 +1,2 @@
-export { VaultPageLayout } from './VaultPageLayout'
 export { VaultPageBreadcrumb } from './VaultPageBreadcrumb'
+export { VaultPageLayout } from './VaultPageLayout'

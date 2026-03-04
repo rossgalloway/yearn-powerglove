@@ -1,8 +1,16 @@
-directive @cacheControl(maxAge: Int, scope: CacheControlScope, inheritMaxAge: Boolean) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
+directive @cacheControl(
+  maxAge: Int
+  scope: CacheControlScope
+  inheritMaxAge: Boolean
+) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
 
-"""Exposes a URL that specifies the behavior of this scalar."""
+"""
+Exposes a URL that specifies the behavior of this scalar.
+"""
 directive @specifiedBy(
-  """The URL that specifies the behavior of this scalar."""
+  """
+  The URL that specifies the behavior of this scalar.
+  """
   url: String!
 ) on SCALAR
 
@@ -48,7 +56,9 @@ type Apy {
   blockTime: String!
 }
 
-"""BigInt override"""
+"""
+BigInt override
+"""
 scalar BigInt
 
 enum CacheControlScope {
@@ -172,7 +182,15 @@ type Query {
   strategy(chainId: Int, address: String): Strategy
   strategyReports(chainId: Int, address: String): [StrategyReport]
   transfers(chainId: Int, address: String): [Transfer]
-  timeseries(chainId: Int, address: String, label: String!, component: String, period: String, limit: Int, timestamp: BigInt): [Output]
+  timeseries(
+    chainId: Int
+    address: String
+    label: String!
+    component: String
+    period: String
+    limit: Int
+    timestamp: BigInt
+  ): [Output]
   tvls(chainId: Int!, address: String, period: String, limit: Int, timestamp: BigInt): [Tvl]
   accountRoles(chainId: Int, account: String!): [AccountRole]
   accountVaults(chainId: Int, account: String!): [Vault]
@@ -509,4 +527,3 @@ type VaultReport {
   logIndex: Int!
   transactionHash: String!
 }
-

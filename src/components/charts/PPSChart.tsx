@@ -1,15 +1,8 @@
 import React, { useMemo } from 'react'
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from 'recharts'
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
-import { ChartDataPoint } from '@/types/dataTypes'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { getTimeframeLimit } from '@/components/charts/chart-utils'
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import type { ChartDataPoint } from '@/types/dataTypes'
 
 type PercentSeriesKey = 'derivedApr'
 
@@ -23,22 +16,16 @@ interface PPSChartProps {
 
 export const PPSChart: React.FC<PPSChartProps> = React.memo(
   ({ chartData, timeframe, hideAxes, hideTooltip, dataKey = 'PPS' }) => {
-    const filteredData = useMemo(
-      () => chartData.slice(-getTimeframeLimit(timeframe)),
-      [chartData, timeframe]
-    )
+    const filteredData = useMemo(() => chartData.slice(-getTimeframeLimit(timeframe)), [chartData, timeframe])
 
     const isPercentSeries = dataKey !== 'PPS'
     const percentSeriesMeta: Record<PercentSeriesKey, { label: string; color: string }> = {
       derivedApr: {
         label: 'Derived APR %',
-        color: 'var(--chart-4)',
-      },
+        color: 'var(--chart-4)'
+      }
     }
-    const activePercentMeta =
-      dataKey !== 'PPS'
-        ? percentSeriesMeta[dataKey as PercentSeriesKey]
-        : undefined
+    const activePercentMeta = dataKey !== 'PPS' ? percentSeriesMeta[dataKey as PercentSeriesKey] : undefined
 
     return (
       <ChartContainer
@@ -47,14 +34,14 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             ? {
                 [dataKey]: {
                   label: activePercentMeta.label,
-                  color: hideAxes ? 'black' : activePercentMeta.color,
-                },
+                  color: hideAxes ? 'black' : activePercentMeta.color
+                }
               }
             : {
                 pps: {
                   label: 'Price Per Share',
-                  color: hideAxes ? 'black' : 'var(--chart-1)',
-                },
+                  color: hideAxes ? 'black' : 'var(--chart-1)'
+                }
               }
         }
         style={{ height: 'inherit' }}
@@ -66,7 +53,7 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
               top: 20,
               right: 30,
               left: 10,
-              bottom: 20,
+              bottom: 20
             }}
           >
             <CartesianGrid vertical={false} />
@@ -76,53 +63,38 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
                 hideAxes
                   ? false
                   : {
-                      fill: 'hsl(var(--muted-foreground))',
+                      fill: 'hsl(var(--muted-foreground))'
                     }
               }
-              axisLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
-              tickLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
+              axisLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
+              tickLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
             />
             <YAxis
               domain={isPercentSeries ? [0, 'auto'] : ['auto', 'auto']}
-              tickFormatter={value =>
-                isPercentSeries ? `${value}%` : Number(value).toFixed(3)
-              }
+              tickFormatter={(value) => (isPercentSeries ? `${value}%` : Number(value).toFixed(3))}
               label={
                 hideAxes
                   ? undefined
                   : {
-                      value:
-                        isPercentSeries && activePercentMeta
-                          ? activePercentMeta.label
-                          : 'Price Per Share',
+                      value: isPercentSeries && activePercentMeta ? activePercentMeta.label : 'Price Per Share',
                       angle: -90,
                       position: 'insideLeft',
                       offset: 10,
                       style: {
                         textAnchor: 'middle',
-                        fill: hideAxes
-                          ? 'transparent'
-                          : 'hsl(var(--muted-foreground))',
-                      },
+                        fill: hideAxes ? 'transparent' : 'hsl(var(--muted-foreground))'
+                      }
                     }
               }
               tick={
                 hideAxes
                   ? false
                   : {
-                      fill: 'hsl(var(--muted-foreground))',
+                      fill: 'hsl(var(--muted-foreground))'
                     }
               }
-              axisLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
-              tickLine={
-                hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-              }
+              axisLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
+              tickLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
             />
             {!hideTooltip && (
               <ChartTooltip
@@ -137,9 +109,7 @@ export const PPSChart: React.FC<PPSChartProps> = React.memo(
             <Line
               type="monotone"
               dataKey={dataKey}
-              stroke={
-                isPercentSeries ? `var(--color-${dataKey})` : 'var(--color-pps)'
-              }
+              stroke={isPercentSeries ? `var(--color-${dataKey})` : 'var(--color-pps)'}
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}

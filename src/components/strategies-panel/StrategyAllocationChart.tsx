@@ -29,7 +29,7 @@ const DEFAULT_COLORS = [
   '#000838', // Dark blue
   '#001070',
   '#0018A8',
-  '#0020E0', // Lighter blue
+  '#0020E0' // Lighter blue
 ]
 
 // Custom tooltip component for the charts
@@ -70,92 +70,80 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null
 }
 
-export const StrategyAllocationChart: React.FC<StrategyAllocationChartProps> =
-  React.memo(
-    ({
-      allocationData,
-      apyContributionData,
-      totalAPYContribution,
-      colors = DEFAULT_COLORS,
-    }) => {
-      return (
-        <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3 pb-16">
-          {/* Allocation Chart */}
-          <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
-            <PieChart width={160} height={160}>
-              <Pie
-                data={allocationData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                startAngle={90}
-                endAngle={-270}
-              >
-                {allocationData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
-                  />
-                ))}
-                <Label
-                  content={() => (
-                    <text
-                      x={80}
-                      y={80}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className="fill-foreground text-sm font-medium"
-                    >
-                      allocation %
-                    </text>
-                  )}
-                />
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-          </div>
-
-          {/* APY Contribution Chart */}
-          <div className="lg:w-full w-1/2 pl-2 lg:pl-0 lg:mt-6">
-            <PieChart width={160} height={160}>
-              <Pie
-                data={apyContributionData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                startAngle={90}
-                endAngle={-270}
-              >
-                {apyContributionData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
-                  />
-                ))}
-                <Label
-                  content={() => (
-                    <text
-                      x={80}
-                      y={80}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className="fill-foreground text-sm font-medium"
-                    >
-                      {totalAPYContribution.toFixed(2)}%
-                    </text>
-                  )}
-                />
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-          </div>
+export const StrategyAllocationChart: React.FC<StrategyAllocationChartProps> = React.memo(
+  ({ allocationData, apyContributionData, totalAPYContribution, colors = DEFAULT_COLORS }) => {
+    return (
+      <div className="lg:ml-6 lg:w-64 mt-6 lg:mt-0 flex lg:flex-col flex-row justify-around pt-3 pb-16">
+        {/* Allocation Chart */}
+        <div className="lg:w-full w-1/2 pr-2 lg:pr-0">
+          <PieChart width={160} height={160}>
+            <Pie
+              data={allocationData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              startAngle={90}
+              endAngle={-270}
+            >
+              {allocationData.map((entry, index) => (
+                <Cell key={entry.id} fill={colors[index % colors.length]} />
+              ))}
+              <Label
+                content={() => (
+                  <text
+                    x={80}
+                    y={80}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="fill-foreground text-sm font-medium"
+                  >
+                    allocation %
+                  </text>
+                )}
+              />
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
         </div>
-      )
-    }
-  )
+
+        {/* APY Contribution Chart */}
+        <div className="lg:w-full w-1/2 pl-2 lg:pl-0 lg:mt-6">
+          <PieChart width={160} height={160}>
+            <Pie
+              data={apyContributionData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              startAngle={90}
+              endAngle={-270}
+            >
+              {apyContributionData.map((entry, index) => (
+                <Cell key={entry.id} fill={colors[index % colors.length]} />
+              ))}
+              <Label
+                content={() => (
+                  <text
+                    x={80}
+                    y={80}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="fill-foreground text-sm font-medium"
+                  >
+                    {totalAPYContribution.toFixed(2)}%
+                  </text>
+                )}
+              />
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </div>
+      </div>
+    )
+  }
+)

@@ -1,7 +1,7 @@
 import { readContracts } from '@wagmi/core'
-import { Address } from 'viem'
-import type { ChainId } from '@/constants/chains'
+import type { Address } from 'viem'
 import { aprOracleAbi, getAprOracleAddress } from '@/constants/aprOracle'
+import type { ChainId } from '@/constants/chains'
 import { formatPercentNullable } from '@/lib/formatters'
 import { config } from '@/wagmi'
 
@@ -56,7 +56,7 @@ const formatAprValue = (raw: bigint | null): AprValue => {
     return {
       raw: null,
       percent: null,
-      formatted: null,
+      formatted: null
     }
   }
 
@@ -64,16 +64,12 @@ const formatAprValue = (raw: bigint | null): AprValue => {
   return {
     raw,
     percent,
-    formatted: formatPercentNullable(percent),
+    formatted: formatPercentNullable(percent)
   }
 }
 
 const calculatePercentChange = (current: AprValue, projected: AprValue): string | null => {
-  if (
-    current.percent === null ||
-    projected.percent === null ||
-    current.percent === 0
-  ) {
+  if (current.percent === null || projected.percent === null || current.percent === 0) {
     return null
   }
 
@@ -82,15 +78,13 @@ const calculatePercentChange = (current: AprValue, projected: AprValue): string 
   return `${sign}${change.toFixed(2)}%`
 }
 
-const executeWithFallback = async (
-  contracts: OracleContractCall[]
-): Promise<ContractResult[]> => {
+const executeWithFallback = async (contracts: OracleContractCall[]): Promise<ContractResult[]> => {
   if (!contracts.length) {
     return []
   }
 
   const initialResults = (await readContracts(config, {
-    contracts,
+    contracts
   })) as ContractResult[]
 
   const failed = initialResults
@@ -103,11 +97,11 @@ const executeWithFallback = async (
 
   const fallbackContracts: OracleContractCall[] = failed.map(({ index }) => ({
     ...contracts[index],
-    functionName: 'getExpectedApr',
+    functionName: 'getExpectedApr'
   }))
 
   const fallbackResults = (await readContracts(config, {
-    contracts: fallbackContracts,
+    contracts: fallbackContracts
   })) as ContractResult[]
 
   failed.forEach(({ index }, fallbackIndex) => {
@@ -122,7 +116,7 @@ const executeWithFallback = async (
 export const fetchAprOracle = async ({
   vaultAddress,
   chainId,
-  delta = 0n,
+  delta = 0n
 }: FetchAprOracleParams): Promise<AprOracleResponse> => {
   const oracleAddress = getAprOracleAddress(chainId)
   if (!oracleAddress) {
@@ -135,33 +129,29 @@ export const fetchAprOracle = async ({
       abi: aprOracleAbi,
       functionName: 'getStrategyApr',
       args: [vaultAddress, 0n],
-      chainId: chainId as WagmiChainId,
+      chainId: chainId as WagmiChainId
     },
     {
       address: oracleAddress,
       abi: aprOracleAbi,
       functionName: 'getStrategyApr',
       args: [vaultAddress, delta],
-      chainId: chainId as WagmiChainId,
-    },
+      chainId: chainId as WagmiChainId
+    }
   ]
 
   const [currentResult, projectedResult] = await executeWithFallback(contracts)
 
   const current =
-    currentResult?.status === 'success'
-      ? formatAprValue(currentResult.result as bigint)
-      : formatAprValue(null)
+    currentResult?.status === 'success' ? formatAprValue(currentResult.result as bigint) : formatAprValue(null)
   const projected =
-    projectedResult?.status === 'success'
-      ? formatAprValue(projectedResult.result as bigint)
-      : formatAprValue(null)
+    projectedResult?.status === 'success' ? formatAprValue(projectedResult.result as bigint) : formatAprValue(null)
 
   return {
     current,
     projected,
     percentChange: calculatePercentChange(current, projected),
-    delta,
+    delta
   }
 }
 
@@ -170,9 +160,7 @@ type PreparedStrategyApr = {
   contract: OracleContractCall
 }
 
-export const fetchStrategyAprs = async (
-  requests: StrategyAprRequest[]
-): Promise<StrategyAprMap> => {
+export const fetchStrategyAprs = async (requests: StrategyAprRequest[]): Promise<StrategyAprMap> => {
   if (!requests.length) {
     return {}
   }
@@ -191,8 +179,8 @@ export const fetchStrategyAprs = async (
         abi: aprOracleAbi,
         functionName: 'getStrategyApr',
         args: [request.address, 0n],
-        chainId: request.chainId as WagmiChainId,
-      },
+        chainId: request.chainId as WagmiChainId
+      }
     })
   }
 
@@ -200,16 +188,12 @@ export const fetchStrategyAprs = async (
     return {}
   }
 
-  const results = await executeWithFallback(
-    prepared.map(entry => entry.contract)
-  )
+  const results = await executeWithFallback(prepared.map((entry) => entry.contract))
 
   return prepared.reduce<StrategyAprMap>((acc, entry, index) => {
     const contractResult = results[index]
     const formatted =
-      contractResult?.status === 'success'
-        ? formatAprValue(contractResult.result as bigint)
-        : formatAprValue(null)
+      contractResult?.status === 'success' ? formatAprValue(contractResult.result as bigint) : formatAprValue(null)
     acc[entry.request.address.toLowerCase()] = formatted
     return acc
   }, {})

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react'
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface LazyOptimizedImageProps {
   src: string
@@ -36,7 +37,7 @@ class ImageLoadingQueue {
       insertIndex = 0
     } else if (priority === 'normal') {
       // Insert after high priority items
-      insertIndex = this.queue.findIndex(item => item.priority === 'low')
+      insertIndex = this.queue.findIndex((item) => item.priority === 'low')
       if (insertIndex === -1) insertIndex = this.queue.length
     }
 
@@ -79,7 +80,7 @@ class ImageLoadingQueue {
   }
 
   remove(src: string) {
-    const index = this.queue.findIndex(item => item.src === src)
+    const index = this.queue.findIndex((item) => item.src === src)
     if (index > -1) {
       this.queue.splice(index, 1)
     }
@@ -97,7 +98,7 @@ export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   onError,
   placeholder,
   priority = 'normal',
-  rootMargin = '50px',
+  rootMargin = '50px'
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -110,7 +111,7 @@ export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
     if (!element) return
 
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         const [entry] = entries
         if (entry.isIntersecting) {
           setIsVisible(true)
@@ -169,19 +170,11 @@ export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   return (
     <div ref={imgRef} className="relative w-6 h-6">
       {/* Loading placeholder */}
-      {!imageLoaded &&
-        (placeholder || (
-          <div className="absolute inset-0 bg-gray-300 rounded-full animate-pulse" />
-        ))}
+      {!imageLoaded && (placeholder || <div className="absolute inset-0 bg-gray-300 rounded-full animate-pulse" />)}
 
       {/* Actual image - only render when loaded */}
       {imageLoaded && (
-        <img
-          src={src}
-          alt={alt}
-          className={`${className} transition-opacity duration-200`}
-          loading="lazy"
-        />
+        <img src={src} alt={alt} className={`${className} transition-opacity duration-200`} loading="lazy" />
       )}
     </div>
   )

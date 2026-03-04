@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Filter, X } from 'lucide-react'
+import type React from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VAULT_TYPE_LIST } from '@/constants/vaultTypes'
 
 // --- Constants object for better maintainability ---
@@ -9,7 +10,7 @@ const CONSTANTS = {
   TYPE_BUTTON_WIDTH: 100, // Width of the type button itself
   BUTTON_PADDING_X: 16, // px-3
   FILTER_ICON_WIDTH: 8, // w-4
-  FILTER_ICON_MARGIN_RIGHT: 10, // mr-2
+  FILTER_ICON_MARGIN_RIGHT: 10 // mr-2
 }
 
 interface TypeSelectorProps {
@@ -27,22 +28,16 @@ interface TypeData {
 }
 
 // --- Type position calculation hook similar to useIconPositions ---
-const useTypePositions = (
-  types: string[],
-  selectedTypes: string[],
-  isExpanded: boolean
-): TypeData[] => {
-  const TYPE_WIDTH = isExpanded
-    ? CONSTANTS.TYPE_WIDTH_EXPANDED
-    : CONSTANTS.TYPE_WIDTH_COLLAPSED
+const useTypePositions = (types: string[], selectedTypes: string[], isExpanded: boolean): TypeData[] => {
+  const TYPE_WIDTH = isExpanded ? CONSTANTS.TYPE_WIDTH_EXPANDED : CONSTANTS.TYPE_WIDTH_COLLAPSED
 
   return useMemo(() => {
     const findNearestSelected = (unselectedIndex: number): number => {
       if (selectedTypes.length === 0) return 0
       let minDistance = Infinity
       let nearestIndex = 0
-      selectedTypes.forEach(selectedType => {
-        const selectedIndex = types.findIndex(t => t === selectedType)
+      selectedTypes.forEach((selectedType) => {
+        const selectedIndex = types.indexOf(selectedType)
         if (selectedIndex !== -1) {
           const distance = Math.abs(selectedIndex - unselectedIndex)
           if (distance < minDistance) {
@@ -58,33 +53,28 @@ const useTypePositions = (
       return types.map((type, index) => ({
         type,
         targetX: index * TYPE_WIDTH,
-        isSelected: selectedTypes.includes(type),
+        isSelected: selectedTypes.includes(type)
       }))
     }
 
-    const selectedTypeObjects = types.filter(type =>
-      selectedTypes.includes(type)
-    )
+    const selectedTypeObjects = types.filter((type) => selectedTypes.includes(type))
     return types.map((type, index) => {
       const isSelected = selectedTypes.includes(type)
       if (isSelected) {
-        const selectedIndex = selectedTypeObjects.findIndex(st => st === type)
+        const selectedIndex = selectedTypeObjects.indexOf(type)
         return {
           type,
           targetX: selectedIndex * TYPE_WIDTH,
-          isSelected: true,
+          isSelected: true
         }
-      } else {
-        const nearestSelectedIndex = findNearestSelected(index)
-        const nearestSelectedType = types[nearestSelectedIndex]
-        const packedIndex = selectedTypeObjects.findIndex(
-          st => st === nearestSelectedType
-        )
-        return {
-          type,
-          targetX: Math.max(0, packedIndex) * TYPE_WIDTH,
-          isSelected: false,
-        }
+      }
+      const nearestSelectedIndex = findNearestSelected(index)
+      const nearestSelectedType = types[nearestSelectedIndex]
+      const packedIndex = selectedTypeObjects.indexOf(nearestSelectedType)
+      return {
+        type,
+        targetX: Math.max(0, packedIndex) * TYPE_WIDTH,
+        isSelected: false
       }
     })
   }, [types, selectedTypes, isExpanded, TYPE_WIDTH])
@@ -101,6 +91,7 @@ const useComponentWidth = (
   const textRef = useRef<HTMLSpanElement>(null)
   const [textWidth, setTextWidth] = useState(0)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recalc width when button label changes
   useEffect(() => {
     if (textRef.current) {
       setTextWidth(textRef.current.offsetWidth)
@@ -109,23 +100,14 @@ const useComponentWidth = (
 
   const containerWidth = useMemo(() => {
     const baseWidth =
-      textWidth +
-      CONSTANTS.BUTTON_PADDING_X * 2 +
-      CONSTANTS.FILTER_ICON_WIDTH +
-      CONSTANTS.FILTER_ICON_MARGIN_RIGHT
+      textWidth + CONSTANTS.BUTTON_PADDING_X * 2 + CONSTANTS.FILTER_ICON_WIDTH + CONSTANTS.FILTER_ICON_MARGIN_RIGHT
 
     if (isExpanded) {
-      const typesWidth =
-        (typeCount - 1) * CONSTANTS.TYPE_WIDTH_EXPANDED +
-        CONSTANTS.TYPE_BUTTON_WIDTH +
-        10
+      const typesWidth = (typeCount - 1) * CONSTANTS.TYPE_WIDTH_EXPANDED + CONSTANTS.TYPE_BUTTON_WIDTH + 10
       return baseWidth + typesWidth
     }
     if (hasSelectedTypes) {
-      const typesWidth =
-        (selectedTypeCount - 1) * CONSTANTS.TYPE_WIDTH_COLLAPSED +
-        CONSTANTS.TYPE_BUTTON_WIDTH +
-        10
+      const typesWidth = (selectedTypeCount - 1) * CONSTANTS.TYPE_WIDTH_COLLAPSED + CONSTANTS.TYPE_BUTTON_WIDTH + 10
       return baseWidth + typesWidth
     }
     return baseWidth
@@ -139,7 +121,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
   onTypeToggle,
   onSetSelectedTypes,
   isCollapsed = false,
-  onToggleCollapsed,
+  onToggleCollapsed
 }) => {
   // --- Component state ---
   const [isHovered, setIsHovered] = useState(false)
@@ -149,8 +131,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
   // --- Derived data and constants ---
   const types = VAULT_TYPE_LIST
   // If no types are selected or all types are selected, treat as "all types selected"
-  const isAllTypesSelected =
-    selectedTypes.length === 0 || selectedTypes.length === types.length
+  const isAllTypesSelected = selectedTypes.length === 0 || selectedTypes.length === types.length
   const hasSelectedTypes = selectedTypes.length > 0 && !isAllTypesSelected
 
   // --- Custom hooks for complex logic ---
@@ -172,13 +153,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
       }
       setFilterButtonText(hasSelectedTypes ? 'Selected Types' : 'Filter Types')
     }
-  }, [
-    isExpanded,
-    hasSelectedTypes,
-    onSetSelectedTypes,
-    selectedTypes.length,
-    types.length,
-  ])
+  }, [isExpanded, hasSelectedTypes, onSetSelectedTypes, selectedTypes.length, types.length])
 
   // --- Event handlers ---
   const handleClearSelection = () => {
@@ -186,7 +161,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
       onSetSelectedTypes([])
     } else {
       // Fallback: if onSetSelectedTypes is not provided, clear by toggling all selected types
-      selectedTypes.forEach(type => {
+      selectedTypes.forEach((type) => {
         onTypeToggle(type)
       })
     }
@@ -235,10 +210,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
           ) : (
             <Filter className="w-4 h-4 text-gray-500 mr-2" />
           )}
-          <span
-            ref={textRef}
-            className="text-sm font-medium text-gray-700 whitespace-nowrap"
-          >
+          <span ref={textRef} className="text-sm font-medium text-gray-700 whitespace-nowrap">
             {filterButtonText}
           </span>
         </div>
@@ -246,7 +218,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
         {/* Type container */}
         {(isExpanded || hasSelectedTypes) && (
           <div className="relative h-10 flex-1 pl-4">
-            {typePositions.map(typeData => (
+            {typePositions.map((typeData) => (
               <button
                 key={typeData.type}
                 className={`absolute flex items-center justify-center rounded-md transition-all duration-300 ease-in-out focus:outline-none ${
@@ -257,7 +229,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
                   top: typeData.isSelected || isExpanded ? '4px' : '6px',
                   width: typeData.isSelected || isExpanded ? '76px' : '60px',
                   height: typeData.isSelected || isExpanded ? '32px' : '28px',
-                  opacity: typeData.isSelected || isExpanded ? 1 : 0,
+                  opacity: typeData.isSelected || isExpanded ? 1 : 0
                 }}
                 onClick={() => handleTypeClick(typeData.type)}
                 title={typeData.type}
@@ -269,9 +241,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({
                       : 'bg-gray-50 border-gray-200 text-gray-600'
                   }`}
                 >
-                  <span className="hidden sm:inline text-xs">
-                    {typeData.type}
-                  </span>
+                  <span className="hidden sm:inline text-xs">{typeData.type}</span>
                 </div>
               </button>
             ))}

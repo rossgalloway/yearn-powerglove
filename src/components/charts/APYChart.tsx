@@ -1,77 +1,51 @@
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartTooltip,
-  type ChartConfig,
-} from '@/components/ui/chart'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ChartDataPoint } from '@/types/dataTypes'
 import React, { useMemo, useState } from 'react'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { getTimeframeLimit } from '@/components/charts/chart-utils'
+import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
+import { Checkbox } from '@/components/ui/checkbox'
+import type { ChartDataPoint } from '@/types/dataTypes'
 
-type SeriesKey =
-  | 'derivedApy'
-  | 'sevenDayApy'
-  | 'thirtyDayApy'
-  | 'oracleApr'
-  | 'oracleApy30dAvg'
+type SeriesKey = 'derivedApy' | 'sevenDayApy' | 'thirtyDayApy' | 'oracleApr' | 'oracleApy30dAvg'
 
 const TOOLTIP_ORDER: Record<SeriesKey, number> = {
   derivedApy: 0,
   sevenDayApy: 1,
   thirtyDayApy: 2,
   oracleApr: 3,
-  oracleApy30dAvg: 4,
+  oracleApy30dAvg: 4
 }
 
-const isDashedSeries = (seriesKey: SeriesKey) =>
-  seriesKey === 'thirtyDayApy' || seriesKey === 'oracleApy30dAvg'
+const isDashedSeries = (seriesKey: SeriesKey) => seriesKey === 'thirtyDayApy' || seriesKey === 'oracleApy30dAvg'
 
-const SERIES_BASE_CONFIG: Record<
-  SeriesKey,
-  { chartLabel: string; legendLabel: string; color: string }
-> = {
+const SERIES_BASE_CONFIG: Record<SeriesKey, { chartLabel: string; legendLabel: string; color: string }> = {
   derivedApy: {
     chartLabel: '1-day APY %',
     legendLabel: '1-day APY',
-    color: 'var(--chart-3)',
+    color: 'var(--chart-3)'
   },
   sevenDayApy: {
     chartLabel: '7-day APY %',
     legendLabel: '7-day APY',
-    color: 'var(--chart-2)',
+    color: 'var(--chart-2)'
   },
   thirtyDayApy: {
     chartLabel: '30-day APY %',
     legendLabel: '30-day APY',
-    color: 'var(--chart-1)',
+    color: 'var(--chart-1)'
   },
   oracleApr: {
     chartLabel: 'Oracle APR %',
     legendLabel: 'Oracle APR',
-    color: 'var(--chart-4)',
+    color: 'var(--chart-4)'
   },
   oracleApy30dAvg: {
     chartLabel: 'Oracle APY (30d avg) %',
     legendLabel: 'Oracle APY (30d avg)',
-    color: 'var(--chart-4)',
-  },
+    color: 'var(--chart-4)'
+  }
 }
 
-const SERIES_ORDER: SeriesKey[] = [
-  'derivedApy',
-  'sevenDayApy',
-  'thirtyDayApy',
-  'oracleApr',
-  'oracleApy30dAvg',
-]
+const SERIES_ORDER: SeriesKey[] = ['derivedApy', 'sevenDayApy', 'thirtyDayApy', 'oracleApr', 'oracleApy30dAvg']
 
 interface APYChartProps {
   chartData: ChartDataPoint[]
@@ -83,32 +57,25 @@ interface APYChartProps {
 
 export const APYChart: React.FC<APYChartProps> = React.memo(
   ({ chartData, timeframe, hideAxes, hideTooltip, defaultVisibleSeries }) => {
-    const [visibleSeries, setVisibleSeries] = useState<
-      Record<SeriesKey, boolean>
-    >({
+    const [visibleSeries, setVisibleSeries] = useState<Record<SeriesKey, boolean>>({
       derivedApy: defaultVisibleSeries?.derivedApy ?? true,
       sevenDayApy: defaultVisibleSeries?.sevenDayApy ?? true,
       thirtyDayApy: defaultVisibleSeries?.thirtyDayApy ?? true,
       oracleApr: defaultVisibleSeries?.oracleApr ?? false,
-      oracleApy30dAvg: defaultVisibleSeries?.oracleApy30dAvg ?? false,
+      oracleApy30dAvg: defaultVisibleSeries?.oracleApy30dAvg ?? false
     })
 
     const seriesConfig = SERIES_BASE_CONFIG
     const seriesOrder = SERIES_ORDER
 
-    const filteredData = useMemo(
-      () => chartData.slice(-getTimeframeLimit(timeframe)),
-      [chartData, timeframe]
-    )
+    const filteredData = useMemo(() => chartData.slice(-getTimeframeLimit(timeframe)), [chartData, timeframe])
 
     const hasOracleApr = useMemo(() => {
-      return filteredData.some(point => typeof point.oracleApr === 'number')
+      return filteredData.some((point) => typeof point.oracleApr === 'number')
     }, [filteredData])
 
     const hasOracleApy30dAvg = useMemo(() => {
-      return filteredData.some(
-        point => typeof point.oracleApy30dAvg === 'number'
-      )
+      return filteredData.some((point) => typeof point.oracleApy30dAvg === 'number')
     }, [filteredData])
 
     const chartConfig = useMemo<ChartConfig>(() => {
@@ -121,14 +88,13 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
         }
         acc[key] = {
           label: meta.chartLabel,
-          color: hideAxes ? 'black' : meta.color,
+          color: hideAxes ? 'black' : meta.color
         }
         return acc
       }, {} as ChartConfig)
     }, [hideAxes, hasOracleApr, hasOracleApy30dAvg])
 
-    const getSeriesLabel = (name: string) =>
-      seriesConfig[name as SeriesKey]?.legendLabel || name
+    const getSeriesLabel = (name: string) => seriesConfig[name as SeriesKey]?.legendLabel || name
 
     return (
       <div className="relative h-full">
@@ -140,7 +106,7 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                 top: 20,
                 right: 30,
                 left: 10,
-                bottom: 20,
+                bottom: 20
               }}
             >
               <CartesianGrid vertical={false} />
@@ -150,19 +116,15 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                   hideAxes
                     ? false
                     : {
-                        fill: 'hsl(var(--muted-foreground))',
+                        fill: 'hsl(var(--muted-foreground))'
                       }
                 }
-                axisLine={
-                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-                }
-                tickLine={
-                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-                }
+                axisLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
+                tickLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis
                 domain={[0, 'auto']}
-                tickFormatter={value => `${value}%`}
+                tickFormatter={(value) => `${value}%`}
                 label={
                   hideAxes
                     ? undefined
@@ -173,25 +135,19 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                         offset: 10,
                         style: {
                           textAnchor: 'middle',
-                          fill: hideAxes
-                            ? 'transparent'
-                            : 'hsl(var(--muted-foreground))',
-                        },
+                          fill: hideAxes ? 'transparent' : 'hsl(var(--muted-foreground))'
+                        }
                       }
                 }
                 tick={
                   hideAxes
                     ? false
                     : {
-                        fill: 'hsl(var(--muted-foreground))',
+                        fill: 'hsl(var(--muted-foreground))'
                       }
                 }
-                axisLine={
-                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-                }
-                tickLine={
-                  hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }
-                }
+                axisLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
+                tickLine={hideAxes ? false : { stroke: 'hsl(var(--muted-foreground))' }}
               />
               {!hideTooltip && (
                 <ChartTooltip
@@ -201,23 +157,17 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                     const sorted = [...payload].sort((a, b) => {
                       const aKey = a.dataKey as SeriesKey
                       const bKey = b.dataKey as SeriesKey
-                      return (
-                        (TOOLTIP_ORDER[aKey] ?? 999) -
-                        (TOOLTIP_ORDER[bKey] ?? 999)
-                      )
+                      return (TOOLTIP_ORDER[aKey] ?? 999) - (TOOLTIP_ORDER[bKey] ?? 999)
                     })
 
                     return (
                       <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
                         <div className="font-medium">{label}</div>
                         <div className="grid gap-1.5">
-                          {sorted.map(item => {
+                          {sorted.map((item) => {
                             const seriesKey = item.dataKey as SeriesKey
                             const raw = item.value
-                            const value =
-                              typeof raw === 'number'
-                                ? `${raw.toFixed(2)}%`
-                                : raw
+                            const value = typeof raw === 'number' ? `${raw.toFixed(2)}%` : raw
 
                             const color =
                               (item.color as string | undefined) ||
@@ -225,18 +175,9 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
                               'currentColor'
 
                             return (
-                              <div
-                                key={`${item.dataKey}`}
-                                className="flex items-center justify-between gap-3"
-                              >
+                              <div key={`${item.dataKey}`} className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                  <svg
-                                    aria-hidden="true"
-                                    width={18}
-                                    height={6}
-                                    viewBox="0 0 18 6"
-                                    className="shrink-0"
-                                  >
+                                  <svg aria-hidden="true" width={18} height={6} viewBox="0 0 18 6" className="shrink-0">
                                     <line
                                       x1="0"
                                       y1="3"
@@ -322,33 +263,30 @@ export const APYChart: React.FC<APYChartProps> = React.memo(
           <div className="absolute inset-x-0 bottom-[-1rem] flex justify-center">
             <div className="flex flex-wrap items-center justify-center gap-4 rounded-md bg-white/80 px-4 py-2 text-xs">
               {seriesOrder
-                .filter(seriesKey => {
+                .filter((seriesKey) => {
                   if (seriesKey === 'oracleApr') return hasOracleApr
                   if (seriesKey === 'oracleApy30dAvg') return hasOracleApy30dAvg
                   return true
                 })
-                .map(seriesKey => (
+                .map((seriesKey) => (
                   <div key={seriesKey} className="flex items-center gap-2">
                     <Checkbox
                       id={`toggle-${seriesKey}`}
                       checked={visibleSeries[seriesKey]}
                       className="h-4 w-4 rounded-[4px] border border-gray-400 bg-white text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:bg-white data-[state=checked]:text-gray-800"
-                      onCheckedChange={checked =>
-                        setVisibleSeries(prev => ({
+                      onCheckedChange={(checked) =>
+                        setVisibleSeries((prev) => ({
                           ...prev,
-                          [seriesKey]: !!checked,
+                          [seriesKey]: !!checked
                         }))
                       }
                     />
-                    <label
-                      htmlFor={`toggle-${seriesKey}`}
-                      className="flex items-center gap-1"
-                    >
+                    <label htmlFor={`toggle-${seriesKey}`} className="flex items-center gap-1">
                       <span
                         aria-hidden="true"
                         className="inline-block h-3.5 w-3.5 rounded-sm border border-gray-200"
                         style={{
-                          backgroundColor: seriesConfig[seriesKey].color,
+                          backgroundColor: seriesConfig[seriesKey].color
                         }}
                       />
                       {seriesConfig[seriesKey].legendLabel}

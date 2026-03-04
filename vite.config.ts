@@ -1,23 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
+import react from '@vitejs/plugin-react'
 import path from 'path'
+import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
-    react(),
-  ],
+  plugins: [TanStackRouterVite({ target: 'react', autoCodeSplitting: true }), react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+      '@': path.resolve(__dirname, './src')
+    }
   },
   server:
     process.env.NODE_ENV === 'development'
       ? {
-          allowedHosts: ['localhost', '127.0.0.1'],
+          allowedHosts: ['localhost', '127.0.0.1']
         }
-      : {},
+      : {}
 })

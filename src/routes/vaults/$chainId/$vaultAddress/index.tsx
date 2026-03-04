@@ -1,25 +1,26 @@
 import { createFileRoute } from '@tanstack/react-router'
+import React, { lazy, Suspense } from 'react'
 import { MainInfoPanel } from '@/components/main-info-panel'
-import React, { Suspense, lazy } from 'react'
+
 // Lazy load ChartsPanel for code splitting (reduces initial bundle size)
 const ChartsPanel = lazy(() =>
-  import('@/components/charts/charts-panel').then(m => ({
-    default: m.ChartsPanel,
+  import('@/components/charts/charts-panel').then((m) => ({
+    default: m.ChartsPanel
   }))
 )
-import { StrategiesPanel } from '@/components/strategies-panel/index'
-import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
 
+import type { Address } from 'viem'
+import { StrategiesPanel } from '@/components/strategies-panel/index'
+import { VaultPageBreadcrumb, VaultPageLayout } from '@/components/vault-page'
+import type { ChainId } from '@/constants/chains'
+import { useTokenAssetsContext } from '@/contexts/useTokenAssets'
+import { useAprOracle } from '@/hooks/useAprOracle'
+import { useChartData } from '@/hooks/useChartData'
+import { useMainInfoPanelData } from '@/hooks/useMainInfoPanelData'
 // Import our new data hooks and layout components
 import { useVaultPageData } from '@/hooks/useVaultPageData'
-import { useMainInfoPanelData } from '@/hooks/useMainInfoPanelData'
-import { useChartData } from '@/hooks/useChartData'
-import { useAprOracle } from '@/hooks/useAprOracle'
-import { VaultPageLayout, VaultPageBreadcrumb } from '@/components/vault-page'
-import { ChainId } from '@/constants/chains'
-import { isLegacyVaultType } from '@/utils/vaultDataUtils'
-import { Address } from 'viem'
 import { formatPercent } from '@/lib/formatters'
+import { isLegacyVaultType } from '@/utils/vaultDataUtils'
 import { getVaultOverrideDisplayItems } from '@/utils/vaultOverrides'
 
 function SingleVaultPage() {
@@ -40,34 +41,31 @@ function SingleVaultPage() {
     chartsError,
     overrideConfig,
     isBlacklisted,
-    blacklistReason,
+    blacklistReason
   } = useVaultPageData({ vaultAddress, vaultChainId })
 
   // Transform main info panel data
   const mainInfoPanelData = useMainInfoPanelData({
     vaultDetails,
-    tokenAssets,
+    tokenAssets
   })
 
   // Process chart data
-  const { transformedAprApyData, transformedTvlData, transformedPpsData } =
-    useChartData({
-      apyWeeklyData,
-      apyMonthlyData,
-      aprOracleAprData,
-      tvlData,
-      ppsData,
-      isLoading: chartsLoading,
-      hasErrors: chartsError,
-    })
+  const { transformedAprApyData, transformedTvlData, transformedPpsData } = useChartData({
+    apyWeeklyData,
+    apyMonthlyData,
+    aprOracleAprData,
+    tvlData,
+    ppsData,
+    isLoading: chartsLoading,
+    hasErrors: chartsError
+  })
 
   const { data: vaultAprOracle } = useAprOracle({
-    address: vaultDetails?.address
-      ? (vaultDetails.address as Address)
-      : undefined,
+    address: vaultDetails?.address ? (vaultDetails.address as Address) : undefined,
     chainId: vaultDetails?.v3 ? vaultChainId : undefined,
     delta: 0n,
-    enabled: Boolean(vaultDetails?.v3),
+    enabled: Boolean(vaultDetails?.v3)
   })
 
   const latestDerivedApy = React.useMemo(() => {
@@ -82,9 +80,7 @@ function SingleVaultPage() {
   }, [transformedAprApyData])
 
   const legacyVault = vaultDetails ? isLegacyVaultType(vaultDetails) : false
-  const yDaemonForwardApy = legacyVault
-    ? null
-    : (vaultDetails?.forwardApyNet ?? null)
+  const yDaemonForwardApy = legacyVault ? null : (vaultDetails?.forwardApyNet ?? null)
   const oracleOneDayApy = vaultAprOracle?.current.formatted ?? null
 
   const yDaemonForwardApyPercent = React.useMemo(() => {
@@ -95,10 +91,7 @@ function SingleVaultPage() {
   }, [yDaemonForwardApy])
 
   const yDaemonForwardApyFormatted = React.useMemo(() => {
-    if (
-      yDaemonForwardApyPercent === null ||
-      yDaemonForwardApyPercent === undefined
-    ) {
+    if (yDaemonForwardApyPercent === null || yDaemonForwardApyPercent === undefined) {
       return null
     }
     return formatPercent(yDaemonForwardApyPercent)
@@ -109,27 +102,16 @@ function SingleVaultPage() {
     const derivedApyFormatted = formatPercent(latestDerivedApy)
     const thirtyDayFormatted = mainInfoPanelData.thirtyDayAPY
 
-    const finalOneDayApy = legacyVault
-      ? ' - '
-      : (yDaemonForwardApyFormatted ?? oracleOneDayApy ?? derivedApyFormatted)
+    const finalOneDayApy = legacyVault ? ' - ' : (yDaemonForwardApyFormatted ?? oracleOneDayApy ?? derivedApyFormatted)
 
     return {
       ...mainInfoPanelData,
       oneDayAPY: finalOneDayApy,
-      thirtyDayAPY: thirtyDayFormatted,
+      thirtyDayAPY: thirtyDayFormatted
     }
-  }, [
-    mainInfoPanelData,
-    latestDerivedApy,
-    legacyVault,
-    yDaemonForwardApyFormatted,
-    oracleOneDayApy,
-  ])
+  }, [mainInfoPanelData, latestDerivedApy, legacyVault, yDaemonForwardApyFormatted, oracleOneDayApy])
 
-  const overrideItems = React.useMemo(
-    () => getVaultOverrideDisplayItems(overrideConfig),
-    [overrideConfig]
-  )
+  const overrideItems = React.useMemo(() => getVaultOverrideDisplayItems(overrideConfig), [overrideConfig])
 
   // Ensure we have vault details and main info panel data
   if (!vaultDetails || !mainInfoPanelProps) {
@@ -144,9 +126,7 @@ function SingleVaultPage() {
     <VaultPageLayout isLoading={isInitialLoading} hasErrors={hasErrors}>
       <VaultPageBreadcrumb vaultName={vaultDetails.name} />
       <div className="relative">
-        {isBlacklisted && (
-          <div className="absolute inset-0 z-20 rounded-lg bg-white/40 backdrop-blur-sm" />
-        )}
+        {isBlacklisted && <div className="absolute inset-0 z-20 rounded-lg bg-white/40 backdrop-blur-sm" />}
         {isBlacklisted && (
           <div className="relative z-30 flex items-start gap-3 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
             <span aria-hidden="true" className="text-xl leading-none">
@@ -155,8 +135,7 @@ function SingleVaultPage() {
             <div className="text-left">
               <p className="font-semibold">Vault Data Unavailable</p>
               <p className="text-sm text-amber-700">
-                {blacklistReason ||
-                  'This vault has been hidden until its data can be reviewed.'}
+                {blacklistReason || 'This vault has been hidden until its data can be reviewed.'}
               </p>
             </div>
           </div>
@@ -168,25 +147,18 @@ function SingleVaultPage() {
             </span>
             <div className="text-left">
               <p className="font-semibold">Vault info override active</p>
-              <p className="text-sm text-amber-700">
-                Certain values have been manually overridden.
-              </p>
+              <p className="text-sm text-amber-700">Certain values have been manually overridden.</p>
               <ul className="mt-2 space-y-1 text-sm">
-                {overrideItems.map(item => (
+                {overrideItems.map((item) => (
                   <li key={item.label}>
-                    <span className="font-medium">{item.label}:</span>{' '}
-                    <span>{item.value}</span>
+                    <span className="font-medium">{item.label}:</span> <span>{item.value}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
         )}
-        <div
-          className={`space-y-0 ${
-            isBlacklisted ? 'relative z-10 pointer-events-none select-none' : ''
-          }`}
-        >
+        <div className={`space-y-0 ${isBlacklisted ? 'relative z-10 pointer-events-none select-none' : ''}`}>
           <MainInfoPanel {...mainInfoPanelProps} />
           <Suspense fallback={null}>
             <ChartsPanel
@@ -197,11 +169,7 @@ function SingleVaultPage() {
               hasErrors={chartsError}
             />
           </Suspense>
-          <StrategiesPanel
-            vaultAddress={vaultAddress}
-            vaultChainId={vaultChainId}
-            vaultDetails={vaultDetails}
-          />
+          <StrategiesPanel vaultChainId={vaultChainId} vaultDetails={vaultDetails} />
         </div>
       </div>
     </VaultPageLayout>
@@ -209,5 +177,5 @@ function SingleVaultPage() {
 }
 
 export const Route = createFileRoute('/vaults/$chainId/$vaultAddress/')({
-  component: SingleVaultPage,
+  component: SingleVaultPage
 })

@@ -1,6 +1,6 @@
-import React from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import type React from 'react'
 import { FixedHeightChartContainer } from '@/components/charts/chart-container'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const ChartSkeleton: React.FC = () => {
   // Define timeframe options to match the real component
@@ -8,7 +8,7 @@ const ChartSkeleton: React.FC = () => {
     { label: '30 Days', value: '30d' },
     { label: '90 Days', value: '90d' },
     { label: '1 Year', value: '1y' },
-    { label: 'All Time', value: 'all' },
+    { label: 'All Time', value: 'all' }
   ]
 
   return (
@@ -48,11 +48,8 @@ const ChartSkeleton: React.FC = () => {
             </div>
             <div className="flex flex-wrap gap-2">
               {/* Skeleton timeframe buttons */}
-              {timeframes.map(tf => (
-                <div
-                  key={tf.value}
-                  className="h-7 w-16 bg-gray-200 rounded animate-pulse"
-                ></div>
+              {timeframes.map((tf) => (
+                <div key={tf.value} className="h-7 w-16 bg-gray-200 rounded animate-pulse"></div>
               ))}
             </div>
           </div>
@@ -82,16 +79,16 @@ const ChartSkeleton: React.FC = () => {
 
 // Individual skeleton chart component
 const SkeletonChart: React.FC = () => {
+  const yAxisTicks = Array.from({ length: 5 }, (_, index) => `y-axis-${index}`)
+  const xAxisTicks = Array.from({ length: 6 }, (_, index) => `x-axis-${index}`)
+
   return (
     <div className="w-full h-full flex flex-col min-h-[400px]">
       {/* Y-axis labels skeleton */}
       <div className="flex flex-1">
         <div className="w-12 flex flex-col justify-between py-4 pl-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-2 bg-gray-200 rounded animate-pulse"
-            ></div>
+          {yAxisTicks.map((tick) => (
+            <div key={tick} className="h-2 bg-gray-200 rounded animate-pulse"></div>
           ))}
         </div>
 
@@ -101,11 +98,8 @@ const SkeletonChart: React.FC = () => {
 
       {/* X-axis labels skeleton */}
       <div className="flex justify-around pl-4 mt-2 ml-12 flex-shrink-0">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-2 bg-gray-200 rounded w-8 animate-pulse"
-          ></div>
+        {xAxisTicks.map((tick) => (
+          <div key={tick} className="h-2 bg-gray-200 rounded w-8 animate-pulse"></div>
         ))}
       </div>
     </div>

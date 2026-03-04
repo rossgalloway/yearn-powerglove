@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import APYChart from '@/components/charts/APYChart'
-import TVLChart from '@/components/charts/TVLChart'
-import PPSChart from '@/components/charts/PPSChart'
-import { FixedHeightChartContainer } from '@/components/charts/chart-container'
-import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
-import { tvlChartData, ppsChartData, aprApyChartData } from '@/types/dataTypes'
 import ChartSkeleton from '@/components/charts/ChartSkeleton'
 import ChartsLoader from '@/components/charts/ChartsLoader'
+import { FixedHeightChartContainer } from '@/components/charts/chart-container'
+import PPSChart from '@/components/charts/PPSChart'
+import TVLChart from '@/components/charts/TVLChart'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChartErrorBoundary } from '@/components/utils/ErrorBoundary'
+import type { aprApyChartData, ppsChartData, tvlChartData } from '@/types/dataTypes'
 
 type ChartData = {
   aprApyData: aprApyChartData | null
@@ -19,20 +19,14 @@ type ChartData = {
 
 export function ChartsPanel(data: ChartData) {
   const [activeTab, setActiveTab] = useState('historical-apy')
-  const {
-    aprApyData,
-    tvlData,
-    ppsData,
-    isLoading = false,
-    hasErrors = false,
-  } = data
+  const { aprApyData, tvlData, ppsData, isLoading = false, hasErrors = false } = data
 
   // Define timeframe options with values that match the chart component expectations
   const timeframes = [
     { label: '30 Days', value: '30d' },
     { label: '90 Days', value: '90d' },
     { label: '1 Year', value: '1y' },
-    { label: 'All Time', value: 'all' },
+    { label: 'All Time', value: 'all' }
   ]
 
   const [timeframe, setTimeframe] = useState(timeframes[3]) // Default to All Time
@@ -53,9 +47,7 @@ export function ChartsPanel(data: ChartData) {
     return (
       <div className="relative">
         <ChartSkeleton />
-        <ChartsLoader
-          loadingState={isLoading ? 'loading charts' : 'preparing charts'}
-        />
+        <ChartsLoader loadingState={isLoading ? 'loading charts' : 'preparing charts'} />
       </div>
     )
   }
@@ -64,25 +56,21 @@ export function ChartsPanel(data: ChartData) {
   const chartInfo = {
     'historical-apy': {
       title: 'Vault Performance (TVL shown ghosted)',
-      description: `1-Day, 7-Day, and 30-Day APYs over ${timeframe.label}.`,
+      description: `1-Day, 7-Day, and 30-Day APYs over ${timeframe.label}.`
     },
     'historical-pps': {
       title: 'Vault Share Growth (1-Day APY shown ghosted)',
-      description: `Price Per Share values over ${timeframe.label}.`,
+      description: `Price Per Share values over ${timeframe.label}.`
     },
     'historical-tvl': {
       title: 'Total Value Deposited (APY shown ghosted)',
-      description: `Value Deposited in Vault over ${timeframe.label}.`,
-    },
+      description: `Value Deposited in Vault over ${timeframe.label}.`
+    }
   }
 
   return (
     <div className="border-x border-border bg-white">
-      <Tabs
-        defaultValue="historical-apy"
-        className="w-full"
-        onValueChange={value => setActiveTab(value)}
-      >
+      <Tabs defaultValue="historical-apy" className="w-full" onValueChange={(value) => setActiveTab(value)}>
         <div className="border-b border-border">
           <div className="px-0 pt-4">
             <TabsList className="grid w-fit grid-cols-3 bg-transparent p-0">
@@ -111,15 +99,11 @@ export function ChartsPanel(data: ChartData) {
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <div className="text-sm font-medium">
-                {chartInfo[activeTab as keyof typeof chartInfo].title}
-              </div>
-              <div className="text-xs text-gray-500">
-                {chartInfo[activeTab as keyof typeof chartInfo].description}
-              </div>
+              <div className="text-sm font-medium">{chartInfo[activeTab as keyof typeof chartInfo].title}</div>
+              <div className="text-xs text-gray-500">{chartInfo[activeTab as keyof typeof chartInfo].description}</div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {timeframes.map(tf => (
+              {timeframes.map((tf) => (
                 <button
                   key={tf.value}
                   onClick={() => setTimeframe(tf)}
@@ -138,20 +122,12 @@ export function ChartsPanel(data: ChartData) {
           <TabsContent value="historical-apy" className="mt-0">
             <FixedHeightChartContainer>
               <ChartErrorBoundary>
-                <APYChart
-                  chartData={aprApyData}
-                  timeframe={timeframe.value}
-                />
+                <APYChart chartData={aprApyData} timeframe={timeframe.value} />
               </ChartErrorBoundary>
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 {/* Ghosted TVL chart */}
                 <ChartErrorBoundary>
-                  <TVLChart
-                    chartData={tvlData}
-                    timeframe={timeframe.value}
-                    hideAxes={true}
-                    hideTooltip={true}
-                  />
+                  <TVLChart chartData={tvlData} timeframe={timeframe.value} hideAxes={true} hideTooltip={true} />
                 </ChartErrorBoundary>
               </div>
             </FixedHeightChartContainer>
@@ -175,7 +151,7 @@ export function ChartsPanel(data: ChartData) {
                       thirtyDayApy: false,
                       derivedApy: true,
                       oracleApr: false,
-                      oracleApy30dAvg: false,
+                      oracleApy30dAvg: false
                     }}
                   />
                 </ChartErrorBoundary>
@@ -201,7 +177,7 @@ export function ChartsPanel(data: ChartData) {
                       thirtyDayApy: true,
                       derivedApy: false,
                       oracleApr: false,
-                      oracleApy30dAvg: false,
+                      oracleApy30dAvg: false
                     }}
                   />
                 </ChartErrorBoundary>

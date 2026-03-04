@@ -1,7 +1,9 @@
-import React from 'react'
 import { ChevronRight } from 'lucide-react'
+import type React from 'react'
 
 const StrategiesSkeleton: React.FC = () => {
+  const skeletonRows = ['row-1', 'row-2', 'row-3']
+
   return (
     <div className="w-full">
       <div className="w-full mx-auto bg-white border-x border-b border-border">
@@ -34,8 +36,8 @@ const StrategiesSkeleton: React.FC = () => {
               </div>
 
               {/* Strategy Rows Skeleton */}
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="border-t border-[#f5f5f5]">
+              {skeletonRows.map((rowKey) => (
+                <div key={rowKey} className="border-t border-[#f5f5f5]">
                   <div className="flex items-center p-3">
                     <div className="w-8 flex justify-center">
                       <ChevronRight className="w-4 h-4 text-gray-300" />

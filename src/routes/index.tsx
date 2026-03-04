@@ -1,17 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
+import YearnLoader from '@/components/utils/YearnLoader'
 import { VaultsList } from '@/components/vaults-list'
 import { useVaults } from '@/contexts/useVaults'
-import { Vault } from '@/types/vaultTypes'
-import YearnLoader from '@/components/utils/YearnLoader'
+import type { Vault } from '@/types/vaultTypes'
 import { useTokenAssetsContext } from '../contexts/useTokenAssets'
 
 export default function AllVaultsPage() {
   const { vaults, loading, error, loadingState } = useVaults()
-  const {
-    assets,
-    loading: assetsLoading,
-    error: assetsError,
-  } = useTokenAssetsContext()
+  const { assets, loading: assetsLoading, error: assetsError } = useTokenAssetsContext()
 
   // Ensure data is defined before accessing `data.vaults`
   const retrievedVaults: Vault[] = vaults || []
@@ -29,8 +25,7 @@ export default function AllVaultsPage() {
     return (
       <main className="min-h-screen px-0 py-0 max-w-[1400px] mx-auto w-full">
         <div className="text-red-500">
-          Error loading vaults:{' '}
-          {error?.message || assetsError?.message || 'Unknown error'}
+          Error loading vaults: {error?.message || assetsError?.message || 'Unknown error'}
         </div>
       </main>
     )
@@ -46,5 +41,5 @@ export default function AllVaultsPage() {
 }
 
 export const Route = createFileRoute('/')({
-  component: AllVaultsPage,
+  component: AllVaultsPage
 })

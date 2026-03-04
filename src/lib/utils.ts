@@ -1,8 +1,9 @@
 // src/lib/utils.ts
+
+import { type ClassValue, clsx } from 'clsx'
 import { format, fromUnixTime } from 'date-fns'
-import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { TimeseriesDataPoint } from '../types/vaultTypes'
+import type { TimeseriesDataPoint } from '@/types/dataTypes'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -20,17 +21,13 @@ export const formatUnixTimestamp = (timestamp: number | string): string => {
 }
 
 // Helper function for SMA calculation
-export const calculateSMA = (
-  data: number[],
-  windowSize: number = 15
-): (number | null)[] => {
+export const calculateSMA = (data: number[], windowSize: number = 15): (number | null)[] => {
   const sma: (number | null)[] = []
 
   for (let i = 0; i < data.length; i++) {
     const start = Math.max(0, i - windowSize + 1)
     const windowData = data.slice(start, i + 1)
-    const average =
-      windowData.reduce((sum, value) => sum + value, 0) / windowData.length
+    const average = windowData.reduce((sum, value) => sum + value, 0) / windowData.length
     sma.push(average)
   }
   return sma
@@ -46,7 +43,7 @@ export function calculateAprFromPps(
   const aprSeries: TimeseriesDataPoint[] = []
   const window = Math.max(1, Math.floor(smoothingWindowDays))
 
-  const smoothedValues: (number | null)[] = pps.map((point, index) => {
+  const smoothedValues: (number | null)[] = pps.map((_point, index) => {
     const windowStart = Math.max(0, index - window + 1)
     let sum = 0
     let count = 0
@@ -74,12 +71,7 @@ export function calculateAprFromPps(
     const prev = pps[i - 1]
     const prevSmoothed = smoothedValues[i - 1]
 
-    if (
-      current.value === null ||
-      prev.value === null ||
-      currentSmoothed === null ||
-      prevSmoothed === null
-    ) {
+    if (current.value === null || prev.value === null || currentSmoothed === null || prevSmoothed === null) {
       aprSeries.push({ ...current, value: null })
       continue
     }
@@ -110,13 +102,13 @@ export function calculateApyFromApr(
   const periodDays = Math.max(1, compoundingPeriodDays)
   const periodsPerYear = 365 / periodDays
 
-  return aprSeries.map(point => {
+  return aprSeries.map((point) => {
     if (point.value === null) {
       return { ...point, value: null }
     }
 
     const apr = point.value
-    const apy = Math.pow(1 + apr / periodsPerYear, periodsPerYear) - 1
+    const apy = (1 + apr / periodsPerYear) ** periodsPerYear - 1
 
     return { ...point, value: apy }
   })
@@ -138,20 +130,14 @@ export function getEarliestAndLatestTimestamps(
   oracle?: TimeseriesDataPoint[]
 ) {
   // Convert string times to numbers for ease of comparison
-  const apy1Times = apy1.map(d => Number(d.time))
-  const apy2Times = apy2.map(d => Number(d.time))
-  const tvlTimes = tvl.map(d => Number(d.time))
-  const ppsTimes = pps.map(d => Number(d.time))
-  const oracleTimes = oracle?.map(d => Number(d.time)) ?? []
+  const apy1Times = apy1.map((d) => Number(d.time))
+  const apy2Times = apy2.map((d) => Number(d.time))
+  const tvlTimes = tvl.map((d) => Number(d.time))
+  const ppsTimes = pps.map((d) => Number(d.time))
+  const oracleTimes = oracle?.map((d) => Number(d.time)) ?? []
 
   // Combine all time arrays to check if any data exists
-  const allTimes = [
-    ...apy1Times,
-    ...apy2Times,
-    ...tvlTimes,
-    ...ppsTimes,
-    ...oracleTimes,
-  ]
+  const allTimes = [...apy1Times, ...apy2Times, ...tvlTimes, ...ppsTimes, ...oracleTimes]
 
   // Handle case where all input arrays are empty
   if (allTimes.length === 0) {
@@ -186,7 +172,7 @@ export function fillMissingDailyData(
 ): TimeseriesDataPoint[] {
   // Index existing data by day (converted from Unix so day boundaries match)
   const dailyMap: Record<string, TimeseriesDataPoint> = {}
-  data.forEach(point => {
+  data.forEach((point) => {
     dailyMap[point.time] = point
   })
 
@@ -201,7 +187,7 @@ export function fillMissingDailyData(
         value: null,
         label: data[0]?.label || '',
         component: data[0]?.component || '',
-        period: data[0]?.period || '1 day',
+        period: data[0]?.period || '1 day'
       })
     } else {
       filled.push(dailyMap[tStr])

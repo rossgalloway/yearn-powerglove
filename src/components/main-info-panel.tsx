@@ -1,6 +1,6 @@
+import { Check, Copy, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
-import { Copy, Check, ExternalLink } from 'lucide-react'
-import { MainInfoPanelProps } from '@/types/dataTypes'
+import type { MainInfoPanelProps } from '@/types/dataTypes'
 
 export function MainInfoPanel(data: MainInfoPanelProps) {
   const [copied, setCopied] = useState(false)
@@ -17,9 +17,7 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
         <div className="md:col-span-2">
           <div className="mb-2 flex items-center gap-2">
             <div className="text-sm text-gray-500">{data.vaultId}</div>
-            <div className="bg-gray-100 text-xs inline-block px-2 py-1">
-              Deployed: {data.deploymentDate}
-            </div>
+            <div className="bg-gray-100 text-xs inline-block px-2 py-1">Deployed: {data.deploymentDate}</div>
           </div>
           <div className="">
             <div className="flex items-center gap-3 mb-2">
@@ -43,15 +41,9 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
             <div className="text-sm text-gray-500 mb-1">Vault Token</div>
             <div className="flex items-center gap-2">
               {data.vaultToken.icon ? (
-                <img
-                  src={data.vaultToken.icon}
-                  alt={data.vaultToken.name}
-                  className="h-6 w-6 rounded-full"
-                />
+                <img src={data.vaultToken.icon} alt={data.vaultToken.name} className="h-6 w-6 rounded-full" />
               ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                  ?
-                </div>
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">?</div>
               )}
               <span>{data.vaultToken.name}</span>
             </div>
@@ -61,30 +53,17 @@ export function MainInfoPanel(data: MainInfoPanelProps) {
             <div className="text-sm text-gray-500 mt-4 mb-1">Network</div>
             <div className="flex items-center gap-2">
               {data.network.icon ? (
-                <img
-                  src={data.network.icon}
-                  alt={data.network.name}
-                  className="h-6 w-6 rounded-full"
-                />
+                <img src={data.network.icon} alt={data.network.name} className="h-6 w-6 rounded-full" />
               ) : (
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">
-                  ?
-                </div>
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-300 rounded-full text-white">?</div>
               )}
               <span>{data.network.name}</span>
             </div>
 
             <div className="text-sm text-gray-500 mt-4 mb-1">Vault Address</div>
             <div className="flex items-center gap-2">
-              <span>
-                {data.vaultAddress.slice(0, 5) +
-                  '...' +
-                  data.vaultAddress.slice(-4)}
-              </span>
-              <div
-                className="h-4 w-4 text-gray-400 cursor-pointer"
-                onClick={handleCopy}
-              >
+              <span>{data.vaultAddress.slice(0, 5) + '...' + data.vaultAddress.slice(-4)}</span>
+              <div className="h-4 w-4 text-gray-400 cursor-pointer" onClick={handleCopy}>
                 {copied ? (
                   <Check className="h-4 w-4 text-grey-400" />
                 ) : (

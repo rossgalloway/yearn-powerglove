@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Filter, X } from 'lucide-react'
-import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME, ChainId } from '@/constants/chains'
+import type React from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CHAIN_ID_TO_ICON, CHAIN_ID_TO_NAME, type ChainId } from '@/constants/chains'
 
 // --- I've added a constants object for better maintainability ---
 const CONSTANTS = {
@@ -9,7 +10,7 @@ const CONSTANTS = {
   ICON_BUTTON_WIDTH: 48, // Width of the icon button itself
   BUTTON_PADDING_X: 12, // px-3
   FILTER_ICON_WIDTH: 16, // w-4
-  FILTER_ICON_MARGIN_RIGHT: 8, // mr-2
+  FILTER_ICON_MARGIN_RIGHT: 8 // mr-2
 }
 
 interface ChainSelectorProps {
@@ -32,17 +33,15 @@ const useIconPositions = (
   selectedChains: number[],
   isExpanded: boolean
 ): IconData[] => {
-  const ICON_WIDTH = isExpanded
-    ? CONSTANTS.ICON_WIDTH_EXPANDED
-    : CONSTANTS.ICON_WIDTH_COLLAPSED
+  const ICON_WIDTH = isExpanded ? CONSTANTS.ICON_WIDTH_EXPANDED : CONSTANTS.ICON_WIDTH_COLLAPSED
 
   return useMemo(() => {
     const findNearestSelected = (unselectedIndex: number): number => {
       if (selectedChains.length === 0) return 0
       let minDistance = Infinity
       let nearestIndex = 0
-      selectedChains.forEach(selectedId => {
-        const selectedIndex = chains.findIndex(c => c.id === selectedId)
+      selectedChains.forEach((selectedId) => {
+        const selectedIndex = chains.findIndex((c) => c.id === selectedId)
         if (selectedIndex !== -1) {
           const distance = Math.abs(selectedIndex - unselectedIndex)
           if (distance < minDistance) {
@@ -60,38 +59,32 @@ const useIconPositions = (
         name: chain.name,
         icon: chain.icon,
         targetX: index * ICON_WIDTH,
-        isSelected: selectedChains.includes(chain.id),
+        isSelected: selectedChains.includes(chain.id)
       }))
     }
 
-    const selectedChainObjects = chains.filter(chain =>
-      selectedChains.includes(chain.id)
-    )
+    const selectedChainObjects = chains.filter((chain) => selectedChains.includes(chain.id))
     return chains.map((chain, index) => {
       const isSelected = selectedChains.includes(chain.id)
       if (isSelected) {
-        const selectedIndex = selectedChainObjects.findIndex(
-          sc => sc.id === chain.id
-        )
+        const selectedIndex = selectedChainObjects.findIndex((sc) => sc.id === chain.id)
         return {
           chainId: chain.id,
           name: chain.name,
           icon: chain.icon,
           targetX: selectedIndex * ICON_WIDTH,
-          isSelected: true,
+          isSelected: true
         }
       } else {
         const nearestSelectedIndex = findNearestSelected(index)
         const nearestSelectedId = chains[nearestSelectedIndex]?.id
-        const packedIndex = selectedChainObjects.findIndex(
-          sc => sc.id === nearestSelectedId
-        )
+        const packedIndex = selectedChainObjects.findIndex((sc) => sc.id === nearestSelectedId)
         return {
           chainId: chain.id,
           name: chain.name,
           icon: chain.icon,
           targetX: Math.max(0, packedIndex) * ICON_WIDTH,
-          isSelected: false,
+          isSelected: false
         }
       }
     })
@@ -109,6 +102,7 @@ const useComponentWidth = (
   const textRef = useRef<HTMLSpanElement>(null)
   const [textWidth, setTextWidth] = useState(0)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recalc width when button label changes
   useEffect(() => {
     if (textRef.current) {
       setTextWidth(textRef.current.offsetWidth)
@@ -117,21 +111,14 @@ const useComponentWidth = (
 
   const containerWidth = useMemo(() => {
     const baseWidth =
-      textWidth +
-      CONSTANTS.BUTTON_PADDING_X * 2 +
-      CONSTANTS.FILTER_ICON_WIDTH +
-      CONSTANTS.FILTER_ICON_MARGIN_RIGHT
+      textWidth + CONSTANTS.BUTTON_PADDING_X * 2 + CONSTANTS.FILTER_ICON_WIDTH + CONSTANTS.FILTER_ICON_MARGIN_RIGHT
 
     if (isExpanded) {
-      const iconsWidth =
-        (chainCount - 1) * CONSTANTS.ICON_WIDTH_EXPANDED +
-        CONSTANTS.ICON_BUTTON_WIDTH
+      const iconsWidth = (chainCount - 1) * CONSTANTS.ICON_WIDTH_EXPANDED + CONSTANTS.ICON_BUTTON_WIDTH
       return baseWidth + iconsWidth
     }
     if (hasSelectedChains) {
-      const iconsWidth =
-        (selectedChainCount - 1) * CONSTANTS.ICON_WIDTH_COLLAPSED +
-        CONSTANTS.ICON_BUTTON_WIDTH
+      const iconsWidth = (selectedChainCount - 1) * CONSTANTS.ICON_WIDTH_COLLAPSED + CONSTANTS.ICON_BUTTON_WIDTH
       return baseWidth + iconsWidth
     }
     return baseWidth
@@ -140,11 +127,7 @@ const useComponentWidth = (
   return { textRef, containerWidth }
 }
 
-export const ChainSelector: React.FC<ChainSelectorProps> = ({
-  selectedChains,
-  onChainToggle,
-  onSetSelectedChains,
-}) => {
+export const ChainSelector: React.FC<ChainSelectorProps> = ({ selectedChains, onChainToggle, onSetSelectedChains }) => {
   // --- Component state ---
   const [isHovered, setIsHovered] = useState(false)
   const [buttonText, setButtonText] = useState('Filter Chains')
@@ -158,13 +141,12 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         return {
           id: chainId,
           name,
-          icon: CHAIN_ID_TO_ICON[chainId],
+          icon: CHAIN_ID_TO_ICON[chainId]
         }
       }),
     []
   )
-  const allSelected =
-    selectedChains.length === 0 || selectedChains.length === chains.length
+  const allSelected = selectedChains.length === 0 || selectedChains.length === chains.length
   const hasSelectedChains = selectedChains.length > 0 && !allSelected
 
   // --- Custom hooks for complex logic ---
@@ -186,13 +168,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
       }
       setButtonText(hasSelectedChains ? 'Selected Chains' : 'Filter Chains')
     }
-  }, [
-    isExpanded,
-    hasSelectedChains,
-    onSetSelectedChains,
-    selectedChains.length,
-    chains.length,
-  ])
+  }, [isExpanded, hasSelectedChains, onSetSelectedChains, selectedChains.length, chains.length])
 
   // --- Event handlers ---
   const handleClearSelection = () => {
@@ -232,10 +208,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         ) : (
           <Filter className="w-4 h-4 text-gray-500 mr-2" />
         )}
-        <span
-          ref={textRef}
-          className="text-sm font-medium text-gray-700 whitespace-nowrap"
-        >
+        <span ref={textRef} className="text-sm font-medium text-gray-700 whitespace-nowrap">
           {buttonText}
         </span>
       </div>
@@ -243,7 +216,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
       {/* Icon container */}
       {(isExpanded || hasSelectedChains) && (
         <div className="relative h-10 flex-1">
-          {iconPositions.map(iconData => (
+          {iconPositions.map((iconData) => (
             <button
               key={iconData.chainId}
               className={`absolute flex items-center justify-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${
@@ -253,7 +226,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
               }`}
               style={{
                 transform: `translateX(${iconData.targetX}px)`,
-                top: iconData.isSelected || isExpanded ? '4px' : '8px',
+                top: iconData.isSelected || isExpanded ? '4px' : '8px'
               }}
               onClick={() => handleIconClick(iconData.chainId)}
               title={iconData.name}
@@ -263,7 +236,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
                 style={{
                   top: '50%',
                   left: '50%',
-                  transform: 'translate(-50%, -50%)',
+                  transform: 'translate(-50%, -50%)'
                 }}
               />
               <img

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
 
 interface OptimizedImageProps {
   src: string
@@ -19,7 +20,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onLoad,
   onError,
   placeholder,
-  loading = 'lazy',
+  loading = 'lazy'
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -46,9 +47,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   if (imageError) {
     return (
-      <div
-        className={`bg-gray-300 rounded-full flex items-center justify-center text-white ${fallbackClassName}`}
-      >
+      <div className={`bg-gray-300 rounded-full flex items-center justify-center text-white ${fallbackClassName}`}>
         ?
       </div>
     )
@@ -57,10 +56,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   return (
     <div className="relative w-6 h-6">
       {/* Loading placeholder */}
-      {!imageLoaded &&
-        (placeholder || (
-          <div className="absolute inset-0 bg-gray-300 rounded-full animate-pulse" />
-        ))}
+      {!imageLoaded && (placeholder || <div className="absolute inset-0 bg-gray-300 rounded-full animate-pulse" />)}
 
       {/* Actual image */}
       <img

@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
-import { Vault } from '../types/vaultTypes'
-import { ChevronsUp, ChevronsDown } from 'lucide-react'
+import { ChevronsDown, ChevronsUp } from 'lucide-react'
+import { useState } from 'react'
+import type { Vault } from '../types/vaultTypes'
 
 export function YearnVaultsSummary({
   selectedType,
-  onTypeFilterChange,
+  onTypeFilterChange
 }: {
   vaults: Vault[]
   selectedType: string
@@ -16,7 +16,7 @@ export function YearnVaultsSummary({
     'Allocator Vaults': 'Allocator Vault',
     'Strategy Vaults': 'Strategy Vault',
     'Factory Vaults': 'Factory Vault',
-    'Legacy Vaults': 'Legacy Vault',
+    'Legacy Vaults': 'Legacy Vault'
   }
 
   return (
@@ -28,9 +28,7 @@ export function YearnVaultsSummary({
       </div>
 
       {/* Collapsible Content */}
-      <div
-        className={`transition-all duration-300 ${isOpen ? 'max-h-screen' : 'max-h-0 overflow-hidden'}`}
-      >
+      <div className={`transition-all duration-300 ${isOpen ? 'max-h-screen' : 'max-h-0 overflow-hidden'}`}>
         <div className="grid grid-cols-5 gap-6">
           {/* Vault Types Information (60% width) */}
           <div className="col-span-3 space-y-6">
@@ -61,9 +59,7 @@ export function YearnVaultsSummary({
           {/* TVL Chart (40% width) */}
           <div className="col-span-2 p-4 border border-dashed border-gray-300 rounded">
             <h2 className="font-semibold mb-2">Total Value Locked (TVL)</h2>
-            <div className="h-48 flex items-center justify-center text-gray-500">
-              TVL Chart Placeholder
-            </div>
+            <div className="h-48 flex items-center justify-center text-gray-500">TVL Chart Placeholder</div>
           </div>
         </div>
       </div>

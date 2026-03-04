@@ -1,12 +1,15 @@
 // src/lib/timeseries-api.ts
-import { TimeseriesDataPoint } from '@/types/dataTypes'
 
-const API_BASE = `${import.meta.env.VITE_PUBLIC_REST_URL}/timeseries`
+import { fetchKongJson, getKongTimeseriesUrl } from '@/lib/kong-rest'
+import type { TimeseriesDataPoint } from '@/types/dataTypes'
+import type { KongTimeseriesPoint } from '@/types/kong'
 
-type RestTimeseriesPoint = {
-  time: number
-  component: string
-  value: number | string
+const toNullableNumber = (value: KongTimeseriesPoint['value']): number | null => {
+  if (value === null || value === undefined) {
+    return null
+  }
+  const numericValue = typeof value === 'string' ? Number(value) : value
+  return Number.isFinite(numericValue) ? numericValue : null
 }
 
 /**
@@ -19,32 +22,20 @@ export async function fetchTimeseries(
   address: string,
   components?: string[]
 ): Promise<TimeseriesDataPoint[]> {
-  const url = new URL(`${API_BASE}/${segment}/${chainId}/${address}`)
-
-  if (components?.length) {
-    components.forEach(c => url.searchParams.append('components', c))
+  const url = getKongTimeseriesUrl(segment, chainId, address, components)
+  const data = await fetchKongJson<KongTimeseriesPoint[]>(url, { allow404: true })
+  if (!data) {
+    return []
   }
-
-  const response = await fetch(url.toString())
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      return []
-    }
-    throw new Error(`Failed to fetch timeseries: ${response.status}`)
-  }
-
-  const data: RestTimeseriesPoint[] = await response.json()
 
   // Transform to match TimeseriesDataPoint shape
-  return data.map(point => {
-    const numericValue = typeof point.value === 'string' ? Number(point.value) : point.value
+  return data.map((point) => {
     return {
       time: String(point.time),
-      value: Number.isNaN(numericValue) ? null : numericValue,
-      component: point.component,
+      value: toNullableNumber(point.value),
+      component: point.component ?? undefined,
       label: segment,
-      period: '1 day',
+      period: '1 day'
     }
   })
 }

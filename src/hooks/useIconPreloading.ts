@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { CHAIN_ID_TO_ICON, ChainId } from '@/constants/chains'
+import { CHAIN_ID_TO_ICON, type ChainId } from '@/constants/chains'
 
 // Preload critical chain icons immediately
 export const useIconPreloading = () => {
@@ -8,7 +8,7 @@ export const useIconPreloading = () => {
     const chainIcons = Object.values(CHAIN_ID_TO_ICON)
 
     // Preload chain icons immediately with high priority
-    chainIcons.forEach(iconUrl => {
+    chainIcons.forEach((iconUrl) => {
       if (iconUrl) {
         const img = new Image()
         img.src = iconUrl

@@ -1,7 +1,7 @@
 // src/hooks/useRestTimeseries.ts
 import { useQuery } from '@tanstack/react-query'
 import { fetchTimeseries } from '@/lib/timeseries-api'
-import { TimeseriesDataPoint } from '@/types/dataTypes'
+import type { TimeseriesDataPoint } from '@/types/dataTypes'
 
 interface UseRestTimeseriesProps {
   segment: string
@@ -26,18 +26,18 @@ export function useRestTimeseries({
   chainId,
   address,
   components,
-  enabled = true,
+  enabled = true
 }: UseRestTimeseriesProps): UseRestTimeseriesReturn {
   const { data, isLoading, error } = useQuery({
     queryKey: ['timeseries', segment, chainId, address, components],
     queryFn: () => fetchTimeseries(segment, chainId, address, components),
     enabled,
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: 1000 * 60 * 15 // 15 minutes
   })
 
   return {
     data: data ? { timeseries: data } : undefined,
     isLoading,
-    error: error as Error | null,
+    error: error as Error | null
   }
 }

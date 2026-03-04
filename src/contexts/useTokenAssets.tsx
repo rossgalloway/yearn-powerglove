@@ -10,7 +10,7 @@ interface TokenAssetsContextProps {
 export const TokenAssetsContext = createContext<TokenAssetsContextProps>({
   assets: [],
   loading: false,
-  error: null,
+  error: null
 })
 
 export const useTokenAssetsContext = () => useContext(TokenAssetsContext)

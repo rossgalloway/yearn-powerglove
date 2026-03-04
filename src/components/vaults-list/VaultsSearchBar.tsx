@@ -1,5 +1,5 @@
 import React from 'react'
-import { VaultListData } from '@/components/vaults-list/VaultRow'
+import type { VaultListData } from '@/components/vaults-list/VaultRow'
 import { CHAIN_ID_TO_NAME } from '@/constants/chains'
 
 interface VaultsSearchBarProps {
@@ -8,9 +8,7 @@ interface VaultsSearchBarProps {
     APY: { min: string; max: string }
     tvl: { min: string; max: string }
   }
-  onSearchTermsChange: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >
+  onSearchTermsChange: React.Dispatch<React.SetStateAction<Record<string, string>>>
   onRangeFiltersChange: React.Dispatch<
     React.SetStateAction<{
       APY: { min: string; max: string }
@@ -26,7 +24,7 @@ const headers: { label: string; key: keyof VaultListData }[] = [
   { label: 'Token', key: 'token' },
   { label: 'Type', key: 'type' },
   { label: '30D APY', key: 'APY' },
-  { label: 'TVL', key: 'tvl' },
+  { label: 'TVL', key: 'tvl' }
 ]
 
 const vaultTypes = ['Allocator Vault', 'Strategy Vault', 'Factory Vault', 'Legacy Vault', 'External Vault']
@@ -34,13 +32,7 @@ const vaultTypes = ['Allocator Vault', 'Strategy Vault', 'Factory Vault', 'Legac
 const chainOptions = Object.values(CHAIN_ID_TO_NAME)
 
 export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
-  ({
-    searchTerms,
-    rangeFilters,
-    onSearchTermsChange,
-    onRangeFiltersChange,
-    onTypeFilterChange,
-  }) => {
+  ({ searchTerms, rangeFilters, onSearchTermsChange, onRangeFiltersChange, onTypeFilterChange }) => {
     const renderSearchInput = (key: keyof VaultListData) => {
       if (key === 'APY' || key === 'tvl') {
         // APY and TVL: Range filter with "greater than" and "less than" inputs
@@ -50,18 +42,14 @@ export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
               type="text"
               placeholder={key === 'APY' ? 'Min %' : 'Min $'}
               value={
-                rangeFilters[key].min
-                  ? key === 'APY'
-                    ? `${rangeFilters[key].min}%`
-                    : `$${rangeFilters[key].min}`
-                  : ''
+                rangeFilters[key].min ? (key === 'APY' ? `${rangeFilters[key].min}%` : `$${rangeFilters[key].min}`) : ''
               }
-              onChange={e => {
+              onChange={(e) => {
                 const rawValue = e.target.value.replace(/[$%]/g, '')
-                if (!isNaN(Number(rawValue))) {
-                  onRangeFiltersChange(prev => ({
+                if (!Number.isNaN(Number(rawValue))) {
+                  onRangeFiltersChange((prev) => ({
                     ...prev,
-                    [key]: { ...prev[key], min: rawValue },
+                    [key]: { ...prev[key], min: rawValue }
                   }))
                 }
               }}
@@ -71,18 +59,14 @@ export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
               type="text"
               placeholder={key === 'APY' ? 'Max %' : 'Max $'}
               value={
-                rangeFilters[key].max
-                  ? key === 'APY'
-                    ? `${rangeFilters[key].max}%`
-                    : `$${rangeFilters[key].max}`
-                  : ''
+                rangeFilters[key].max ? (key === 'APY' ? `${rangeFilters[key].max}%` : `$${rangeFilters[key].max}`) : ''
               }
-              onChange={e => {
+              onChange={(e) => {
                 const rawValue = e.target.value.replace(/[$%]/g, '')
-                if (!isNaN(Number(rawValue))) {
-                  onRangeFiltersChange(prev => ({
+                if (!Number.isNaN(Number(rawValue))) {
+                  onRangeFiltersChange((prev) => ({
                     ...prev,
-                    [key]: { ...prev[key], max: rawValue },
+                    [key]: { ...prev[key], max: rawValue }
                   }))
                 }
               }}
@@ -96,15 +80,15 @@ export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
         return (
           <select
             value={searchTerms[key] || ''}
-            onChange={e => {
+            onChange={(e) => {
               const selectedValue = e.target.value
-              onSearchTermsChange(prev => ({ ...prev, [key]: selectedValue }))
+              onSearchTermsChange((prev) => ({ ...prev, [key]: selectedValue }))
               onTypeFilterChange(selectedValue)
             }}
             className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
           >
             <option value="">All Types</option>
-            {vaultTypes.map(option => (
+            {vaultTypes.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -117,13 +101,11 @@ export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
         return (
           <select
             value={searchTerms[key] || ''}
-            onChange={e =>
-              onSearchTermsChange(prev => ({ ...prev, [key]: e.target.value }))
-            }
+            onChange={(e) => onSearchTermsChange((prev) => ({ ...prev, [key]: e.target.value }))}
             className="w-full h-full bg-white border border-gray-300 rounded px-2 py-1 text-sm text-right text-gray-500"
           >
             <option value="">All Chains</option>
-            {chainOptions.map(option => (
+            {chainOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -138,9 +120,7 @@ export const VaultsSearchBar: React.FC<VaultsSearchBarProps> = React.memo(
           type="text"
           placeholder={`Search ${key}`}
           value={searchTerms[key] || ''}
-          onChange={e =>
-            onSearchTermsChange(prev => ({ ...prev, [key]: e.target.value }))
-          }
+          onChange={(e) => onSearchTermsChange((prev) => ({ ...prev, [key]: e.target.value }))}
           className={`w-full border border-gray-300 rounded px-2 py-1 text-sm text-gray-500 ${
             key === 'name' ? 'text-left' : 'text-right'
           }`}
